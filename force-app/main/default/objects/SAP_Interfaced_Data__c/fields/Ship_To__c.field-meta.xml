@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Ship_To__c</fullName>
+    <externalId>false</externalId>
+    <formula>CASE(TEXT( Business_State__c ),&#39;NSW&#39;, Market__r.Sample_Order_NSW_ShipTo__c, &#39;QLD&#39;,  Market__r.Sample_Order_QLD_ShipTo__c,&#39;VIC&#39;,Market__r.Sample_Order_VIC_ShipTo__c, &#39;SA&#39;, Market__r.Sample_Order_SA_ShipTo__c, &#39;WA&#39;,Market__r.Sample_Order_WA_ShipTo__c, &#39;ACT&#39;,Market__r.Sample_Order_ACT_ShipTo__c, &#39;NT&#39;,Market__r.Sample_Order_NT_ShipTo__c, &#39;0&#39;)</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Ship To</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

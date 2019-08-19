@@ -1,0 +1,45 @@
+.THIS {
+}
+.THIS .status_New {
+    background-color: #dddbda;
+}
+.THIS .status_Submitted {
+    background-color: #d8edff;
+}
+.THIS .status_Approved {
+    background-color: #04844b;
+}
+.THIS .status_Declined .status_Canceled {
+    background-color: #c23934;
+}
+.THIS .header {
+    height: 50px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 2em;
+    width: 100%;
+    margin: 10px auto;
+    padding: 0px 10px;
+}
+.THIS .bannerText {
+    font-size: 1.5em;
+    text-transform: uppercase;
+    vertical-align: middle;
+    height: 50px;
+    text-align: right;
+}
+.THIS .bannerText_black {
+    color: #999;
+}
+.THIS .bannerText_white {
+    color: #fff;
+}
+.THIS .height_60 {
+    height: 60px;
+}
+.THIS .scroll-wrapper_brand {
+    height: 150px;
+}
+.THIS .scroll-wrapper_products {
+    height: 500px;
+}

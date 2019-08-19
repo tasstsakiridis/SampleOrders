@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GlobalValueSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customValue>
+        <fullName>Agency Brands</fullName>
+        <default>false</default>
+        <label>Agency Brands</label>
+    </customValue>
+    <customValue>
+        <fullName>BenRiach</fullName>
+        <default>false</default>
+        <label>BenRiach</label>
+    </customValue>
+    <customValue>
+        <fullName>Chambord</fullName>
+        <default>false</default>
+        <label>Chambord</label>
+    </customValue>
+    <customValue>
+        <fullName>Collingwood Canadian</fullName>
+        <default>false</default>
+        <label>Collingwood Canadian</label>
+    </customValue>
+    <customValue>
+        <fullName>EJ RTS</fullName>
+        <default>false</default>
+        <label>EJ RTS</label>
+    </customValue>
+    <customValue>
+        <fullName>El Jimador</fullName>
+        <default>false</default>
+        <label>El Jimador</label>
+    </customValue>
+    <customValue>
+        <fullName>El Jimador RTD</fullName>
+        <default>false</default>
+        <label>El Jimador RTD</label>
+    </customValue>
+    <customValue>
+        <fullName>Finlandia Vodka</fullName>
+        <default>false</default>
+        <label>Finlandia Vodka</label>
+    </customValue>
+    <customValue>
+        <fullName>Gentleman Jack</fullName>
+        <default>false</default>
+        <label>Gentleman Jack</label>
+    </customValue>
+    <customValue>
+        <fullName>GJ &amp; Cola</fullName>
+        <default>false</default>
+        <label>GJ &amp; Cola</label>
+    </customValue>
+    <customValue>
+        <fullName>GlenDronach</fullName>
+        <default>false</default>
+        <label>GlenDronach</label>
+    </customValue>
+    <customValue>
+        <fullName>Glenglassaugh</fullName>
+        <default>false</default>
+        <label>Glenglassaugh</label>
+    </customValue>
+    <customValue>
+        <fullName>Herradura</fullName>
+        <default>false</default>
+        <label>Herradura</label>
+    </customValue>
+    <customValue>
+        <fullName>Herradura Seleccion Suprema</fullName>
+        <default>false</default>
+        <label>Herradura Seleccion Suprema</label>
+    </customValue>
+    <customValue>
+        <fullName>Heradura Ultra</fullName>
+        <default>false</default>
+        <label>Heradura Ultra</label>
+    </customValue>
+    <customValue>
+        <fullName>Jack Daniel&#39;s</fullName>
+        <default>false</default>
+        <label>Jack Daniel&#39;s</label>
+    </customValue>
+    <customValue>
+        <fullName>Jack Daniel&#39;s Gold</fullName>
+        <default>false</default>
+        <label>Jack Daniel&#39;s Gold</label>
+    </customValue>
+    <customValue>
+        <fullName>Jack Daniel&#39;s Honey</fullName>
+        <default>false</default>
+        <label>Jack Daniel&#39;s Honey</label>
+    </customValue>
+    <customValue>
+        <fullName>Jagermeister</fullName>
+        <default>false</default>
+        <label>Jagermeister</label>
+    </customValue>
+    <customValue>
+        <fullName>JD &amp; Cola</fullName>
+        <default>false</default>
+        <label>JD &amp; Cola</label>
+    </customValue>
+    <customValue>
+        <fullName>JD 1907</fullName>
+        <default>false</default>
+        <label>JD 1907</label>
+    </customValue>
+    <customValue>
+        <fullName>JD 1907 RTD</fullName>
+        <default>false</default>
+        <label>JD 1907 RTD</label>
+    </customValue>
+    <customValue>
+        <fullName>JD American Serve</fullName>
+        <default>false</default>
+        <label>JD American Serve</label>
+    </customValue>
+    <customValue>
+        <fullName>JD Craft Rye</fullName>
+        <default>false</default>
+        <label>JD Craft Rye</label>
+    </customValue>
+    <customValue>
+        <fullName>JD RTD</fullName>
+        <default>false</default>
+        <label>JD RTD</label>
+    </customValue>
+    <customValue>
+        <fullName>JD Sinatra</fullName>
+        <default>false</default>
+        <label>JD Sinatra</label>
+    </customValue>
+    <customValue>
+        <fullName>JD Single Barrel</fullName>
+        <default>false</default>
+        <label>JD Single Barrel</label>
+    </customValue>
+    <customValue>
+        <fullName>JD Tennessee Fire</fullName>
+        <default>false</default>
+        <label>JD Tennessee Fire</label>
+    </customValue>
+    <customValue>
+        <fullName>JD Tennessee Rye</fullName>
+        <default>false</default>
+        <label>JD Tennessee Rye</label>
+    </customValue>
+    <customValue>
+        <fullName>JD Winter Jack</fullName>
+        <default>false</default>
+        <label>JD Winter Jack</label>
+    </customValue>
+    <customValue>
+        <fullName>Old Forester</fullName>
+        <default>false</default>
+        <label>Old Forester</label>
+    </customValue>
+    <customValue>
+        <fullName>Old Forester 100</fullName>
+        <default>false</default>
+        <label>Old Forester 100</label>
+    </customValue>
+    <customValue>
+        <fullName>Old Forester Single Barrel</fullName>
+        <default>false</default>
+        <label>Old Forester Single Barrel</label>
+    </customValue>
+    <customValue>
+        <fullName>Slane</fullName>
+        <default>false</default>
+        <label>Slane</label>
+    </customValue>
+    <customValue>
+        <fullName>Woodford Reserve</fullName>
+        <default>false</default>
+        <label>Woodford Reserve</label>
+    </customValue>
+    <customValue>
+        <fullName>Woodford Reserve Double Oak</fullName>
+        <default>false</default>
+        <label>Woodford Reserve Double Oak</label>
+    </customValue>
+    <customValue>
+        <fullName>Woodford Reserve Rye</fullName>
+        <default>false</default>
+        <label>Woodford Reserve Rye</label>
+    </customValue>
+    <customValue>
+        <fullName>Tuaca Liqueur</fullName>
+        <default>false</default>
+        <isActive>false</isActive>
+        <label>Tuaca Liqueur</label>
+    </customValue>
+    <customValue>
+        <fullName>Pepe Lopez</fullName>
+        <default>false</default>
+        <isActive>false</isActive>
+        <label>Pepe Lopez</label>
+    </customValue>
+    <customValue>
+        <fullName>Little Black Dress Vodka</fullName>
+        <default>false</default>
+        <isActive>false</isActive>
+        <label>Little Black Dress Vodka</label>
+    </customValue>
+    <customValue>
+        <fullName>Coleccion de la Casa</fullName>
+        <default>false</default>
+        <isActive>false</isActive>
+        <label>Coleccion de la Casa</label>
+    </customValue>
+    <customValue>
+        <fullName>Chambord Flavored Vodka</fullName>
+        <default>false</default>
+        <isActive>false</isActive>
+        <label>Chambord Flavored Vodka</label>
+    </customValue>
+    <customValue>
+        <fullName>JD FOB</fullName>
+        <default>false</default>
+        <isActive>false</isActive>
+        <label>JD FOB</label>
+    </customValue>
+    <customValue>
+        <fullName>Tequila Non-Alcohol</fullName>
+        <default>false</default>
+        <isActive>false</isActive>
+        <label>Tequila Non-Alcohol</label>
+    </customValue>
+    <masterLabel>BF Brands</masterLabel>
+    <sorted>false</sorted>
+</GlobalValueSet>

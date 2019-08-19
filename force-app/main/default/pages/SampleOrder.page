@@ -1,0 +1,24 @@
+<apex:page standardStylesheets="false" showHeader="true" sidebar="false">
+    <head>
+        <meta charset="utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />        
+    </head>
+    <apex:includeLightning />
+    <div id="lightning" style="width: 100%; height: 100%;" />
+    <script>
+    var userTheme = "{!$User.UITheme}";
+    var isSF1 = userTheme.substr(0,6) == 'Theme4';
+    
+    $Lightning.use("c:SampleOrderApp", function() {
+        $Lightning.createComponent(
+            "c:SampleOrder",
+            { "userContext":userTheme, "isSF1":isSF1 },            
+            "lightning",
+            function(cmp) {
+        });
+    });
+    </script>
+</apex:page>

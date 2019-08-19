@@ -1,0 +1,181 @@
+<aura:component access="global" controller="SampleOrder_Controller">
+	<!-- String Attributes -->
+    <aura:attribute name="userId" type="String" default="" />
+    <aura:attribute name="userName" type="String" default="" />
+    <aura:attribute name="userContext" type="String" />
+    <aura:attribute name="selectedBrand" type="String" />
+    <aura:attribute name="country" type="String" default="AU" />
+    <aura:attribute name="classification" type="String" default="" />
+    <aura:attribute name="businessState" type="String" />
+    <aura:attribute name="itemsButtonLabel" type="String" default="Add Items" />
+    <aura:attribute name="toastTitle" type="String" default="Warning" />
+    <aura:attribute name="toastMessage" type="String" default="" />   
+
+    <!-- Number Attributes -->
+    <aura:attribute name="selectedRowCount" type="Integer" default="0" />
+    
+    <!-- Boolean Attributes -->
+    <aura:attribute name="isLoading" type="Boolean" default="false" />
+    <aura:attribute name="isSF1" type="Boolean" default="false" />
+    <aura:attribute name="isAddingItems" type="Boolean" default="false" />
+    <aura:attribute name="isVisible" type="Boolean" default="true" />
+    <aura:attribute name="disableAddItems" type="Boolean" default="true" />
+    <aura:attribute name="closeAfterSave" type="Boolean" default="false" />
+    <aura:attribute name="showSelectedProducts" type="Boolean" default="false" />
+    <aura:attribute name="orderLocked" type="Boolean" default="false" />
+    <aura:attribute name="canSubmit" type="Boolean" default="false" />
+
+    <!-- List & Object Attributes -->
+    <aura:attribute name="theSampleOrder" type="SAP_Interfaced_Data__c" default="{ }" />
+    <aura:attribute name="objectDescribe" type="bfObjectDescribe" default="{}" />
+    <aura:attribute name="provinceOptions" type="List" default="[]" />
+    <aura:attribute name="countryOptions" type="List" default="[]" />
+    <aura:attribute name="classifications" type="List" default="[]" />
+    <aura:attribute name="productData" type="SampleOrderItem[]" />
+    <aura:attribute name="deletedRows" type="SampleOrderItem[]" />
+    <aura:attribute name="data" type="SampleOrderItem[]" />
+    <aura:attribute name="brands" type="List" />
+    <aura:attribute name="productColumns" type="List" />
+    <aura:attribute name="selectedProducts" type="SampleOrderItem[]" />
+
+    <!-- Handle component events -->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <!-- Handle attribute value changes -->
+    <aura:handler name="change" value="{!v.country}" action="{!c.handleCountryChange}" />
+    <aura:handler name="change" value="{!v.objectDescribe}" action="{!c.handleDescribeInfoChange}" />
+    <aura:handler name="change" value="{!v.closeDialog}" action="{!c.handleCloseDialogChange}" />
+    
+    <!-- handle Component events -->
+    <aura:handler name="bfLightningEvent" event="c:bfLightningEvent" action="{!c.handleLightningEvent}" />
+
+    <!-- Register component events -->
+    <aura:registerEvent name="bfLightningEvent" type="c:bfLightningEvent" />
+    
+    <!-- Public methods -->
+    <aura:method name="loadSampleOrder" action="{!c.loadSampleOrder}" access="PUBLIC">
+        <aura:attribute name="recordId" type="String" default="" />
+    </aura:method>
+    <aura:method name="newSampleOrder" action="{!c.newSampleOrder}" access="PUBLIC">
+    </aura:method>
+    
+    <aura:if isTrue="{!v.isLoading}">
+        <lightning:spinner alternativeText="Loading..." />
+    </aura:if>
+    <div aura:id="toastPanel" class="slds-notify_container slds-is-relative slds-hide">
+	    <div class="slds-notify slds-notify_toast slds-theme_warning" role="alert">
+    		<span class="slds-assistive-text">{!v.toastTitle}</span>
+		    <span class="slds-icon_container slds-icon-utility-warning slds-m-right_small slds-no-flex slds-align-top" title="Description of icon when needed">
+                <c:svg class="slds-icon slds-icon_small" ariaHidden="true" xlinkHref="/resource/SLDS232/assets/icons/utility-sprite/svg/symbols.svg#warning" />
+		    </span>
+		    <div class="slds-notify__content">
+			    <h2 class="slds-text-heading_small ">{!v.toastMessage}</h2>
+		    </div>
+		    <button class="slds-button slds-button_icon slds-notify__close slds-button_icon-inverse" title="Close" name="toastClose" onclick="{!c.handleCloseToastButtonClick}">
+                <c:svg class="slds-button__icon slds-button__icon_large" ariaHidden="true" xlinkHref="/resource/SLDS232/assets/icons/utility-sprite/svg/symbols.svg#close" />
+			    <span class="slds-assistive-text">Close</span>
+			</button>
+	    </div>
+    </div>
+    <lightning:card aura:id="theOrderForm" title="Sample Order" class="slds-card__body slds-card__body_inner slds-hide" iconName="custom:custom62">                
+        <div class="slds-text-align_center slds-m-top_medium">
+            <lightning:button aura:id="btnSave" variant="brand" type="submit" disabled="{!v.orderLocked}" name="save" label="Save" onclick="{!c.handleButtonClick}" />
+            <lightning:button aura:id="btnSaveClose" variant="brand" type="submit" disabled="{!v.orderLocked}"  name="saveclose" label="Save &amp; Close"  onclick="{!c.handleButtonClick}"/>
+            <lightning:button aura:id="btnCancel" variant="brand" type="button" name="cancel" label="Cancel" onclick="{!c.handleButtonClick}" />
+            <lightning:button aura:id="btnSubmit" variant="brand" type="button" disabled="{!v.canSubmit==false}"  name="submit" label="Submit for Approval" onclick="{!c.handleButtonClick}" />
+            <lightning:button aura:id="btnItems" variant="brand" disabled="{!v.disableAddItems}" type="button" name="additems" label="{!v.itemsButtonLabel}" onclick="{!c.handleButtonClick}" />
+        </div>
+        <div aura:id="approvalStatus" class="header">
+        	<h2 aura:id="bannerText" class="slds-text-title_caps bannerText">{!v.theSampleOrder.Approval_Status__c}</h2>
+        </div>
+        <aura:if isTrue="{!v.isAddingItems}">
+            <div class="slds-grid slds-gutters_small slds-m-top_small">
+                <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                    <!--<lightning:combobox name="brands" label="Brand" disabled="{!v.orderLocked}" placeholder="Select a Brand" options="{!v.brands}" onchange="{!c.handleBrandChange}" />-->
+                        <lightning:select aura:id="brands" name="brands" label="Brand" disabled="{!v.orderLocked}" onchange="{!c.handleBrandChange}" >
+                            <aura:iteration items="{!v.brands}" var="brand">
+                                <option text="{!brand.label}" value="{!brand.value}"></option>
+                            </aura:iteration>                
+                        </lightning:select>
+                </div>
+                <div class="slds-col slds-has-flexi-truncate" role="listitem">                        
+                    <lightning:input type="toggle" label="Show selected products" disabled="{!v.orderLocked}" checked="{!v.showSelectedProducts}" name="showSelectedProducts" onchange="{!c.handleShowSelectedProductsChange}" />
+                </div>
+            </div>
+            <div class="slds-m-top_medium" style="height: 500px; overflow-y: scroll;">
+                <h2># of Selected Products: {!v.selectedRowCount}</h2>
+                <div style="height: 400px;">
+                    <ui:scrollerWrapper class="scroll-wrapper_products">
+                    <table aura:id="datatable_container" id="datatable_container" class="slds-table slds-table_bordered slds-max-medium-table_stacked-horizontal slds-table_striped slds-table_bordered" style="width: 100%; height: 400px">
+                        <thead>
+                            <tr class="slds-text-title_caps">
+                                <aura:iteration items="{!v.productColumns}" var="th">
+                                    <th class="slds-cell-shrink" scope="col">
+                                        <div class="slds-truncate" title="{!th.label}">{!th.label}
+                                            <span class="slds-assistive-text">{!th.label}</span>
+                                        </div>
+                                    </th>
+                                </aura:iteration>
+                            </tr>
+                        </thead>
+                        <tbody>                    
+                            <aura:iteration items="{!v.data}" var="r">
+                                <c:SampleOrderItemRow row="{!r}" selectedProducts="{!v.selectedProducts}" selectedRowCount="{!v.selectedRowCount}" selectedBrand="{!v.selectedBrand}" showSelectedRows="{!v.showSelectedProducts}" orderLocked="{!v.orderLocked}" deletedRows="{!v.deletedRows}" />
+                            </aura:iteration>
+                        </tbody>                
+                    </table>
+                    </ui:scrollerWrapper>                    
+                </div>
+            </div>
+            <aura:set attribute="else">            
+                <aura:if isTrue="{!v.isVisible}">
+                <div class="slds-grid slds-gutters_small slds-m-top_small">
+                    <div class="slds-col slds-has-flexi-truncate" role="listitem">
+	                	<lightning:input type="date" name="i_RequestedDeliveryDate" label="Requested Delivery Date" disabled="{!v.orderLocked}" required="true" value="{!v.theSampleOrder.Requested_Delivery_Date__c}" placeholder="Requested Delivery Date" />
+                    </div>  
+                    <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                        <lightning:select name="classification" label="Classification" aura:id="classification" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Classification__c}">
+                            <aura:iteration items="{!v.classifications}" var="i">
+                                <option text="{!i.label}" value="{!i.id}" selected="{!i.selected}" />
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                    <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                        <lightning:input type="toggle" label="International Order" name="i_IsInternationalOrder" checked="{!v.theSampleOrder.Is_International_Order__c}" messageToggleActive="" messageToggleInactive="" class="slds-align_absolute-center" />
+                    </div>
+                </div>
+                <div class="slds-m-top_large">
+                    <lightning:input name="i_BusinessName" label="Business Name"  disabled="{!v.orderLocked}" required="true" value="{!v.theSampleOrder.Business_Name__c}" placeholder="Business Name" />
+                </div>
+                <div class="slds-m-top_large">
+                    <lightning:inputAddress aura:id="i_BusinessAddress" addressLabel="Business Address" streetLabel="Street" cityLabel="City" countryLabel="Country" provinceLabel="State" postalCodeLabel="Postcode"
+                                            street="{!v.theSampleOrder.Business_Address__c}" city="{!v.theSampleOrder.Business_City__c}" province="{!v.businessState}" country="{!v.country}" postalCode="{!v.theSampleOrder.Business_Postcode__c}"
+                                            countryOptions="{!v.countryOptions}" provinceOptions="{!v.provinceOptions}"
+                                            required="true" disabled="{!v.orderLocked}"/>
+                </div>
+                <div class="slds-grid slds-gutters_small slds-m-top_small">
+                    <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                        <lightning:input aura:id="i_ContactName" name="i_ContactName" label="Contact Name" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Contact_Name__c}" placeholder="Contact name" required="true" />
+                    </div>            
+                    <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                        <lightning:input aura:id="i_ContactPhone" type="tel" name="i_ContactPhone" label="Contact Phone" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Contact_Phone__c}" placeholder="Contact phone" required="true" />
+                    </div>            
+                </div>
+                <div class="slds-m-top_small">
+                    <!--<span class="slds-form-element__label">Reason for Stock Order/Comments</span>-->
+                    <!--<lightning:inputRichText label="Reason for Stock Order/Comments" disabled="{!v.orderLocked}" placeholder="Comments" value="{!v.theSampleOrder.Reason__c}" disabledCategories="FORMAT_FONT,FORMAT_TEXT,FORMAT_BODY,ALIGN_TEXT,INSERT_CONTENT,REMOVE_FORMATTING" />-->
+                    <lightning:input label="Reason for Stock Order/Comments" disabled="{!v.orderLocked}" placeholder="Comments" value="{!v.theSampleOrder.Reason__c}" class="height_60" />
+                </div>
+				</aura:if>                    
+            </aura:set>
+        </aura:if>                
+        
+        <div class="slds-text-align_center slds-m-top_medium">
+            <lightning:button aura:id="btnSave" variant="brand" type="submit" disabled="{!v.orderLocked}"  name="save" label="Save" onclick="{!c.handleButtonClick}" />
+            <lightning:button aura:id="btnSaveClose" variant="brand" type="submit" disabled="{!v.orderLocked}"  name="saveclose" label="Save &amp; Close" onclick="{!c.handleButtonClick}"/>
+            <lightning:button aura:id="btnCancel" variant="brand" type="button" name="cancel" label="Cancel" onclick="{!c.handleButtonClick}" />
+            <lightning:button aura:id="btnSubmit" variant="brand" type="button" disabled="{!v.canSubmit==false}"  name="submit" label="Submit for Approval" onclick="{!c.handleButtonClick}" />
+            <lightning:button aura:id="btnItems" variant="brand" disabled="{!v.disableAddItems}" type="button" name="additems" label="{!v.itemsButtonLabel}" onclick="{!c.handleButtonClick}" />
+        </div>
+    </lightning:card>    
+</aura:component>

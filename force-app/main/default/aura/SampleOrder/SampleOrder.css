@@ -1,0 +1,5 @@
+.THIS {
+}
+.THIS .table_hover tr:hover {
+    cursor: pointer;
+}

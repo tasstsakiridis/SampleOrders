@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListView xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>AU_Sample_Order_Finance_Approvers_SAP_Interfaced_Data</fullName>
+    <filterScope>Queue</filterScope>
+    <label>AU - Sample Order Finance Approvers</label>
+    <queue>AU_Sample_Order_Finance_Approvers</queue>
+    <sharedTo>
+        <allInternalUsers/>
+    </sharedTo>
+</ListView>

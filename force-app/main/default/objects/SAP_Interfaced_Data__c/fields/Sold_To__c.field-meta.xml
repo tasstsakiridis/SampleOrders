@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Sold_To__c</fullName>
+    <externalId>false</externalId>
+    <formula>CASE(TEXT(Classification__c), &#39;AU1-Samples for Marketing Related Activities&#39;, Market__r.Sample_Order_Marketing_Sold_To__c, &#39;AU2-Samples for Sales Related Activities&#39;, Market__r.Sample_Order_Sales_Sold_To__c, &#39;AU5-Samples for Admin Activities&#39;, Market__r.Sample_Order_Admin_Sold_To__c, &#39;AU4-Discount Sample Orders&#39;, Market__r.Sample_Order_Discount_Sold_To__c, &#39;AU3-Duty Free Samples&#39;, Market__r.Sample_Order_Duty_Free_Sold_To__c, &#39;&#39;)</formula>
+    <label>Sold To</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

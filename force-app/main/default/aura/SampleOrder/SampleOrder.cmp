@@ -1,0 +1,113 @@
+<aura:component implements="force:appHostable,flexipage:availableForAllPageTypes,force:lightningQuickAction,force:hasRecordId" access="global" controller="SampleOrder_Controller" >
+	<!-- String Attributes -->
+    <aura:attribute name="userId" type="String" default="" />
+    <aura:attribute name="userName" type="String" default="" />
+    <aura:attribute name="userContext" type="String" />
+    <aura:attribute name="recordId" type="String" />
+    
+    <!-- Boolean Attributes -->
+    <aura:attribute name="isLoading" type="Boolean" default="false" />
+    <aura:attribute name="isSF1" type="Boolean" default="false" />
+    <aura:attribute name="isEditingOrder" type="Boolean" default="false" />
+
+	<!-- List & Object Attributes -->    
+    <aura:attribute name="objectDescribe" type="bfObjectDescribe" default="{}" />
+    <aura:attribute name="mySampleOrders" type="List" default="[]" />
+    
+    <!-- Handle component events -->
+    <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
+    
+    <!-- handle Component events -->
+    <aura:handler name="bfLightningEvent" event="c:bfLightningEvent" action="{!c.handleLightningEvent}" />
+    
+    <!-- Register component events -->
+    <aura:registerEvent name="bfLightningEvent" type="c:bfLightningEvent" />
+
+        <c:SampleOrderForm aura:id="orderForm" userId="{!v.userId}" userName="{!v.userName}" userContext="{!v.userContext}" objectDescribe="{!v.objectDescribe}" />
+                    
+            <article aura:id="listView" class="slds-card">
+            	<div class="slds-card__header slds-grid">
+                    <header class="slds-media slds-media_center slds-has-flexi-truncate">
+                        <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-standard-contract" title="Sample Orders">
+                                <c:svg class="slds-icon slds-icon_small" ariaHidden="true" xlinkHref="/resource/SLDS232/assets/icons/custom-sprite/svg/symbols.svg#custom62" />
+                                <span class="slds-assistive-text">Sample Order</span>
+                            </span>                        
+                        </div>
+                        <div class="slds-media__body">
+                            <h2 class="slds-card__header-title">
+                                <span class="slds-text-heading_small">Sample Orders</span>
+                            </h2>
+                            <p class="slds-text-body_small slds-lin-height_reset">{!v.mySampleOrders.length} sample orders</p>
+                        </div>
+                        <div class="slds-no-flex">
+                            <button aura:id="btnNew" id="btnNew" name="new" class="slds-button slds-button_neutral" disabled="{!v.objectDescribe.canInsert==false}" onclick="{!c.handleNewButtonClick}">New</button>
+                            <button aura:id="btnRefresh" id="btnRefresh" name="refresh" class="slds-button slds-button_icon slds-button_icon-border-filled" onclick="{!c.handleRefreshButtonClick}">
+                                <c:svg class="slds-button__icon" ariaHidden="true" xlinkHref="/resource/SLDS232/assets/icons/utility-sprite/svg/symbols.svg#refresh" />
+                            </button>
+                        </div>
+                    </header>
+                </div>
+                <div class="slds-card__body">
+                    <aura:if isTrue="{!v.isLoading}">
+                        <lightning:spinner alternativeText="Loading..." />
+                    <aura:set attribute="else">
+                	<table class="slds-table slds-table_fixed-layout slds-table_bordered slds-no-row-hover slds-table_cell-buffer slds-table_striped slds-max-medium-table_stacked-horizontal table_hover">
+                    	<thead>
+                        	<tr class="slds-text-title_caps">
+                            	<th scope="col">
+                                	<div class="slds-truncate" title="Order Number">Order Number</div>
+                                </th>
+                                <th scope="col">
+                                	<div class="slds-truncate" title="Requested Delivery Date">Requested Delivery Date</div>
+                                </th>
+                                <th scope="col">
+                                	<div class="slds-truncate" title="Status">Approval Status</div>
+                                </th>
+                                <th scope="col">
+                                	<div class="slds-truncate" title="Authorised By">Authorised By</div>
+                                </th>
+                                <th scope="col">
+                                	<div class="slds-truncate" title="Authorised Date">Authorised Date</div>
+                                </th>
+                                <th scope="col">
+                                	<div class="slds-truncate" title="Business Name">Business Name</div>
+                                </th>
+                                <th scope="col">
+                                	<div class="slds-truncate" title="Contact">Contact</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        	<aura:iteration items="{!v.mySampleOrders}" var="order">
+                            	<tr class="slds-hint-parent" id="{!order.Id}" onclick="{!c.handleRowSelected}" data-order-id="{!order.Id}" >
+                                    <th scope="row">
+                                		<div class="slds-truncate" title="{!order.Order_Number__c}" data-order-id="{!order.Id}">{!order.Order_Number__c}</div>                                    	
+                                    </th>
+                                    <td>
+                                        <div class="slds-truncate" title="{!order.Requested_Delivery_Date__c}" data-order-id="{!order.Id}">{!order.Requested_Delivery_Date__c}</div>
+                                    </td>
+                                    <td>
+                                        <div class="slds-truncate" title="{!order.Approval_Status__c}" data-order-id="{!order.Id}">{!order.Approval_Status__c}</div>
+                                    </td>
+                                    <td>
+                                    	<div class="slds-truncate" title="{!order.Authorised_By__c}" data-order-id="{!order.Id}">{!order.Authorised_By__r.Name}</div>
+                                    </td>
+                                    <td>
+                                    	<div class="slds-truncate" title="{!order.Authorised_Date__c}" data-order-id="{!order.Id}">{!order.Authorised_Date__c}</div>
+                                    </td>
+                                    <td>
+                                    	<div class="slds-truncate" title="{!order.Business_Name__c}" data-order-id="{!order.Id}">{!order.Business_Name__c}</div>
+                                    </td>
+                                    <td>
+                                    	<div class="slds-truncate" title="{!order.Contact_Name__c}" data-order-id="{!order.Id}">{!order.Contact_Name__c}</div>
+                                    </td>
+                                </tr>
+                            </aura:iteration>
+                        </tbody>
+                    </table>
+                    </aura:set>
+                    </aura:if>                        
+                </div>
+            </article>
+</aura:component>
