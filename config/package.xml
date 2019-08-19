@@ -81,7 +81,7 @@
     </types>
     <types>
         <name>PermissionSet</name>
-        <members>Appointment_Calendar</members>
+        <members>Sample_Orders</members>
     </types>
     <types>
         <name>Queue</name>
