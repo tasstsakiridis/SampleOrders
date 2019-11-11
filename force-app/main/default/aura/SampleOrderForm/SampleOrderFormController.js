@@ -4,6 +4,7 @@
 		component.set("v.provinceOptions", helper.getProvinceOptions(component.get("v.country")));
         component.set("v.itemsButtonLabel", $A.get('$Label.c.Add_Item'));
         helper.setupProductColumns(component);   
+        helper.getBannerGroups(component);
 	},
     handleCountryChange : function(component, event, helper) {
         helper.updateProvinceOptions(component);
@@ -46,7 +47,9 @@
             }
         } else if (btn == "cancel") {
             if (component.get("v.isAddingItems")) {
-                helper.initProductData(component);
+                //helper.initProductData(component);
+                helper.revertProductChanges(component);
+	            component.set("v.isAddingItems", false);                
             } else {
 	            helper.closeSampleOrderDialog(component);                
             }
@@ -61,6 +64,25 @@
         }
         }catch(ex) {
             console.log('SampleOrderForm.controller.hanlderButtonClick] exception', ex);
+        }
+    },
+    handleClassificationChange : function(component, event, helper) {
+        console.log('[handleClassificationChange]');
+        let theSampleOrder = component.get("v.theSampleOrder");
+        console.log('classification', theSampleOrder.Classification__c);
+        if (theSampleOrder.Classification__c.indexOf('Duty Free') >= 0) {
+            component.set("v.showDutyFreeBanners", true);
+        } else {
+            component.set("v.showDutyFreeBanners", false);
+        }
+    },
+    handleBannerGroupChange : function(component, event, helper) {
+        try {
+        var bannerGroup = component.find("bannerGroup").get("v.value");
+        component.set("v.selectedBannerGroup", bannerGroup);
+        console.log('bannergroup', bannerGroup);
+        } catch(ex) {
+            console.log('[handleBannerGroupChange] exception', ex);
         }
     },
     handleBrandChange : function(component, event, helper) {

@@ -14,9 +14,9 @@
                     component.set('v.objectDescribe', rv);
                     var columns = [];
                     if (rv) {
-                        for(var f in rv.fields) {
-                            console.log('f', rv.fields[f]);
-                        }
+                        //for(var f in rv.fields) {
+                        //    console.log('f', rv.fields[f]);
+                        //}
                         /*
                         for(var i = 0; i < rv.fields.length; i++) {
                             console.log('rv.fields[i]', rv.fields[i]);

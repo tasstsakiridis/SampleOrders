@@ -85,7 +85,7 @@ public class SampleOrder_Test {
             
             String json = '[{"id":"","productId":"'+lProducts.get(0).Id+'","quantity":"1"}]';
             newSampleOrder = SampleOrder_Controller.saveSampleOrder(newSampleOrder);
-            List<SampleOrderItem> items = SampleOrder_Controller.saveOrderItems(newSampleOrder.Id, json);
+            List<SAP_Interfaced_Data_Item__c> items = SampleOrder_Controller.saveOrderItems(newSampleOrder.Id, json);
             System.assertNotEquals(0, items.size(), 'Items saved');
             
             newSampleOrder = SampleOrder_Controller.getInterfacedData(newSampleOrder.Id);

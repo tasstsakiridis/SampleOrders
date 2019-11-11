@@ -4,6 +4,7 @@
     <aura:attribute name="userName" type="String" default="" />
     <aura:attribute name="userContext" type="String" />
     <aura:attribute name="selectedBrand" type="String" />
+    <aura:attribute name="selectedBannerGroup" type="String" />
     <aura:attribute name="country" type="String" default="AU" />
     <aura:attribute name="classification" type="String" default="" />
     <aura:attribute name="businessState" type="String" />
@@ -22,6 +23,7 @@
     <aura:attribute name="disableAddItems" type="Boolean" default="true" />
     <aura:attribute name="closeAfterSave" type="Boolean" default="false" />
     <aura:attribute name="showSelectedProducts" type="Boolean" default="false" />
+    <aura:attribute name="showDutyFreeBanners" type="Boolean" default="false" />
     <aura:attribute name="orderLocked" type="Boolean" default="false" />
     <aura:attribute name="canSubmit" type="Boolean" default="false" />
 
@@ -31,6 +33,7 @@
     <aura:attribute name="provinceOptions" type="List" default="[]" />
     <aura:attribute name="countryOptions" type="List" default="[]" />
     <aura:attribute name="classifications" type="List" default="[]" />
+    <aura:attribute name="bannerGroups" type="List" default="[]" />
     <aura:attribute name="productData" type="SampleOrderItem[]" />
     <aura:attribute name="deletedRows" type="SampleOrderItem[]" />
     <aura:attribute name="data" type="SampleOrderItem[]" />
@@ -134,11 +137,18 @@
 	                	<lightning:input type="date" name="i_RequestedDeliveryDate" label="Requested Delivery Date" disabled="{!v.orderLocked}" required="true" value="{!v.theSampleOrder.Requested_Delivery_Date__c}" placeholder="Requested Delivery Date" />
                     </div>  
                     <div class="slds-col slds-has-flexi-truncate" role="listitem">
-                        <lightning:select name="classification" label="Classification" aura:id="classification" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Classification__c}">
+                        <lightning:select aura:id="i_classification" name="i_classification" label="Classification" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Classification__c}" onchange="{!c.handleClassificationChange}">
                             <aura:iteration items="{!v.classifications}" var="i">
                                 <option text="{!i.label}" value="{!i.id}" selected="{!i.selected}" />
                             </aura:iteration>
                         </lightning:select>
+                        <aura:if isTrue="{!v.showDutyFreeBanners}">
+                            <lightning:select name="bannergroup" label="Banner Group" aura:id="bannerGroup" disabled="{!v.orderLocked}" onchange="{!c.handleBannerGroupChange}">
+                                <aura:iteration items="{!v.bannerGroups}" var="bg">
+                                    <option text="{!bg.label}" value="{!bg.value}" selected="{!bg.selected}" />
+                                </aura:iteration>
+                            </lightning:select>
+                        </aura:if>                        
                     </div>
                     <div class="slds-col slds-has-flexi-truncate" role="listitem">
                         <lightning:input type="toggle" label="International Order" name="i_IsInternationalOrder" checked="{!v.theSampleOrder.Is_International_Order__c}" messageToggleActive="" messageToggleInactive="" class="slds-align_absolute-center" />

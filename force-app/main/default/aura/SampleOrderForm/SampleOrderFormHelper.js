@@ -91,6 +91,40 @@
         });
         $A.enqueueAction(action);
     },
+    getBannerGroups : function(component) {
+        console.log('getBannerGroups');
+    	var action = component.get("c.getBannerGroups");
+        action.setCallback(this, function(response) {
+            if (component.isValid()) {
+                var callState = response.getState();
+                if (callState === "SUCCESS") {
+                    var rv = response.getReturnValue();
+                    console.log('[SampleOrderForm.Helper.getBannerGroups] bannergroups', rv);
+                    var banners = [{"label":"", value:""}];
+                    for(var i = 0; i < rv.length; i++) {
+                        banners.push({"label":rv[i].Name,"value":rv[i].Id});
+                    }
+                    banners.sort(function(a, b) { 
+                        let x = a.label.toLowerCase();
+                        let y = b.label.toLowerCase();
+                        if (x < y) { return -1; }
+                        if (x > y) { return 1; }
+                        return 0; 
+                    });
+                    console.log('[SampleOrderForm.helper.getBannerGroups] bannergroups', banners);
+                    component.set("v.bannerGroups", banners);
+                    
+                } else if (callState === "INCOMPLETE") {
+                    console.log("[SampleOrderForm.Helper.getBannerGroups] callback returned incomplete.");                    
+                } else if (callState === "ERROR") {
+                    var errors = response.getError();
+                    console.log("[SampleOrderForm.Helper.getBannerGroups] callback returned in error.", errors);                    
+                }
+            }
+            
+        });
+        $A.enqueueAction(action);
+    },
     initSampleOrder : function(component) {
         var theSampleOrder = { 'sObjectType': 'SAP_Interfaced_Data__c', 'Approval_Status__c':'New' };
         console.log('[SampleOrderForm.helper.initSampleOrder] sampleorder', theSampleOrder);
@@ -121,11 +155,40 @@
             for(var i = 0; i < rows.length; i++) {
                 rows[i].id = '';
                 rows[i].quantity = 0;
+                rows[i].units = 0;
             }
             component.set("v.productData", rows);            
         }
             
     },
+    revertProductChanges : function(component) {
+        let theOrder = component.get("v.theSampleOrder");
+        console.log('[SampleOrderForm.helper.revertproductChanges] theOrder', theOrder);
+        var found = false;
+        if (theOrder.SAP_Interfaced_Data_Items__r && theOrder.SAP_Interfaced_Data_Items__r.length > 0) {
+            var products = component.get("v.productData");
+            for(var i = 0; i < products.length; i++) {
+                found = false;
+                for(var j = 0; j < theOrder.SAP_Interfaced_Data_Items__r.length; j++) {                    
+                    if (products[i].productId == theOrder.SAP_Interfaced_Data_Items__r[j].Product__c) {
+                        found = true;
+                        products[i].quantity = theOrder.SAP_Interfaced_Data_Items__r[j].Quantity__c;
+                        products[i].units = products[i].quantity * products[i].packQty;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    products[i].quantity = 0;
+                    products[i].units = 0;
+                }
+            }
+            
+            component.set("v.productData", products);
+        }
+
+    },
+
     clearErrorMessage : function(component, fld) {
         console.log('[SampleOrderForm.helper.clearErrorMessage] clearing message for ', fld);
         let el = component.find(fld);
@@ -232,6 +295,15 @@
                         $A.util.removeClass(banner, "status_Canceled");
                         $A.util.addClass(banner, "status_"+rv.Approval_Status__c);
                         
+                        if (rv.Classification__c.indexOf('Duty Free') >= 0) {
+                            component.set("v.showBannerGroups", true);                            
+                        } else {
+                            component.set("v.showBannerGroups", false);
+                        }
+                        if (rv.Banner_Group__c != null) {
+                            component.sert("v.selectedBannerGroup", rv.Banner_Group__c);
+                        }
+
                         console.log('[SampleOrderForm.helper.loadSampleOrder] items', rv.SAP_Interfaced_Data_Items__r);
                         var bannerText = component.find("bannerText");
                         if (rv.Approval_Status__c == 'New') {
@@ -290,11 +362,16 @@
     	var theSampleOrder = component.get("v.theSampleOrder");
         var businessState = component.get("v.businessState");
         var country = component.get("v.country");
+        var bannerGroup = component.get("v.selectedBannerGroup");
 
         theSampleOrder.Approval_Status__c = 'New';
         theSampleOrder.Business_Country__c = country;
         theSampleOrder.Business_State__c = businessState;
-		console.log('theSampleOrder', theSampleOrder);
+        if (bannerGroup != null && bannerGroup.length > 0) {
+            theSampleOrder.Banner_Group__c = bannerGroup;
+        }
+
+        console.log('theSampleOrder', theSampleOrder);
 		console.log('theSampleOrder.classification', theSampleOrder.Classification__c);
 		var action = component.get("c.saveSampleOrder");
         action.setParams({
@@ -354,14 +431,20 @@
         console.log('[SampleOrderForm.helper.saveSampleOrderItems] deletedRows', deletedRows);
         try {
             var items = [];
+            var productIds = [];
             for(var i = 0; i < rows.length; i++) {
+                if (rows[i].quantity == null) { rows[i].quantity = 0; }
                 if (rows[i].quantity > 0) {
                     console.log('[SampleOrderForm.helper.saveSampleOrderItems] row', rows[i]);                
-                    items.push(rows[i]);                    
+                    items.push(rows[i]);
+                    productIds.push(rows[i].productId);                    
                 }
             }
+            var found = false;
             for(var i = 0; i < deletedRows.length; i++) {
-                items.push(deletedRows[i]);
+                if (productIds.indexOf(deletedRows[i].productId) < 0) {
+                    items.push(deletedRows[i]);
+                }
             }
             
             console.log('[SampleOrderForm.helper.saveSampleOrderItems] items', items);
@@ -379,25 +462,36 @@
                 if (callState === "SUCCESS") {
                     try {
                         component.set("v.deletedRows", []);
-                        
+
+                        var rv = response.getReturnValue();
+                        console.log("[SampleOrderForm.helper.saveItems] returnvalue", rv);
+                        var productData = component.get("v.productData");
+                        for(var i = 0; i < rv.length; i++) {
+                            for(var j = 0; j < rows.length; j++) {
+                                if (productData[j].productId == rv[i].Product__c) {
+                                    productData[j].id = rv[i].Id;
+                                    productData[j].quantity = rv[i].Quantity__c;
+                                    productData[j].units = productData[j].quantity * productData[j].packQty;
+                                    break;
+                                }
+                                /*
+                                if (rv[i].productId == rows[j].productId) {
+                                    rows[j].id = rv[i].id; break;
+                                }
+                                */
+                            }
+                        }
+                        component.set("v.productData", rows); 
+                        var theSampleOrder = component.get("v.theSampleOrder");
+                        theSampleOrder.SAP_Interfaced_Data_Items__r = rv;
+                        component.set("v.theSampleOrder", theSampleOrder);
+
                         var closeAfterSave = component.get("v.closeAfterSave");
                         console.log('[SampleOrderForm.helper.saveSampleOrder] closeAfterSave', closeAfterSave);
                         if (closeAfterSave) {                            
                             component.set("v.isAddingItems", false);                            
-                        } else {
-                            var rv = response.getReturnValue();
-                            console.log("[SampleOrderForm.helper.saveItems] returnvalue", rv);
-                            var rows = component.get("v.productData");
-                            for(var i = 0; i < rv.length; i++) {
-                                for(var j = 0; j < rows.length; j++) {
-                                    if (rv[i].productId == rows[j].productId) {
-                                        rows[j].id = rv[i].id; break;
-                                    }
-                                }
-                            }
-                            component.set("v.productData", rows); 
-                        }                  
-                        
+                        }
+                            
                     } catch(ex) {
                         console.log('[SampleOrderForm.helper.saveItems] exception', ex.toString());
                     }

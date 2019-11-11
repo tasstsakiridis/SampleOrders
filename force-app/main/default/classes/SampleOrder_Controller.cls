@@ -29,7 +29,7 @@ public with sharing class SampleOrder_Controller {
     @AuraEnabled
     public static SAP_Interfaced_Data__c getSampleOrder(String recordId) {
         if (recordId == null || recordId == '') { return null; }
-        return [SELECT Id, Name, Order_Number__c, Approval_Status__c, Requested_Delivery_Date__c, Authorised_By__c, Authorised_By__r.Name, Authorised_Date__c, Finance_Authorised_By__c, Finance_Authorised_Date__c, Classification__c, Business_Name__c, Business_Address__c, Business_City__c, Business_State__c, Business_Postcode__c, Business_Country__c, Contact_Name__c, Contact_Phone__c, Reason__c, Is_International_Order__c, (SELECT Id, Name, SAP_Interfaced_Data__c, Product__c, Brand_Name__c, Product_Code__c, Quantity__c FROM SAP_Interfaced_Data_Items__r) FROM SAP_Interfaced_Data__c WHERE Id=:recordId];
+        return [SELECT Id, Name, Order_Number__c, Approval_Status__c, Requested_Delivery_Date__c, Authorised_By__c, Authorised_By__r.Name, Authorised_Date__c, Finance_Authorised_By__c, Finance_Authorised_Date__c, Classification__c, Banner_Group__c, Business_Name__c, Business_Address__c, Business_City__c, Business_State__c, Business_Postcode__c, Business_Country__c, Contact_Name__c, Contact_Phone__c, Reason__c, Is_International_Order__c, (SELECT Id, Name, SAP_Interfaced_Data__c, Product__c, Brand_Name__c, Product_Code__c, Quantity__c FROM SAP_Interfaced_Data_Items__r) FROM SAP_Interfaced_Data__c WHERE Id=:recordId];
     }
     
     @AuraEnabled
@@ -46,7 +46,7 @@ public with sharing class SampleOrder_Controller {
     }
     
     @AuraEnabled
-    public static List<SampleOrderItem> saveOrderItems(String sapId, String sapItems) {
+    public static List<SAP_Interfaced_Data_Item__c> saveOrderItems(String sapId, String sapItems) {
         if (sapId == null || sapId == '') { return null; }
         if (sapItems == null || sapItems.length() == 0) { return null; }
         
@@ -79,6 +79,7 @@ public with sharing class SampleOrder_Controller {
         }     
         
         upsert l_SAPItems;
+        /*
         for(SAP_Interfaced_Data_Item__c i : l_SAPItems) {
             for(SampleOrderItem soi : items) {
                 if (soi.productId == i.Product__c) {
@@ -88,6 +89,8 @@ public with sharing class SampleOrder_Controller {
         }
         
         return items;
+        */
+        return l_SAPItems;
     }
 
 	@AuraEnabled
@@ -119,6 +122,20 @@ public with sharing class SampleOrder_Controller {
         return items;
     }
     
+    @AuraEnabled
+    public static List<Banner_Groups__c> getBannerGroups() {
+		Market__c market;
+        User u = getCurrentUserInfo();
+        if (u != null) {
+            market = [SELECT Id, Name FROM Market__c WHERE Name =:u.Market__c];
+        }
+        if (market == null) {
+            market = [SELECT Id, Name FROM Market__c WHERE Name = 'Australia'];
+        }
+
+        return [SELECT Id, Name FROM Banner_Groups__c WHERE Market__c =:market.Id AND Management_Group_State_Level__c = 'MGT_NAT' AND Name LIKE '%Duty%'];
+    }
+
     @AuraEnabled
     public static void submitForApproval(String sapId) {
         System.debug('sapId: ' + sapId);
