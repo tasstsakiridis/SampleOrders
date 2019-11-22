@@ -9,11 +9,13 @@ public class SampleOrder_Test {
         Map<String, RecordTypeInfo> pRecordTypes = Schema.SObjectType.Product__c.getRecordTypeInfosByName();
         Map<String, RecordTypeInfo> sapRecordTypes = Schema.SObjectType.SAP_Interfaced_Data__c.getRecordTypeInfosByName();
         Map<String, RecordTypeInfo> sapiRecordTypes = Schema.SObjectType.SAP_Interfaced_Data_Item__c.getRecordTypeInfosByName();
+        Map<String, RecordTypeInfo> bannerRecordTypes = Schema.SObjectType.Banner_Groups__c.getRecordTypeInfosByName();
 
         String rtSampleOrder = sapRecordTypes.get('Sample Order').getRecordTypeId(); 
         String rtSampleOrderLocked = sapRecordTypes.get('Sample Order Locked').getRecordTypeId();
         String rtSampleOrderItem = sapiRecordTypes.get('Sample Order').getRecordTypeId();
         String rtWetGoods = pRecordTypes.get('Wet Goods').getRecordTypeId();
+        String rtAUBannerGroup = bannerRecordTypes.get('AUD - Banner Groups').getRecordTypeId();
        
         Market__c mAU = helper.createMarket('Australia');
         mAU.Vistex_Clearing_Account__c = '0123456789';
@@ -43,6 +45,12 @@ public class SampleOrder_Test {
         }
         insert lProducts;
         
+        Banner_Groups__c banner1 = new Banner_Groups__c();
+        banner1.Name = 'Test Duty Free Banner';
+        banner1.Management_Group_State_Level__c = 'MGT_NAT';
+        banner1.Market__c = mAU.Id;
+        insert banner1;
+
 		SAP_Interfaced_Data__c sampleOrder = new SAP_Interfaced_Data__c();
         sampleOrder.RecordTypeId = rtSampleOrder;
         sampleOrder.Approval_Status__c = 'New';
@@ -94,6 +102,9 @@ public class SampleOrder_Test {
             List<SampleOrderItem> newProducts = SampleOrder_Controller.getProducts(sampleOrder.Id);
             System.assertNotEquals(0, newProducts.size());
             
+            List<Banner_Groups__c> bannerGroups = SampleOrder_Controller.getBannerGroups();
+            System.assertNotEquals(bannerGroups, null);
+
             SampleOrder_Controller.submitForApproval(sampleOrder.Id);
             
             SampleOrderItem soi = new SampleOrderItem();
