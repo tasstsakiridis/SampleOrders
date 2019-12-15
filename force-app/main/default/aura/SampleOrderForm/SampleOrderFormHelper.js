@@ -301,7 +301,7 @@
                             component.set("v.showBannerGroups", false);
                         }
                         if (rv.Banner_Group__c != null) {
-                            component.sert("v.selectedBannerGroup", rv.Banner_Group__c);
+                            component.set("v.selectedBannerGroup", rv.Banner_Group__c);
                         }
 
                         console.log('[SampleOrderForm.helper.loadSampleOrder] items', rv.SAP_Interfaced_Data_Items__r);
