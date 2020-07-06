@@ -1,20 +1,25 @@
 ({
 	doInit : function(component, event, helper) {
-        console.log('row', component.get("v.row"));
+        var row = component.get("v.row");
+        console.log('[SampleOrderItemRow.doInit] row', row);
+        console.log('[SampleOrderItemRow.doInit] product: ' + row.productName + ', qty: ' + row.quantity + ', units: ' + row.units);
+        console.log('[SampleOrderItemRow.doInit] showPrice', component.get("v.showPrice"));
+        console.log('[SampleOrderItemRow.doInit] showSKU', component.get("v.showSKU"));
         helper.checkRowVisibility(component);
 	},
     handleBrandChange : function(component, event, helper) {
     	var brand = event.getParam("value");
         var row = component.get("v.row");
         var el = component.find("theRow");
+        var recordTypeName = component.get("v.recordTypeName");
         try {
             
-        console.log('[SampleOrderItemRow.controller.handleBrandChange] brand', brand);
-        if (brand == '' || brand == row.brandName) {
-            $A.util.removeClass(el, "slds-hide");
-        } else {
-            $A.util.addClass(el, "slds-hide");
-        }
+            console.log('[SampleOrderItemRow.controller.handleBrandChange] brand', brand);
+            if ((brand == '' || brand == row.brandName) && row.usedFor.indexOf(recordTypeName) >= 0) {
+                $A.util.removeClass(el, "slds-hide");
+            } else {
+                $A.util.addClass(el, "slds-hide");
+            }
         }catch(ex) {
             console.log('[SampleOrderItemRow.controller.handleBrandChange] exception', ex);
         }
@@ -26,6 +31,7 @@
         
     handleQuantityChange : function(component, event, helper) {
         try {
+            let recordType = component.get("v.recordTypeName");            
             let qty = event.target.value;
             var rowCount = component.get("v.selectedRowCount");
             var row = component.get("v.row");
@@ -58,16 +64,23 @@
                 component.set("v.row", row);
                 alert('Quantity out of range.  Please enter a number greater than or equal to zero');
             } else {
-                let remainder = qty % 1;
-                console.log('remainder', remainder);
-                if (remainder > 0) {
-                    alert('Please enter whole units');
-                    row.quantity = 0;
+                console.log('recordType', recordType);
+                if (recordType == 'Sample Order') {
+                    let remainder = qty % 1;
+                    console.log('remainder', remainder);
+                    if (remainder > 0) {
+                        alert('Please enter whole units');
+                        row.quantity = 0;
+                    } else {
+                        row.quantity = qty;
+                        rowCount++;
+                    }    
+                    row.units = row.quantity * row.packQty;
                 } else {
                     row.quantity = qty;
-                    rowCount++;
+                    row.units = qty;
                 }
-				row.units = row.quantity * row.packQty;
+                console.log('row', row);
                 component.set("v.row", row);
 
                 var deletedRows = component.get('v.deletedRows');

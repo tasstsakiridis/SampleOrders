@@ -1,13 +1,37 @@
 ({
 	doInit : function(component, event, helper) {
         component.set("v.countryOptions", helper.getCountryOptions());
-		component.set("v.provinceOptions", helper.getProvinceOptions(component.get("v.country")));
+		component.set("v.provinceOptions", helper.getProvinceOptions(component, component.get("v.country")));
         component.set("v.itemsButtonLabel", $A.get('$Label.c.Add_Item'));
+
         helper.setupProductColumns(component);   
         helper.getBannerGroups(component);
+        helper.getStorageLockers(component);
+        helper.getPicklistValuesForRecordType(component);
 	},
     handleCountryChange : function(component, event, helper) {
-        helper.updateProvinceOptions(component);
+        component.set("v.provinceOptions", helper.getProvinceOptions(component, component.get("v.country")));
+        var showPrice = false;
+        var showSKU = false;
+        var showInternationalOrder = false;
+        var showCostCenters = false;
+        var country = component.get("v.country");
+        if (country == 'GB') {
+            showPrice = true;   
+            showCostCenters = true;                     
+        }
+        if (country == 'AU') {
+            showSKU = true;
+            showInternationalOrder = true;
+        }
+        console.log('country', country);
+        console.log('showPrice', showPrice);
+        component.set("v.showPrice", showPrice);
+        component.set("v.showSKU", showSKU);
+        component.set("v.showInternationalOrder", showInternationalOrder);
+        component.set("v.showCostCenters", showCostCenters);
+        helper.setupProductTableHeaders(component);
+        //helper.updateProvinceOptions(component);
     },
     handleDescribeInfoChange : function(component, event, helper) {
         var describe = component.get("v.objectDescribe");
@@ -15,7 +39,11 @@
         if (describe) {
             classifications = describe.fields["Classification__c"].picklistValues;
         }
-        component.set('v.classifications', classifications);
+        //component.set('v.classifications', classifications);
+    },
+    handleRecordTypeChange : function(component, event, helper) {
+        console.log('[SampleOrderForm.controller.handleRecordTypeChange]');
+        helper.getPicklistValuesForRecordType(component);
     },
     handleCloseToastButtonClick : function(component, event, helper) {
         helper.hideToast(component);
@@ -68,9 +96,11 @@
     },
     handleClassificationChange : function(component, event, helper) {
         console.log('[handleClassificationChange]');
-        let theSampleOrder = component.get("v.theSampleOrder");
-        console.log('classification', theSampleOrder.Classification__c);
-        if (theSampleOrder.Classification__c.indexOf('Duty Free') >= 0) {
+        //let theSampleOrder = component.get("v.theSampleOrder");
+        //console.log('classification', theSampleOrder.Classification__c);
+        //component.set("v.classification", theSampleOrder.Classification__c);
+        let classification = component.get("v.classification");
+        if (classification.indexOf('Duty Free') >= 0) {
             component.set("v.showDutyFreeBanners", true);
         } else {
             component.set("v.showDutyFreeBanners", false);
@@ -83,6 +113,29 @@
         console.log('bannergroup', bannerGroup);
         } catch(ex) {
             console.log('[handleBannerGroupChange] exception', ex);
+        }
+    },
+    handleStorageLockerChange : function(component, event, helper) {
+      	helper.setBusinessDetailsFromStorageLocker(component);  
+    },
+    handleStorageLockerSelectionChange : function(component, event, helper) {
+        try {
+            var storageLocker = component.get("v.storageLocker");
+            //component.set("v.storageLocker", storageLocker);
+            console.log("storageLocker", storageLocker);
+            helper.setBusinessDetailsFromStorageLocker(component);  
+            
+        } catch(ex) {
+            console.log('[handleStorageLockerChange] exception', ex);
+        }
+    },
+    handleCostCenterChange : function(component, event, helper) {
+        try {
+            //var costCenter = component.find("costCenters").get("v.value");
+            //component.set("v.costCenter", costCenter);
+            console.log("costcenter", component.get("v.costCenter"));
+        } catch(ex) {
+            console.log('[handleCostCenterChange] exception', ex);
         }
     },
     handleBrandChange : function(component, event, helper) {

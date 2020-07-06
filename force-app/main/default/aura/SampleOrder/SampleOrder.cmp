@@ -2,8 +2,12 @@
 	<!-- String Attributes -->
     <aura:attribute name="userId" type="String" default="" />
     <aura:attribute name="userName" type="String" default="" />
+    <aura:attribute name="marketId" type="String" default="" />
+    <aura:attribute name="marketName" type="String" default="" />
     <aura:attribute name="userContext" type="String" />
     <aura:attribute name="recordId" type="String" />
+    <aura:attribute name="recordTypeId" type="String" />
+    <aura:attribute name="recordTypeName" type="String" />
     
     <!-- Boolean Attributes -->
     <aura:attribute name="isLoading" type="Boolean" default="false" />
@@ -13,6 +17,7 @@
 	<!-- List & Object Attributes -->    
     <aura:attribute name="objectDescribe" type="bfObjectDescribe" default="{}" />
     <aura:attribute name="mySampleOrders" type="List" default="[]" />
+    <aura:attribute name="recordTypes"    type="List" default="[]" />
     
     <!-- Handle component events -->
     <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
@@ -23,7 +28,7 @@
     <!-- Register component events -->
     <aura:registerEvent name="bfLightningEvent" type="c:bfLightningEvent" />
 
-        <c:SampleOrderForm aura:id="orderForm" userId="{!v.userId}" userName="{!v.userName}" userContext="{!v.userContext}" objectDescribe="{!v.objectDescribe}" />
+       <c:SampleOrderForm aura:id="orderForm" userId="{!v.userId}" userName="{!v.userName}" marketId="{!v.marketId}" country="{!v.marketName}" userContext="{!v.userContext}" objectDescribe="{!v.objectDescribe}" recordTypeName="{!v.recordTypeName}" recordTypeId="{!v.recordTypeId}" />
                     
             <article aura:id="listView" class="slds-card">
             	<div class="slds-card__header slds-grid">
@@ -41,8 +46,17 @@
                             <p class="slds-text-body_small slds-lin-height_reset">{!v.mySampleOrders.length} sample orders</p>
                         </div>
                         <div class="slds-no-flex">
-                            <button aura:id="btnNew" id="btnNew" name="new" class="slds-button slds-button_neutral" disabled="{!v.objectDescribe.canInsert==false}" onclick="{!c.handleNewButtonClick}">New</button>
-                            <button aura:id="btnRefresh" id="btnRefresh" name="refresh" class="slds-button slds-button_icon slds-button_icon-border-filled" onclick="{!c.handleRefreshButtonClick}">
+                            <aura:if isTrue="{!v.recordTypes.length > 1}">
+                                <lightning:buttonMenu aura:id="btnNewMenu" label="New" class="slds-m-right_medium" onselect="{!c.handleNewButtonSelect}" alternativeText="New">
+                                    <aura:iteration items="{!v.recordTypes}" var="rt">
+                                        <lightning:menuItem value="{!rt.value}" label="{!rt.label}" />
+                                    </aura:iteration>
+                                </lightning:buttonMenu>
+                            <aura:set attribute="else">
+                                <button aura:id="btnNew" id="btnNew" name="new" class="slds-button slds-button_neutral" disabled="{!v.objectDescribe.canInsert==false}" onclick="{!c.handleNewButtonClick}">New</button>
+                            </aura:set>    
+                            </aura:if>
+                            <button aura:id="btnRefresh" id="btnRefresh" name="refresh" class="slds-button slds-button_icon slds-button_icon-border-filled slds-m-right_small" onclick="{!c.handleRefreshButtonClick}">
                                 <c:svg class="slds-button__icon" ariaHidden="true" xlinkHref="/resource/SLDS232/assets/icons/utility-sprite/svg/symbols.svg#refresh" />
                             </button>
                         </div>

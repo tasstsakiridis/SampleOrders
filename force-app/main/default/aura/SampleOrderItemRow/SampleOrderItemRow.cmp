@@ -1,6 +1,7 @@
 <aura:component >
     <!-- String Attributes -->
     <aura:attribute name="selectedBrand" type="String" default="" />
+    <aura:attribute name="recordTypeName" type="String" default="" />
     
     <!-- Number Attributes -->
     <aura:attribute name="selectedRowCount" type="Integer" default="0" />
@@ -8,6 +9,8 @@
     <!-- Boolean Attributes -->
     <aura:attribute name="showSelectedRows" type="Boolean" default="false" />
     <aura:attribute name="orderLocked" type="Boolean" default="false" />
+    <aura:attribute name="showPrice" type="Boolean" default="false" />
+    <aura:attribute name="showSKU" type="Boolean" default="false" />
     
     <!-- List & Object Attributes -->
     <aura:attribute name="row" type="SampleOrderItem" required="true" />
@@ -25,12 +28,22 @@
         <td scope="row" data-label="Product">
             <div class="slds-truncate" title="{!v.row.productName}">{!v.row.productName}</div>
         </td>
+        <aura:if isTrue="{!v.showSKU}">
+            <td data-label="SKU">
+                <div class="slds-truncate" title="{!v.row.productCode}">{!v.row.productCode}</div>
+            </td>
+        </aura:if>
         <td data-label="Brand">
             <div class="slds-truncate" title="{!v.row.brandName}">{!v.row.brandName}</div>
         </td>
         <td data-label="PackPerQty">
             <div class="slds-truncate" title="{!v.row.packQty}">{!v.row.packQty}</div>
         </td>
+        <aura:if isTrue="{!v.showPrice}">
+            <td data-label="Price">
+                <div class="slds-truncate" title="{!v.row.price}">{!v.row.price}</div>
+            </td>
+        </aura:if>
         <td class="slds-cell-edit" role="gridcell">
             <div class="slds-from-element slds-grid slds-wrap">
                 <label class="slds-form-element__Label slds-form-element__label_edit slds-no-flex" for="{!'quantity_'+v.row.id}">

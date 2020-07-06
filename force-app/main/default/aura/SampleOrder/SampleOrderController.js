@@ -1,11 +1,31 @@
 ({
 	doInit : function(component, event, helper) {
         component.set("v.isLoading", true);
+        helper.doInit(component);
         helper.getDataTableColumns(component);  
         helper.getMySampleOrders(component);
 	},
         
-    handleNewButtonClick : function(component, event, helper) {        
+    handleNewButtonSelect : function(component, event, helper) {
+        var selectedRecordTypeId = event.getParam("value");
+        var recordTypes = component.get("v.recordTypes");
+        recordTypes.forEach((rt) => {
+            if (rt.value == selectedRecordTypeId) {
+                component.set("v.recordTypeName", rt.label);
+                return true;
+            }
+        });
+        component.set("v.recordTypeId", selectedRecordTypeId);
+        console.log('selectedRecordType: ' + selectedRecordTypeId);
+
+        var listView = component.find("listView");
+        $A.util.addClass(listView, 'slds-hide');
+        var orderForm = component.find("orderForm");
+        orderForm.newSampleOrder();
+        
+    },
+
+    handleNewButtonClick : function(component, event, helper) {                
         var listView = component.find("listView");
         $A.util.addClass(listView, 'slds-hide');
         var orderForm = component.find("orderForm");
