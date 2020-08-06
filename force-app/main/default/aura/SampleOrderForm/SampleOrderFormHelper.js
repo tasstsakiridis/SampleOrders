@@ -431,22 +431,91 @@
         var country = component.get("v.country");
         let classification = component.get("v.classification");
         let costCenter = component.get("v.costCenter");
-    
-        if (classification == null || classification == '') { console.log('classification is null'); return false; }
-        if (theSampleOrder.Business_Name__c == null || theSampleOrder.Business_Name__c == '') { console.log('business name is null'); return false; }
-        if (theSampleOrder.Requested_Delivery_Date__c == null) { console.log('requested delivery date is null'); return false; }
-        if (businessState == null || businessState == '') { console.log('business state is null'); return false; }		 
-        if (country == null || country == '') { console.log('country is null');  return false;}
-        if (theSampleOrder.Business_Address__c == null || theSampleOrder.Business_Address__c == '') { console.log('shipping street is null');  return false;}
-        if (theSampleOrder.Business_City__c == null || theSampleOrder.Business_City__c == '') { console.log('shipping city is null');  return false;}
-        if (theSampleOrder.Business_Postcode__c == null || theSampleOrder.Business_Postcode__c == '') { console.log('shipping postcode is null');  return false;}
-        if (theSampleOrder.Contact_Name__c == null || theSampleOrder.Contact_Name__c == '') { console.log('contact name is null');  return false;}
-        if (theSampleOrder.Contact_Phone__c == null || theSampleOrder.Contact_Phone__c == '') { console.log('contact phone is null');  return false;}
-        if (theSampleOrder.Reason__c == null || theSampleOrder.Reason__c == '') { console.log('Reason is null');  return false;}
-        if (country == 'UK') {
-            if (costCenter == null || costCenter == '') { console.log('cost center is null'); return false; }
+        let isValid = true;
+        let msg = '';
+
+        if (classification == null || classification == '') { console.log('classification is null'); isValid = false; }
+        if (theSampleOrder.Business_Name__c == null || theSampleOrder.Business_Name__c == '') { 
+            console.log('business name is null'); 
+            msg += '\nBusiness Name is required';
+            isValid = false;; 
+        } else {
+            if (theSampleOrder.Business_Name__c.length > 25) {
+                msg += 'Business Name is too long.  Max 25 characters';
+                isValid = false;
+            }
         }
-        return true;
+        if (theSampleOrder.Requested_Delivery_Date__c == null) { console.log('requested delivery date is null'); isValid = false; }
+        if (country == null || country == '') { 
+            console.log('country is null');  
+            isValid = false;
+        } else { 
+        }
+        if (theSampleOrder.Business_Address__c == null || theSampleOrder.Business_Address__c == '') { 
+            console.log('shipping street is null');  
+            isValid = false;
+        } else {
+            if (theSampleOrder.Business_Address__c.length > 35) {
+                msg += 'Business Address is too long.  Max 35 characters';
+                isValid = false;
+            }
+        }
+        if (theSampleOrder.Business_City__c == null || theSampleOrder.Business_City__c == '') { 
+            console.log('shipping city is null');  
+            isValid = false;
+        } else {
+            if (theSampleOrder.Business_City__c.length > 35) {
+                msg += 'Business City is too long.  Max 35 characters';
+                isValid = false;
+            }
+        }
+        if (theSampleOrder.Business_Postcode__c == null || theSampleOrder.Business_Postcode__c == '') { 
+            console.log('shipping postcode is null');  
+            isValid = false;
+        } else {
+            if (theSampleOrder.Business_Postcode__c.length > 9) {
+                msg += 'Business PostCode is too long.  Max 9 characters';
+                isValid = false;
+            }
+        }
+        if (country != 'GB') {
+            if (businessState == null || businessState == '') { 
+                console.log('business state is null'); 
+                isValid = false; 
+            } else {
+                
+            }		 
+        }
+
+        if (theSampleOrder.Contact_Name__c == null || theSampleOrder.Contact_Name__c == '') { 
+            console.log('contact name is null');  
+            msg += 'Contact Name is required<br />';
+            isValid = false;
+        } else {
+            if (theSampleOrder.Contact_Name__c.length > 70) {
+                msg += 'Contact Name is too long.  Max 70 characters.';
+                isValid = false;
+            }
+        }
+        if (theSampleOrder.Contact_Phone__c == null || theSampleOrder.Contact_Phone__c == '') { 
+            console.log('contact phone is null');  
+            msg += 'Contact Phone is required<br />';
+            isValid = false;
+        }
+        if (theSampleOrder.Reason__c == null || theSampleOrder.Reason__c == '') { 
+            console.log('Reason is null');  
+            msg += 'You must enter a Reason.';
+            isValid = false;
+        }
+        
+        if (country == 'UK' && classification != null && classification.indexOf('SD0') == -1) {
+            if (costCenter == null || costCenter == '') { 
+                console.log('cost center is null'); 
+                msg += 'You must select a cost center.';
+                isValid = false; 
+            }
+        }
+        return { msg: msg, isValid: isValid };
     },
     loadSampleOrder : function(component, recordId) {
         component.set("v.isLoading", true);
@@ -467,7 +536,15 @@
                         component.set("v.recordTypeName", rv.RecordType.Name);               
                         component.set("v.recordTypeId", rv.RecordTypeId);
                         component.set("v.classification", rv.Classification__c);
+
+                        let country = component.get("v.country");
+                        let showCostCenter = false;
+                        if (country == 'GB' && rv.Classification__c.indexOf('SD0') < 0) {
+                            showCostCenter = true;
+                        }
+                        component.set("v.showCostCenters", showCostCenter);
                         component.set("v.costCenter", rv.Cost_Center__c);
+
                         component.set("v.storageLocker", rv.Storage_Locker__c)
                         let countryCode = rv.Business_Country__c == undefined ? 'AU' : rv.Business_Country__c;
                         component.set("v.country", countryCode);

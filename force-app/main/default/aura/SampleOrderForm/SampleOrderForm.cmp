@@ -37,6 +37,7 @@
     <aura:attribute name="showSKU" type="Boolean" default="false" />
     <aura:attribute name="showInternationalOrder" type="Boolean" default="false" />
     <aura:attribute name="showCostCenters" type="Boolean" default="false" />
+    <aura:attribute name="useStandardAddressComponent" type="Boolean" default="true" />
 
     <!-- List & Object Attributes -->
     <aura:attribute name="theSampleOrder" type="SAP_Interfaced_Data__c" default="{ }" />
@@ -192,18 +193,46 @@
                     </div>    
                 </aura:if>
                 <div class="slds-m-top_large">
-                    <lightning:input name="i_BusinessName" label="Business Name"  disabled="{!v.orderLocked}" required="true" value="{!v.theSampleOrder.Business_Name__c}" placeholder="Business Name" />
+                    <lightning:input name="i_BusinessName" label="Business Name"  
+                                    disabled="{!v.orderLocked}" 
+                                    required="true" 
+                                    value="{!v.theSampleOrder.Business_Name__c}" 
+                                    placeholder="Business Name"
+                                    onchange="{!c.handleBusinessNameChange}" />
                 </div>
                 <div class="slds-m-top_large">
-                    <lightning:inputAddress aura:id="i_BusinessAddress" addressLabel="Business Address" streetLabel="Street" cityLabel="City" countryLabel="Country" provinceLabel="State" postalCodeLabel="Postcode"
-                                            street="{!v.theSampleOrder.Business_Address__c}" city="{!v.theSampleOrder.Business_City__c}" province="{!v.businessState}" country="{!v.countryName}" postalCode="{!v.theSampleOrder.Business_Postcode__c}"
-                                            provinceOptions="{!v.provinceOptions}"
-                                            required="true" disabled="{!v.orderLocked}"/>
+                    <aura:if isTrue="{!v.useStandardAddressComponent}">
+                        <lightning:inputAddress aura:id="i_BusinessAddress" addressLabel="Business Address" streetLabel="Street" cityLabel="City" countryLabel="Country" provinceLabel="State" postalCodeLabel="Postcode"
+                        street="{!v.theSampleOrder.Business_Address__c}" city="{!v.theSampleOrder.Business_City__c}" province="{!v.businessState}" country="{!v.countryName}" postalCode="{!v.theSampleOrder.Business_Postcode__c}"
+                        provinceOptions="{!v.provinceOptions}"
+                        required="true" disabled="{!v.orderLocked}"/>
+
+                    <aura:set attribute="else">
+                        <h4>{!$Label.c.Business_Address}</h4>
+                        <div>
+                            <lightning:textarea aura:id="i_BusinessAddress" name="i_BusinessAddress" label="Street" value="{!v.theSampleOrder.Business_Address__c}" required="true"  disabled="{!v.orderLocked}" />
+                        </div>
+                        <div>
+                            <lightning:textarea aura:id="i_BusinessAddress2" name="i_BusinessAddress2" label="Street2" value="{!v.theSampleOrder.Business_Address2__c}" required="false"  disabled="{!v.orderLocked}"/>
+                        </div>
+                        <div class="slds-m-top_small">
+                            <lightning:input aura:id="i_BusinessCity" name="i_BusinessCity" label="City" value="{!v.theSampleOrder.Business_City__c}" required="true"  disabled="{!v.orderLocked}"/>
+                        </div>
+                        <div class="slds-m-top_small">
+                            <lightning:input aura:id="i_BusinessCountry" name="i_BusinessCountry" label="Country" required="true" value="{!v.countryName}"  disabled="{!v.orderLocked}"/>
+                        </div>
+                    </aura:set>
+                    </aura:if>
                 </div>
                 <div class="slds-grid slds-gutters_small slds-m-top_small">
                     <div class="slds-col slds-has-flexi-truncate" role="listitem">
-                        <lightning:input aura:id="i_ContactName" name="i_ContactName" label="Contact Name" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Contact_Name__c}" placeholder="Contact name" required="true" />
-                    </div>            
+                        <lightning:input aura:id="i_ContactName" name="i_ContactName" label="Contact Name" 
+                                        disabled="{!v.orderLocked}" 
+                                        value="{!v.theSampleOrder.Contact_Name__c}" 
+                                        placeholder="Contact name" 
+                                        required="true"
+                                        onchange="{!c.handleContactNameChange}"/>
+                        </div>            
                     <div class="slds-col slds-has-flexi-truncate" role="listitem">
                         <lightning:input aura:id="i_ContactPhone" type="tel" name="i_ContactPhone" label="Contact Phone" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Contact_Phone__c}" placeholder="Contact phone" required="true" />
                     </div>            

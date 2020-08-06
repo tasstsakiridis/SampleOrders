@@ -15,10 +15,12 @@
         var showSKU = false;
         var showInternationalOrder = false;
         var showCostCenters = false;
+        var useStandardAddressComponent = true;
         var country = component.get("v.country");
         if (country == 'GB') {
             showPrice = true;   
-            showCostCenters = true;                     
+            showCostCenters = true;            
+            useStandardAddressComponent = false;         
         }
         if (country == 'AU') {
             showSKU = true;
@@ -26,10 +28,12 @@
         }
         console.log('country', country);
         console.log('showPrice', showPrice);
+        console.log('useStandardAddress', useStandardAddressComponent);
         component.set("v.showPrice", showPrice);
         component.set("v.showSKU", showSKU);
         component.set("v.showInternationalOrder", showInternationalOrder);
         component.set("v.showCostCenters", showCostCenters);
+        component.set("v.useStandardAddressComponent", useStandardAddressComponent);
         helper.setupProductTableHeaders(component);
         //helper.updateProvinceOptions(component);
     },
@@ -62,9 +66,9 @@
                 
                 let isValidOrder = helper.validateOrder(component);
                 console.log('[SampleOrderForm.controller.handleButtonClick] isValidOrder', isValidOrder);
-                if (!isValidOrder) { 
+                if (!isValidOrder.isValid) { 
                     component.set("v.toastTitle", "Error");
-                    component.set("v.toastMessage", "Please complete all required fields");
+                    component.set("v.toastMessage", isValidOrder.msg);
                     var toastPanel = component.find("toastPanel");
                     $A.util.removeClass(toastPanel, "slds-hide");
                     
@@ -94,6 +98,23 @@
             console.log('SampleOrderForm.controller.hanlderButtonClick] exception', ex);
         }
     },
+    handleBusinessNameChange : function(component, event, helper) {
+        let theSampleOrder = component.get("v.theSampleOrder");
+        if (theSampleOrder.Business_Name__c.length > 25) {
+            helper.alertUser(component, "Warning", 'warning', 'Business Name is too long. Max 25 characters');
+            theSampleOrder.Business_Name__c = theSampleOrder.Business_Name__c.substr(0, 25);
+            component.set("v.theSampleOrder", theSampleOrder);
+        }
+    },
+    handleContactNameChange : function(component, event, helper) {
+        let theSampleOrder = component.get("v.theSampleOrder");
+        if (theSampleOrder.Contact_Name__c.length > 70) {
+            helper.alertUser(component, "Warning", 'warning', 'Contact Name is too long. Max 70 characters');
+            theSampleOrder.Contact_Name__c = theSampleOrder.Contact_Name__c.substr(0, 70);
+            component.set("v.theSampleOrder", theSampleOrder);
+        }
+    },
+
     handleClassificationChange : function(component, event, helper) {
         console.log('[handleClassificationChange]');
         //let theSampleOrder = component.get("v.theSampleOrder");
@@ -104,6 +125,14 @@
             component.set("v.showDutyFreeBanners", true);
         } else {
             component.set("v.showDutyFreeBanners", false);
+        }
+        let country = component.get("v.country");
+        if (country == 'GB') {
+            if (classification.indexOf('SD0') >= 0) {
+                component.set("v.showCostCenters", false);
+            } else {
+                component.set("v.showCostCenters", true);
+            }    
         }
     },
     handleBannerGroupChange : function(component, event, helper) {

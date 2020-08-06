@@ -65,7 +65,7 @@
                 alert('Quantity out of range.  Please enter a number greater than or equal to zero');
             } else {
                 console.log('recordType', recordType);
-                if (recordType == 'Sample Order') {
+                if (recordType == 'Sample Order' || recordType == 'Sample Order - UK') {
                     let remainder = qty % 1;
                     console.log('remainder', remainder);
                     if (remainder > 0) {

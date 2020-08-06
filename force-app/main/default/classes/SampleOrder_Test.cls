@@ -10,16 +10,21 @@ public class SampleOrder_Test {
         Map<String, RecordTypeInfo> sapRecordTypes = Schema.SObjectType.SAP_Interfaced_Data__c.getRecordTypeInfosByName();
         Map<String, RecordTypeInfo> sapiRecordTypes = Schema.SObjectType.SAP_Interfaced_Data_Item__c.getRecordTypeInfosByName();
         Map<String, RecordTypeInfo> bannerRecordTypes = Schema.SObjectType.Banner_Groups__c.getRecordTypeInfosByName();
+        Map<String, RecordTypeInfo> sapConfigRecordTypes = Schema.SObjectType.SAP_Interfaced_Data_Configuration__c.getRecordTypeInfosByName();
 
         String rtSampleOrder = sapRecordTypes.get('Sample Order').getRecordTypeId(); 
         String rtSampleOrderLocked = sapRecordTypes.get('Sample Order Locked').getRecordTypeId();
         String rtSampleOrderItem = sapiRecordTypes.get('Sample Order').getRecordTypeId();
         String rtWetGoods = pRecordTypes.get('Wet Goods').getRecordTypeId();
         String rtAUBannerGroup = bannerRecordTypes.get('AUD - Banner Groups').getRecordTypeId();
+        String rtShipTo = sapConfigRecordTypes.get('ShipTo').getRecordTypeId();
+        String rtSoldTo = sapConfigRecordTypes.get('SoldTo').getRecordTypeId();
+        String rtGeneral = sapConfigRecordTypes.get('General').getRecordTypeId();
        
         Market__c mAU = helper.createMarket('Australia');
         mAU.Vistex_Clearing_Account__c = '0123456789';
-		mAU.Country_ISO_Code_2__c = 'AU';
+        mAU.Country_ISO_Code_2__c = 'AU';
+        mAU.Sample_Order_Notify_Brand_Managers__c = true;
 	    insert mAU;
         
         User mgr = helper.createUser('System Administrator', 'Mgr', 'Tsakiridis', '');
@@ -32,7 +37,73 @@ public class SampleOrder_Test {
         user1.Manages_Brand__c = 'Gentleman Jack';
         user1.Email = 'tass_tsakiridis@b-f.com';
         insert user1;
-		        
+		       
+		SAP_Interfaced_Data_Configuration__c sapConfig1 = new SAP_Interfaced_Data_Configuration__c();
+        sapConfig1.RecordTypeId = rtShipTo;
+        sapConfig1.Market__c = mAU.Id;
+        sapConfig1.State__c = 'ACT';
+        sapConfig1.ShipTo_Code__c = '2016919';
+        sapConfig1.Is_Active__c = true;
+
+		SAP_Interfaced_Data_Configuration__c sapConfig2 = new SAP_Interfaced_Data_Configuration__c();
+        sapConfig2.RecordTypeId = rtShipTo;
+        sapConfig2.Market__c = mAU.Id;
+        sapConfig2.State__c = 'NSW';
+        sapConfig2.ShipTo_Code__c = '2016919';
+        sapConfig2.Is_Active__c = true;
+
+		SAP_Interfaced_Data_Configuration__c sapConfig3 = new SAP_Interfaced_Data_Configuration__c();
+        sapConfig3.RecordTypeId = rtShipTo;
+        sapConfig3.Market__c = mAU.Id;
+        sapConfig3.State__c = 'VIC';
+        sapConfig3.ShipTo_Code__c = '2016921';
+        sapConfig3.Is_Active__c = true;
+        
+        SAP_Interfaced_Data_Configuration__c sapConfig4 = new SAP_Interfaced_Data_Configuration__c();
+        sapConfig4.RecordTypeId = rtSoldTo;
+        sapConfig4.Market__c = mAU.Id;
+        sapConfig4.Classification__c = 'AU1-Samples for Marketing Related Activities';
+        sapConfig4.SoldTo_Code__c = 'CCA907C';
+        sapConfig4.Is_Active__c = true;
+        
+        SAP_Interfaced_Data_Configuration__c[] l_sapConfigs = new SAP_Interfaced_Data_Configuration__c[]{sapConfig1, sapConfig2, sapConfig3, sapConfig4};
+        insert l_sapConfigs;    
+        
+        Salesforce_Picklist_Controlling_Values__c spcv1 = new Salesforce_Picklist_Controlling_Values__c();
+        spcv1.RecordType__c = 'Sample Order';
+        spcv1.Object_Name__c = 'SAP_Interfaced_Data__c';
+        spcv1.Field_Name__c = 'Classification__c';
+        spcv1.Controller__c = 'RecordType';
+        spcv1.Controller_Value__c = 'Sample Order';
+        spcv1.Value__c = 'AU1-Samples for Marketing Related Activities';
+        spcv1.Is_Active__c = true;
+        spcv1.Market__c = mAU.Id;
+        
+        Salesforce_Picklist_Controlling_Values__c spcv2 = new Salesforce_Picklist_Controlling_Values__c();
+        spcv2.RecordType__c = 'Sample Order';
+        spcv2.Object_Name__c = 'SAP_Interfaced_Data__c';
+        spcv2.Field_Name__c = 'Classification__c';
+        spcv2.Controller__c = 'RecordType';
+        spcv2.Controller_Value__c = 'Sample Order';
+        spcv2.Value__c = 'AU2-Samples for Sales Related Activities';
+        spcv2.Is_Active__c = true;
+        spcv2.Market__c = mAU.Id;
+        
+        Salesforce_Picklist_Controlling_Values__c spcv3 = new Salesforce_Picklist_Controlling_Values__c();
+        spcv3.RecordType__c = 'Sample Order';
+        spcv3.Object_Name__c = 'SAP_Interfaced_Data__c';
+        spcv3.Field_Name__c = 'Classification__c';
+        spcv3.Controller__c = 'RecordType';
+        spcv3.Controller_Value__c = 'Sample Order';
+        spcv3.Value__c = 'AU6-Ecomm Sample Orders';
+        spcv3.Is_Active__c = true;
+        spcv3.Market__c = mAU.Id;
+        
+        Salesforce_Picklist_Controlling_Values__c[] l_spcv = new Salesforce_Picklist_Controlling_Values__c[]{spcv1, spcv2, spcv3};
+        insert l_spcv;
+        
+        
+        
         Supplier__c supplier = helper.createSupplier('Test Supplier', true);
         insert supplier;
         
@@ -43,6 +114,7 @@ public class SampleOrder_Test {
         for(Product__c p : lProducts) {
             p.Used_For__c = 'Sample Order';
         }
+        lProducts[0].Used_For__c = 'Sample Order;High Value';
         insert lProducts;
         
         Banner_Groups__c banner1 = new Banner_Groups__c();
@@ -79,8 +151,8 @@ public class SampleOrder_Test {
             String theme = SampleOrder_Controller.getUIThemeDescription();
             System.assertEquals('Theme3', theme, 'Theme is not classic 2010 interface');
 
-			User runningAsUser = SampleOrder_Controller.getCurrentUserInfo();
-			System.assertEquals('Test Tsakiridis', runningAsUser.Name);
+			SimpleListItem runningAsUser = SampleOrder_Controller.getCurrentUserInfo();
+			System.assertEquals('Test Tsakiridis', runningAsUser.name);
             
             bfObjectDescribe obj = SampleOrder_Controller.getObjectDetails();
             System.assertEquals('SAP_Interfaced_Data__c', obj.apiName);
@@ -126,6 +198,7 @@ public class SampleOrder_Test {
             sli = new SimpleListItem('id', 'name', false, '', false);
             System.assertEquals('id', sli.id);
             
+            List<Salesforce_Picklist_Controlling_Values__c> l_controllingValues = SampleOrder_Controller.getPicklistValuesForRecordType('Sample Order');
         }
         
         

@@ -48,7 +48,7 @@ public with sharing class SampleOrder_Controller {
                        Authorised_By__c, Authorised_By__r.Name, Authorised_Date__c, Finance_Authorised_By__c, Finance_Authorised_Date__c, 
                        Classification__c, Banner_Group__c, Business_Name__c, Business_Address__c, Business_City__c, Business_State__c, 
                        Business_Postcode__c, Business_Country__c, Contact_Name__c, Contact_Phone__c, Reason__c, Is_International_Order__c, 
-                       Storage_Locker__c, Cost_Center__c,
+                       Storage_Locker__c, Cost_Center__c, Business_Address2__c,
                        (SELECT Id, Name, SAP_Interfaced_Data__c, Product__c, Brand_Name__c, Product_Code__c, Quantity__c, Units__c, Product__r.Used_For__c 
                           FROM SAP_Interfaced_Data_Items__r) 
                   FROM SAP_Interfaced_Data__c 
@@ -184,7 +184,7 @@ public with sharing class SampleOrder_Controller {
         //    usedFor = recordTypeName;
         //}
         Boolean found = false;
-        List<Product__c> products = [SELECT Id, Name, ProductCode__c, Brand__c, Brand_Name__c, Pack_Quantity__c, Used_For__c, Price__c 
+        List<Product__c> products = [SELECT Id, Name, ProductCode__c, Brand__c, Brand_Name__c, Pack_Quantity__c, Used_For__c, Price__c, COGS__c
                                        FROM Product__c 
                                       WHERE IsActive__c = true 
                                         AND Market__c=:marketId 
@@ -193,7 +193,7 @@ public with sharing class SampleOrder_Controller {
         
         List<SampleOrderItem> items = new List<SampleOrderItem>();
         for(Product__c p : products) {
-            items.add(new SampleOrderItem('', p.Id, p.Name, p.ProductCode__c, p.Brand_Name__c, p.Used_For__c, (Integer)p.Pack_Quantity__c, 0, (Decimal)p.Price__c));
+            items.add(new SampleOrderItem('', p.Id, p.Name, p.ProductCode__c, p.Brand_Name__c, p.Used_For__c, (Integer)p.Pack_Quantity__c, 0, (Decimal)p.COGS__c));
         }
         return items;
     }
