@@ -84,7 +84,7 @@ public with sharing class SampleOrder_Controller {
                         theSampleOrder.SAP_ShipTo_Code__c = config.ShipTo_Code__c;
                         theSampleOrder.SAP_SoldTo_Code__c = config.SoldTo_Code__c;
                         theSampleOrder.SAP_Plant_Code__c = config.Plant_Code__c;
-                    } else if (config.RecordType.Name == 'General' && config.Market__c == theSampleOrder.Market__c) {
+                    } else if (config.RecordType.Name == 'General' && config.Market__c == theSampleOrder.Market__c && config.Classification__c == null && config.State__c == null) {
                         theSampleOrder.SAP_ShipTo_Code__c = config.ShipTo_Code__c;  
                     }
                 }

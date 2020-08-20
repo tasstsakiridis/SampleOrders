@@ -72,6 +72,7 @@
                     var toastPanel = component.find("toastPanel");
                     $A.util.removeClass(toastPanel, "slds-hide");
                     
+                    window.scrollTo({left: 0, top: 0, behavior: 'smooth'});
                     return; 
                 } else {
 		            helper.saveSampleOrder(component);                                    

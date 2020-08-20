@@ -155,7 +155,7 @@
 	                	<lightning:input type="date" name="i_RequestedDeliveryDate" label="Requested Delivery Date" disabled="{!v.orderLocked}" required="true" value="{!v.theSampleOrder.Requested_Delivery_Date__c}" placeholder="Requested Delivery Date" />
                     </div>  
                     <div class="slds-col slds-has-flexi-truncate" role="listitem">
-                        <lightning:select aura:id="i_classification" name="i_classification" label="Classification" disabled="{!v.orderLocked}" value="{!v.classification}" onchange="{!c.handleClassificationChange}">
+                        <lightning:select aura:id="i_classification" name="i_classification" label="Classification" disabled="{!v.orderLocked}" value="{!v.classification}" onchange="{!c.handleClassificationChange}" required="true">
                             <aura:iteration items="{!v.classifications}" var="i">
                                 <option text="{!i.label}" value="{!i.id}" selected="{!i.selected}" />
                             </aura:iteration>
@@ -175,7 +175,7 @@
                     </aura:if>
                     <aura:if isTrue="{!v.showCostCenters}">
                         <div class="slds-col slds-has-flexi-truncate" role="listitem">
-                            <lightning:select name="costCenters" label="Cost Center" aura:id="costCenters" disabled="{!v.orderLocked}" value="{!v.costCenter}" onchange="{!c.handleCostCenterChange}">
+                            <lightning:select name="costCenters" label="Cost Center" aura:id="costCenters" disabled="{!v.orderLocked}" value="{!v.costCenter}" required="true" onchange="{!c.handleCostCenterChange}">
                                 <aura:iteration items="{!v.costCenters}" var="cc">
                                     <option text="{!cc.label}" value="{!cc.id}" selected="{!cc.selected}" />
                                 </aura:iteration>
@@ -216,7 +216,14 @@
                             <lightning:textarea aura:id="i_BusinessAddress2" name="i_BusinessAddress2" label="Street2" value="{!v.theSampleOrder.Business_Address2__c}" required="false"  disabled="{!v.orderLocked}"/>
                         </div>
                         <div class="slds-m-top_small">
-                            <lightning:input aura:id="i_BusinessCity" name="i_BusinessCity" label="City" value="{!v.theSampleOrder.Business_City__c}" required="true"  disabled="{!v.orderLocked}"/>
+                            <lightning:layout>
+                                <lightning:layoutItem size="6" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="6">
+                                    <lightning:input aura:id="i_BusinessCity" name="i_BusinessCity" label="City" value="{!v.theSampleOrder.Business_City__c}" required="true"  disabled="{!v.orderLocked}"/>
+                                </lightning:layoutItem>
+                                <lightning:layoutItem size="6" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="6" class="slds-m-left_small">
+                                    <lightning:input aura:id="i_BusinessPostCode" name="i_BusinessPostcode" label="PostCode" value="{!v.theSampleOrder.Business_Postcode__c}" required="true"  disabled="{!v.orderLocked}"/>                                    
+                                </lightning:layoutItem>
+                            </lightning:layout>
                         </div>
                         <div class="slds-m-top_small">
                             <lightning:input aura:id="i_BusinessCountry" name="i_BusinessCountry" label="Country" required="true" value="{!v.countryName}"  disabled="{!v.orderLocked}"/>

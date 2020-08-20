@@ -49,8 +49,9 @@
                         }
                     }
                     if (recordTypes.length == 1) {
-                        component.set("v.recordTypeId", recordTypes[0].value);
                         component.set("v.recordTypeName", recordTypes[0].label);
+                        component.set("v.recordTypeId", recordTypes[0].value);
+                        console.log('recordtype set to', recordTypes[0].value);
                     }
                     component.set('v.recordTypes', recordTypes);
                     console.log('# of recordtypes: ' + recordTypes.length);

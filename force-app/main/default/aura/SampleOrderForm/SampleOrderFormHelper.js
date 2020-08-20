@@ -434,7 +434,11 @@
         let isValid = true;
         let msg = '';
 
-        if (classification == null || classification == '') { console.log('classification is null'); isValid = false; }
+        if (classification == null || classification == '') { 
+            console.log('classification is null'); 
+            msg += 'Classification is required';
+            isValid = false; 
+        }
         if (theSampleOrder.Business_Name__c == null || theSampleOrder.Business_Name__c == '') { 
             console.log('business name is null'); 
             msg += '\nBusiness Name is required';
@@ -445,7 +449,11 @@
                 isValid = false;
             }
         }
-        if (theSampleOrder.Requested_Delivery_Date__c == null) { console.log('requested delivery date is null'); isValid = false; }
+        if (theSampleOrder.Requested_Delivery_Date__c == null) { 
+            console.log('requested delivery date is null'); 
+            msg += 'Requested Delivery Date is requied';
+            isValid = false; 
+        }
         if (country == null || country == '') { 
             console.log('country is null');  
             isValid = false;
@@ -508,7 +516,7 @@
             isValid = false;
         }
         
-        if (country == 'UK' && classification != null && classification.indexOf('SD0') == -1) {
+        if (country == 'GB' && classification != null && classification.indexOf('SD0') == -1) {
             if (costCenter == null || costCenter == '') { 
                 console.log('cost center is null'); 
                 msg += 'You must select a cost center.';
