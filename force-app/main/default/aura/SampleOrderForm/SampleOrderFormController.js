@@ -12,7 +12,6 @@
     handleCountryChange : function(component, event, helper) {
         component.set("v.provinceOptions", helper.getProvinceOptions(component, component.get("v.country")));
         var showPrice = false;
-        var showSKU = false;
         var showInternationalOrder = false;
         var showCostCenters = false;
         var useStandardAddressComponent = true;
@@ -23,14 +22,12 @@
             useStandardAddressComponent = false;         
         }
         if (country == 'AU') {
-            showSKU = true;
             showInternationalOrder = true;
         }
         console.log('country', country);
         console.log('showPrice', showPrice);
         console.log('useStandardAddress', useStandardAddressComponent);
         component.set("v.showPrice", showPrice);
-        component.set("v.showSKU", showSKU);
         component.set("v.showInternationalOrder", showInternationalOrder);
         component.set("v.showCostCenters", showCostCenters);
         component.set("v.useStandardAddressComponent", useStandardAddressComponent);

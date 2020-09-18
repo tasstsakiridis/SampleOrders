@@ -90,6 +90,13 @@ public with sharing class SampleOrder_Controller {
                 }
             }
 
+            if (theSampleOrder.Banner_Group__c != null) {
+                Banner_Groups__c banner = [SELECT Id, Name, Ship_To_Code__c FROM Banner_Groups__c WHERE Id =:theSampleOrder.Banner_Group__c LIMIT 1];
+                if (banner != null && banner.Ship_To_Code__c != null) {
+                    theSampleOrder.SAP_ShipTo_Code__c = banner.Ship_To_Code__c;
+                }                
+            }
+
             upsert theSampleOrder;
         }
         
@@ -211,7 +218,8 @@ public with sharing class SampleOrder_Controller {
             marketId = [SELECT Id, Name FROM Market__c WHERE Name = 'Australia'].Id;
         }
 
-        return [SELECT Id, Name FROM Banner_Groups__c WHERE Market__c =:marketId AND Management_Group_State_Level__c = 'MGT_NAT' AND Name LIKE '%Duty%'];
+        return [SELECT Id, Name FROM Banner_Groups__c WHERE Market__c =:marketId AND Ship_To_Code__c <> NULL];
+
     }
 
     @AuraEnabled 

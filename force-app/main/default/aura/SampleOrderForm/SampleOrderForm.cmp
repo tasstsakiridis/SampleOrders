@@ -34,7 +34,7 @@
     <aura:attribute name="canSubmit" type="Boolean" default="false" />
     <aura:attribute name="showStorageLockers" type="Boolean" default="false" />
     <aura:attribute name="showPrice" type="Boolean" default="false" />
-    <aura:attribute name="showSKU" type="Boolean" default="false" />
+    <aura:attribute name="showSKU" type="Boolean" default="true" />
     <aura:attribute name="showInternationalOrder" type="Boolean" default="false" />
     <aura:attribute name="showCostCenters" type="Boolean" default="false" />
     <aura:attribute name="useStandardAddressComponent" type="Boolean" default="true" />
