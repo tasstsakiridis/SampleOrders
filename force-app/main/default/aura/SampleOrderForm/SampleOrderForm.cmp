@@ -20,6 +20,7 @@
 
     <!-- Number Attributes -->
     <aura:attribute name="selectedRowCount" type="Integer" default="0" />
+    <aura:attribute name="leadTime" type="Integer" default="0" />
     
     <!-- Boolean Attributes -->
     <aura:attribute name="isLoading" type="Boolean" default="false" />

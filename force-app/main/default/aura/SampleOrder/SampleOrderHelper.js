@@ -17,7 +17,13 @@
                     component.set('v.userName', rv.name);
                     component.set("v.marketId", rv.value);
                     component.set('v.marketName', rv.description);
+                    var leadTime = 0;
+                    if (rv.label != undefined) {
+                        leadTime = parseInt(rv.label);
+                    }
+                    component.set('v.leadTime', leadTime);
                     console.log('[SampleOrder.helper.getUserDetails] marketName', rv.description);
+                    console.log('[SampleOrder.helper.getUserDetails] leadTime, rv.label', leadTime, rv.label);
                 } else if (callState === "INCOMPLETE") {
                     console.log("[SampleOrder.Helper.getUserDetails] callback returned incomplete.");                    
                 } else if (callState === "ERROR") {

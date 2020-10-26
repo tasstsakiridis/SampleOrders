@@ -3,10 +3,11 @@ public with sharing class SampleOrder_Controller {
     @AuraEnabled
     public static SimpleListItem getCurrentUserInfo() {
     	User u = [SELECT Id, Name, Market__c FROM User WHERE Id =:UserInfo.getUserId()];
-        Market__c m = [SELECT Id, Name, Country_ISO_Code_2__c FROM Market__c WHERE Name =:u.Market__c LIMIT 1];
+        Market__c m = [SELECT Id, Name, Country_ISO_Code_2__c, Sample_Order_Lead_Time__c FROM Market__c WHERE Name =:u.Market__c LIMIT 1];
         SimpleListItem sli = new SimpleListItem(u.Id, u.Name);
         sli.value = m.Id;
         sli.description = m.Country_ISO_Code_2__c;
+        sli.label = String.valueOf(m.Sample_Order_Lead_Time__c);
         return sli;
     }
     

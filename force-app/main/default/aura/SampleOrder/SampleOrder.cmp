@@ -9,6 +9,9 @@
     <aura:attribute name="recordTypeId" type="String" />
     <aura:attribute name="recordTypeName" type="String" />
     
+    <!-- Number Attributes -->
+    <aura:attribute name="leadTime" type="Integer" default="0" />
+
     <!-- Boolean Attributes -->
     <aura:attribute name="isLoading" type="Boolean" default="false" />
     <aura:attribute name="isSF1" type="Boolean" default="false" />
@@ -28,7 +31,7 @@
     <!-- Register component events -->
     <aura:registerEvent name="bfLightningEvent" type="c:bfLightningEvent" />
 
-       <c:SampleOrderForm aura:id="orderForm" userId="{!v.userId}" userName="{!v.userName}" marketId="{!v.marketId}" country="{!v.marketName}" userContext="{!v.userContext}" objectDescribe="{!v.objectDescribe}" recordTypeName="{!v.recordTypeName}" recordTypeId="{!v.recordTypeId}" />
+       <c:SampleOrderForm aura:id="orderForm" userId="{!v.userId}" userName="{!v.userName}" marketId="{!v.marketId}" country="{!v.marketName}" userContext="{!v.userContext}" objectDescribe="{!v.objectDescribe}" recordTypeName="{!v.recordTypeName}" recordTypeId="{!v.recordTypeId}" leadTime="{!v.leadTime}" />
                     
             <article aura:id="listView" class="slds-card">
             	<div class="slds-card__header slds-grid">

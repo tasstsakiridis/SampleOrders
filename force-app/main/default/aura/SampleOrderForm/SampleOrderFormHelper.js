@@ -431,8 +431,11 @@
         var country = component.get("v.country");
         let classification = component.get("v.classification");
         let costCenter = component.get("v.costCenter");
+        let leadTime = component.get("v.leadTime");
+        console.log('[validateOrder] leadTime', leadTime);
         let isValid = true;
         let msg = '';
+        let today = new Date();
 
         if (classification == null || classification == '') { 
             console.log('classification is null'); 
@@ -453,6 +456,16 @@
             console.log('requested delivery date is null'); 
             msg += 'Requested Delivery Date is requied';
             isValid = false; 
+        } else {
+            if (leadTime != null && leadTime > 0) {
+                let daysDiff = Math.floor((new Date(theSampleOrder.Requested_Delivery_Date__c).getTime() - today.getTime()) / (1000 * 3600 * 24));
+                console.log('[validateOrder] daysDiff', daysDiff);
+                if (daysDiff < leadTime) {
+                    console.log('requested delivery date is within lead time');
+                    msg += 'Requested Delivery Date is within the lead time for your market. Please extend the Requested Delivery Date.';
+                    isValid = false;
+                }
+            }
         }
         if (country == null || country == '') { 
             console.log('country is null');  
@@ -489,6 +502,7 @@
         if (country != 'GB') {
             if (businessState == null || businessState == '') { 
                 console.log('business state is null'); 
+                msg += 'Business State is required';
                 isValid = false; 
             } else {
                 
