@@ -102,6 +102,7 @@
                     var rv = response.getReturnValue();
                     console.log('[SampleOrder.Helper.getSampleOrders] orders', rv);
                     component.set('v.mySampleOrders', rv);
+                    component.set("v.allSampleOrders", rv);
                     component.set("v.isLoading", false);
                 } else if (callState === "INCOMPLETE") {
                     console.log("[SampleOrder.Helper.getSampleOrders] callback returned incomplete.");                    
@@ -112,5 +113,45 @@
             }
         });
         $A.enqueueAction(action);        
+    },
+    toggleMyOrders : function(component) {
+        var showMyOrders = component.get("v.showMyOrders");
+        showMyOrders = !showMyOrders;
+        component.set("v.showMyOrders", showMyOrders);
+        var userId = component.get("v.userId");
+        console.log("showMyOrders", showMyOrders);
+        var allSampleOrders = component.get("v.allSampleOrders");
+        console.log('[toggleMyOrders] allSamplerOrders', allSampleOrders);
+        if (showMyOrders) {
+            var sampleOrders = allSampleOrders.filter(s => s.CreatedById == userId);
+            component.set("v.mySampleOrders", sampleOrders);    
+            //component.set("v.myOrdersButtonLabel", component.get("v.lbl_MyOrders"));
+        } else {
+            component.set("v.mySampleOrders", allSampleOrders);
+            //component.set("v.myOrdersButtonLabel", component.get("v.lbl_AllOrders"));
+        }
+    },
+    sortData : function(component, sortBy) {
+        let sortedColumn = component.get("v.sortedColumn");
+        let isAsc = component.get("v.isAsc");
+        if (sortedColumn == sortBy) {
+            isAsc = !isAsc;
+        } else {
+            isAsc = true;
+        }
+        component.set("v.isAsc", isAsc);
+        component.set("v.sortedColumn", sortBy);
+        console.log('[helper.sortData] isAsc', isAsc);
+        console.log('[helper.sortData] sortBy', sortBy);
+        let isReverse = isAsc ? 1 : -1;
+        var orders = component.get("v.mySampleOrders");
+        orders = orders.sort((a, b) => {
+            a = a[sortBy] ? a[sortBy].toLowerCase() : '';
+            b = b[sortBy] ? b[sortBy].toLowerCase() : '';
+            
+            return a > b ? 1 * isReverse : -1 * isReverse;
+        });
+        component.set("v.mySampleOrders", orders);
+        console.log('[helper.sortData] orders', orders);
     }
 })

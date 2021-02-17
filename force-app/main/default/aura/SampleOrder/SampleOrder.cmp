@@ -8,6 +8,10 @@
     <aura:attribute name="recordId" type="String" />
     <aura:attribute name="recordTypeId" type="String" />
     <aura:attribute name="recordTypeName" type="String" />
+    <aura:attribute name="lbl_MyOrders" type="String" default="{!$Label.c.MyOrders}" />
+    <aura:attribute name="lbl_AllOrders" type="String" default="{!$Label.c.AllOrders}" />
+    <aura:attribute name="myOrdersButtonLabel" type="String" default="{!$Label.c.MyOrders}" />
+    <aura:attribute name="sortedColumn" type="String" default="" />
     
     <!-- Number Attributes -->
     <aura:attribute name="leadTime" type="Integer" default="0" />
@@ -16,10 +20,15 @@
     <aura:attribute name="isLoading" type="Boolean" default="false" />
     <aura:attribute name="isSF1" type="Boolean" default="false" />
     <aura:attribute name="isEditingOrder" type="Boolean" default="false" />
+    <aura:attribute name="isRequestedBySort" type="Boolean" default="false" />
+    <aura:attribute name="isRequestedDateSort" type="Boolean" default="false" />
+    <aura:attribute name="isAsc" type="Boolean" default="false" />
+    <aura:attribute name="showMyOrders" type="Boolean" default="false" />
 
 	<!-- List & Object Attributes -->    
     <aura:attribute name="objectDescribe" type="bfObjectDescribe" default="{}" />
     <aura:attribute name="mySampleOrders" type="List" default="[]" />
+    <aura:attribute name="allSampleOrders" type="List" default="[]" />
     <aura:attribute name="recordTypes"    type="List" default="[]" />
     
     <!-- Handle component events -->
@@ -49,6 +58,12 @@
                             <p class="slds-text-body_small slds-lin-height_reset">{!v.mySampleOrders.length} sample orders</p>
                         </div>
                         <div class="slds-no-flex">
+                            <aura:if isTrue="{!v.showMyOrders}">
+                                <lightning:button aura:id="btnAllOrders" label="{!v.lbl_AllOrders}" name="btnAllOrders" class="slds-m-right_small"  onclick="{!c.handleMyOrdersToggle}"></lightning:button>
+                            <aura:set attribute="else">
+                                <lightning:button aura:id="btnMyOrders" label="{!v.lbl_MyOrders}" name="btnMyOrders" class="slds-m-right_small"  onclick="{!c.handleMyOrdersToggle}"></lightning:button>
+                            </aura:set>
+                            </aura:if>
                             <aura:if isTrue="{!v.recordTypes.length > 1}">
                                 <lightning:buttonMenu aura:id="btnNewMenu" label="New" class="slds-m-right_medium" onselect="{!c.handleNewButtonSelect}" alternativeText="New">
                                     <aura:iteration items="{!v.recordTypes}" var="rt">
@@ -75,12 +90,41 @@
                             	<th scope="col">
                                 	<div class="slds-truncate" title="Order Number">Order Number</div>
                                 </th>
-                                <th scope="col">
-                                	<div class="slds-truncate" title="Requested Delivery Date">Requested Delivery Date</div>
+                                <th scope="col" class="slds-is-rezisable" data-id="Requested_By__c" onclick="{!c.handleSortByRequestedBy}">
+                                    <a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="0">
+                                        <span class="slds-assistive-text">Sort By Requested By</span>                                        
+                                        <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                            <span class="slds-truncate" title="Requested By">Requested By</span>
+                                            <aura:if isTrue="{!v.isRequestedBySort}">
+                                                <aura:if isTrue="{!v.isAsc}">
+                                                    &#8595;
+                                                <aura:set attribute="else">
+                                                    &#8593;
+                                                </aura:set>    
+                                                </aura:if>
+                                            </aura:if>
+                                        </div>                                        
+                                    </a>
+                                </th>
+                                <th scope="col" class="slds-is-rezisable" data-id="Requested_Date__c" onclick="{!c.handleSortByRequestedDate}">
+                                    <a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="0">
+                                        <span class="slds-assistive-text">Sort By Requested Date</span>                                        
+                                        <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
+                                            <span class="slds-truncate" title="Requested By">Requested Date</span>
+                                            <aura:if isTrue="{!v.isRequestedDateSort}">
+                                                <aura:if isTrue="{!v.isAsc}">
+                                                    &#8595;
+                                                <aura:set attribute="else">
+                                                    &#8593;
+                                                </aura:set>    
+                                                </aura:if>
+                                            </aura:if>
+                                        </div>                                        
+                                    </a>
                                 </th>
                                 <th scope="col">
                                 	<div class="slds-truncate" title="Status">Approval Status</div>
-                                </th>
+                                </th>                                
                                 <th scope="col">
                                 	<div class="slds-truncate" title="Authorised By">Authorised By</div>
                                 </th>
@@ -101,6 +145,9 @@
                                     <th scope="row">
                                 		<div class="slds-truncate" title="{!order.Order_Number__c}" data-order-id="{!order.Id}">{!order.Order_Number__c}</div>                                    	
                                     </th>
+                                    <td>
+                                        <div class="slds-truncate" title="{!order.Requested_By__c}" data-order-id="{!order.Id}">{!order.Requested_By__c}</div>
+                                    </td>
                                     <td>
                                         <div class="slds-truncate" title="{!order.Requested_Delivery_Date__c}" data-order-id="{!order.Id}">{!order.Requested_Delivery_Date__c}</div>
                                     </td>

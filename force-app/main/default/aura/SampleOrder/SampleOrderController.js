@@ -32,11 +32,28 @@
         orderForm.newSampleOrder();
         
     },
+    handleMyOrdersToggle : function(component, event, helper) {
+        helper.toggleMyOrders(component);
+    },
     handleRefreshButtonClick : function(component, event, helper) {
     	helper.getMySampleOrders(component);  
     },
     handleFormError : function(component, event, helper) {
         alert('form error');
+    },
+    handleSortByRequestedBy : function(component, event, helper) {
+        component.set("v.isRequestedBySort", true);
+        component.set("v.isRequestedDateSort", false);
+        let sortBy = event.currentTarget.dataset.id;
+        console.log('sort by requested by: sortby', sortBy);
+        helper.sortData(component, sortBy);
+    },
+    handleSortByRequestedDate : function(component, event, helper) {
+        component.set("v.isRequestedBySort", false);
+        component.set("v.isRequestedDateSort", true);
+        let sortBy = event.currentTarget.dataset.id;
+        console.log('sort by requested date: sortby', sortBy);
+        helper.sortData(component, sortBy);
     },
     handleRowSelected : function(component, event, helper) {
         try {
