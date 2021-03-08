@@ -49,7 +49,7 @@ public with sharing class SampleOrder_Controller {
                        Authorised_By__c, Authorised_By__r.Name, Authorised_Date__c, Finance_Authorised_By__c, Finance_Authorised_Date__c, 
                        Classification__c, Banner_Group__c, Business_Name__c, Business_Address__c, Business_City__c, Business_State__c, 
                        Business_Postcode__c, Business_Country__c, Contact_Name__c, Contact_Phone__c, Reason__c, Is_International_Order__c, 
-                       Storage_Locker__c, Cost_Center__c, Business_Address2__c,
+                       Storage_Locker__c, Cost_Center__c, Business_Address2__c, Internal_Order_Number__c,
                        (SELECT Id, Name, SAP_Interfaced_Data__c, Product__c, Brand_Name__c, Product_Code__c, Quantity__c, Units__c, Product__r.Used_For__c 
                           FROM SAP_Interfaced_Data_Items__r) 
                   FROM SAP_Interfaced_Data__c 

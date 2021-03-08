@@ -11,6 +11,7 @@
     <aura:attribute name="classification" type="String" default="" />
     <aura:attribute name="storageLocker" type="String" />
     <aura:attribute name="costCenter" type="String" />
+    <aura:attribute name="internalOrderNumber" type="String" />
     <aura:attribute name="businessState" type="String" default=""/>
     <aura:attribute name="itemsButtonLabel" type="String" default="Add Items" />
     <aura:attribute name="toastTitle" type="String" default="Warning" />
@@ -34,6 +35,7 @@
     <aura:attribute name="orderLocked" type="Boolean" default="false" />
     <aura:attribute name="canSubmit" type="Boolean" default="false" />
     <aura:attribute name="showStorageLockers" type="Boolean" default="false" />
+    <aura:attribute name="showInternalOrderNumbers" type="Boolean" default="false" />
     <aura:attribute name="showPrice" type="Boolean" default="false" />
     <aura:attribute name="showSKU" type="Boolean" default="true" />
     <aura:attribute name="showInternationalOrder" type="Boolean" default="false" />
@@ -48,6 +50,7 @@
     <aura:attribute name="classifications" type="List" default="[]" />
     <aura:attribute name="costCenters" type="List" default="[]" />
     <aura:attribute name="bannerGroups" type="List" default="[]" />
+    <aura:attribute name="internalOrderNumbers" type="List" default="[]" />
     <aura:attribute name="productData" type="SampleOrderItem[]" />
     <aura:attribute name="deletedRows" type="SampleOrderItem[]" />
     <aura:attribute name="data" type="SampleOrderItem[]" />
@@ -183,6 +186,15 @@
                             </lightning:select>
                         </div>
                     </aura:if>
+                    <aura:if isTrue="{!v.showInternalOrderNumbers}">
+                        <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                            <lightning:select name="internalOrderNumbers" label="Internal Order Numbers" aura:id="internalOrderNumbers" disabled="{!v.orderLocked}" value="{!v.internalOrderNumber}" required="true" onchange="{!c.handleInternalOrderNumberChange}">
+                                <aura:iteration items="{!v.internalOrderNumbers}" var="st">
+                                    <option text="{!st.label}" value="{!st.value}" selected="{!st.selected}" />
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>                        
+                    </aura:if>    
                 </div>
                 <aura:if isTrue="{!v.showStorageLockers}">
                     <div class="slds-col slds-has-flexi-truncate slds-m-top_large" role="listitem">
@@ -191,7 +203,7 @@
                                 <option text="{!st.label}" value="{!st.value}" selected="{!st.selected}" />
                             </aura:iteration>
                         </lightning:select>
-                    </div>    
+                    </div>                        
                 </aura:if>
                 <div class="slds-m-top_large">
                     <lightning:input name="i_BusinessName" label="Business Name"  

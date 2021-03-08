@@ -14,12 +14,14 @@
         var showPrice = false;
         var showInternationalOrder = false;
         var showCostCenters = false;
+        var showInternalOrderNumbers = false;
         var useStandardAddressComponent = true;
         var country = component.get("v.country");
         if (country == 'GB') {
             showPrice = true;   
             showCostCenters = true;            
-            useStandardAddressComponent = false;         
+            useStandardAddressComponent = false;    
+            showInternalOrderNumbers = true;     
         }
         if (country == 'AU') {
             showInternationalOrder = true;
@@ -31,6 +33,7 @@
         component.set("v.showInternationalOrder", showInternationalOrder);
         component.set("v.showCostCenters", showCostCenters);
         component.set("v.useStandardAddressComponent", useStandardAddressComponent);
+        component.set("v.showInternalOrderNumbers", showInternalOrderNumbers);
         helper.setupProductTableHeaders(component);
         //helper.updateProvinceOptions(component);
     },
@@ -128,8 +131,10 @@
         if (country == 'GB') {
             if (classification.indexOf('SD0') >= 0) {
                 component.set("v.showCostCenters", false);
+                component.set("v.showInternalOrderNumbers", true);
             } else {
                 component.set("v.showCostCenters", true);
+                component.set("v.showInternalOrderNumbers", false);
             }    
         }
     },
@@ -164,6 +169,8 @@
         } catch(ex) {
             console.log('[handleCostCenterChange] exception', ex);
         }
+    },
+    handleInternalOrderNumberChange : function(component, event, helper) {
     },
     handleBrandChange : function(component, event, helper) {
         //var brand = event.getParam("value");

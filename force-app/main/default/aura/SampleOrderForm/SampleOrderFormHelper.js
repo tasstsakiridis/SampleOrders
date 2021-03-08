@@ -77,14 +77,18 @@
                         console.log('[SampleOrderForm.Helper.getPicklistValues] picklistValues', rv);
                         let classification = component.get("v.classification");
                         let costCenter = component.get("v.costCenter");
+                        let internalOrderNumber = component.get("v.internalOrderNumber");
 
                         var classifications = [{"label":"", "value":""}];
                         var costCenters = [{"label":"", "value":""}];
+                        var internalOrderNumbers = [{"label":"", "value":""}];
                         for(var i = 0; i < rv.length; i++) {
                             if (rv[i].Field_Name__c == 'Classification__c') {                                
                                 classifications.push({"label":rv[i].Value__c, "value":rv[i].Value__c, "selected":classification==rv[i].Value__c});
                             } else if (rv[i].Field_Name__c == 'Cost_Center__c') {
                                 costCenters.push({"label":rv[i].Value__c, "value":rv[i].Value__c, "selected":costCenter == rv[i].Value__c});
+                            } else if (rv[i].Field_Name__c == 'Internal_Order_Number__c') {
+                                internalOrderNumbers.push({"label":rv[i].Value__c, "value":rv[i].Value__c, "selected":internalOrderNumber == rv[i].Value__c});
                             }
                         }                    
                         classifications.sort(function(a, b) {
@@ -105,8 +109,10 @@
                     
                         console.log('[SampleOrderForm.helper.getPicklistValues] classifications', classifications);
                         console.log('[SampleOrderForm.helper.getPicklistValues] cost centers', costCenters);
+                        console.log('[SampleOrderForm.helper.getPicklistValues] internal order numbers', internalOrderNumbers);
                         component.set("v.classifications", classifications);
                         component.set("v.costCenters", costCenters);
+                        component.set("v.internalOrderNumbers", internalOrderNumbers);
                     }catch(ex) {
                         console.log('[SampleOrderForm.helper.getPicklistValues] exception', ex);                        
                     }
@@ -276,6 +282,7 @@
         component.set("v.costCenter", null);
         component.set("v.selectedBannerGroup", null);
         component.set("v.storageLocker", null);
+        component.set("v.internalOrderNumber", null);
         
         this.initToast(component);
         let deletedRows = [];
@@ -431,6 +438,7 @@
         var country = component.get("v.country");
         let classification = component.get("v.classification");
         let costCenter = component.get("v.costCenter");
+        let internalOrderNumber = component.get("v.internalOrderNumber");
         let leadTime = component.get("v.leadTime");
         console.log('[validateOrder] leadTime', leadTime);
         let isValid = true;
@@ -530,11 +538,16 @@
             isValid = false;
         }
         
-        if (country == 'GB' && classification != null && classification.indexOf('SD0') == -1) {
-            if (costCenter == null || costCenter == '') { 
+        if (country == 'GB') {
+            if (classification != null && classification.indexOf('SD0') == -1 && costCenter == null || costCenter == '') { 
                 console.log('cost center is null'); 
                 msg += 'You must select a cost center.';
                 isValid = false; 
+            }
+            if (classification != null && classification.indexOf('SD0') > -1 && internalOrderNumber == null || internalOrderNumber == '') {
+                console.log('internal order number is null');
+                msg += 'You must select an internal order number';
+                isValid = false;
             }
         }
         return { msg: msg, isValid: isValid };
@@ -566,6 +579,7 @@
                         }
                         component.set("v.showCostCenters", showCostCenter);
                         component.set("v.costCenter", rv.Cost_Center__c);
+                        component.set("v.internalOrderNumber", rv.Internal_Order_Number__c);
 
                         component.set("v.storageLocker", rv.Storage_Locker__c)
                         let countryCode = rv.Business_Country__c == undefined ? 'AU' : rv.Business_Country__c;
@@ -601,6 +615,16 @@
                                 }
                             }
                         }
+                        let internalOrderNumbers = component.get("v.internalOrderNumbers");
+                        if (internalOrderNumbers != null) {
+                            for(var i = 0; i < internalOrderNumbers.length; i++) {
+                                if (internalOrderNumbers[i].value == rv.Internal_Order_Number__c) {
+                                    internalOrderNumbers[i].selected = true; break;
+                                }
+                            }
+                        }
+                        console.log('[loadSampleOrder] internalOrderNumbers', internalOrderNumbers);
+                        console.log('[loadSampleOrder] internal order number', rv.Internal_Order_Number__c);
                         let classifications = component.get("v.classifications");
                         if (classifications != null) {
                             for(var i = 0; i < classifications.length; i++) {
@@ -676,6 +700,7 @@
         var classification = component.get("v.classification");
         var costCenter = component.get("v.costCenter");
         var storageLocker = component.get("v.storageLocker");
+        var internalOrderNumber = component.get("v.internalOrderNumber");
 
         theSampleOrder.Approval_Status__c = 'New';
         theSampleOrder.Business_Country__c = country;
@@ -687,6 +712,7 @@
         }
         theSampleOrder.Cost_Center__c = costCenter;
         theSampleOrder.Storage_Locker__c = storageLocker;
+        theSampleOrder.Internal_Order_Number__c = internalOrderNumber;
 
         console.log('theSampleOrder', theSampleOrder);
 		console.log('theSampleOrder.classification', theSampleOrder.Classification__c);
