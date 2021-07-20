@@ -10,6 +10,12 @@
             {'label': 'GuangXi', 'value': 'GX'},
             {'label': 'Sichuan', 'value': 'SC'},
         ],
+        TW: [
+            {'label': 'Taipei', 'value': 'Taipei'},
+            {'label': 'Taiwan', 'value': 'Taiwan'},
+            {'label': 'Tainan', 'value': 'Tainan'},
+            {'label': 'Taitung', 'value': 'Taitung'}
+        ],
         VA: [],
         AU : [
             {label:'New South Wales', value:'NSW'},
@@ -29,7 +35,8 @@
     },
     countryOptions: [
         {'label': 'Australia', 'value': 'AU'},
-        {'label': 'United Kingdom', 'value': 'GB' }
+        {'label': 'United Kingdom', 'value': 'GB' },
+        {'label': 'Taiwan', 'value': 'TW' }
     ],
 
     getProvinceOptions: function(component, country) {
@@ -37,11 +44,14 @@
         console.log('[SampleOrderForm.helper.getProvinceOptions] states', this.countryProvinceMap[country]);
         console.log('[SampleOrderForm.helper.getProvinceOptions] countryOptions', this.countryOptions);
         try {
-        for(var i = 0; i < this.countryOptions.length; i++) {
-            if (this.countryOptions[i].value == country) {
-                component.set("v.countryName", this.countryOptions[i].label);                
+            if (country == null || country.length == 0) {
+                country = this.getCountryCode(component, component.get('v.userMarket'));
             }
-        }
+            for(var i = 0; i < this.countryOptions.length; i++) {
+                if (this.countryOptions[i].value == country) {
+                    component.set("v.countryName", this.countryOptions[i].label);                
+                }
+            }
         }catch(ex) {
 	        console.log('[SampleOrderForm.helper.getProvinceOptions] ex', ex);            
         }
@@ -51,10 +61,25 @@
     getCountryOptions: function() {
         return this.countryOptions;
     },
+    getCountryCode: function(component, name) {
+        var countryCode = '';
+        for(var i = 0; i < this.countryOptions.length; i++) {
+            if (this.countryOptions[i].label == name) {
+                countryCode = this.countryOptions[i].value;                
+                break;
+            }
+        }        
+        component.set("v.country", countryCode);
+        return countryCode;
+    },
     
     updateProvinceOptions : function(component) {
         var country = component.get("v.country");
         console.log('[SampleOrderForm.helper.updateProvinceOptions] country', country);                                                        
+        if (country == null || country.length == 0) {
+            country = this.getCountryCode(component, component.get("v.countryName"));
+            console.log('[SampleOrderForm.helper.updateProvinceOptions] country', country);                                                        
+        }
         component.set("v.provinceOptions", this.getProvinceOptions(component, country));
         console.log('[SampleOrderForm.helper.updateProvinceOptions] provinceOptions', component.get('v.provinceOptions'));
     },
@@ -77,20 +102,38 @@
                         console.log('[SampleOrderForm.Helper.getPicklistValues] picklistValues', rv);
                         let classification = component.get("v.classification");
                         let costCenter = component.get("v.costCenter");
-                        let internalOrderNumber = component.get("v.internalOrderNumber");
+                        let statuses = component.get("v.statuses");
 
                         var classifications = [{"label":"", "value":""}];
                         var costCenters = [{"label":"", "value":""}];
-                        var internalOrderNumbers = [{"label":"", "value":""}];
+                        var classificationPicklistValues = rv["Classification__c"].picklistValues;
+                        var costCentersPicklistValues = rv["Cost_Center__c"].picklistValues;
+                        var statusPicklistValues = rv["Approval_Status__c"].picklistValues;
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] classificationPicklistValues', classificationPicklistValues);
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] costCentersPicklistValues', costCentersPicklistValues);
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] statusPicklistValues', statusPicklistValues);
+                        for(var i = 0; i < statusPicklistValues.length; i++) {
+                            statuses.push({"label":statusPicklistValues[i].label, "value":statusPicklistValues[i].value});
+                        }
+                        for(var i = 0; i < classificationPicklistValues.length; i++) {
+                            classifications.push({"label":classificationPicklistValues[i].label, "value":classificationPicklistValues[i].value, "selected":classification==classificationPicklistValues[i].value});
+                        }
+                        for(var i = 0; i < costCentersPicklistValues.length; i++) {
+                            costCenters.push({"label":costCentersPicklistValues[i].label, "value":costCentersPicklistValues[i].value, "selected":costCenter == costCentersPicklistValues[i].value});
+                        }
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] classification', classifications);
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] costCenters', costCenters);
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] statuses', statuses);
+                        
+                        /*
                         for(var i = 0; i < rv.length; i++) {
                             if (rv[i].Field_Name__c == 'Classification__c') {                                
                                 classifications.push({"label":rv[i].Value__c, "value":rv[i].Value__c, "selected":classification==rv[i].Value__c});
                             } else if (rv[i].Field_Name__c == 'Cost_Center__c') {
                                 costCenters.push({"label":rv[i].Value__c, "value":rv[i].Value__c, "selected":costCenter == rv[i].Value__c});
-                            } else if (rv[i].Field_Name__c == 'Internal_Order_Number__c') {
-                                internalOrderNumbers.push({"label":rv[i].Value__c, "value":rv[i].Value__c, "selected":internalOrderNumber == rv[i].Value__c});
                             }
-                        }                    
+                        } 
+                        */                   
                         classifications.sort(function(a, b) {
                             let x = a.label.toLowerCase();
                             let y = b.label.toLowerCase();
@@ -107,12 +150,20 @@
                             return 0; 
                         });
                     
+                        var approvalStatus = component.get("v.approvalStatus");
+                        for(var i = 0; i < statuses.length; i++) {
+                            if (statuses[i].value == approvalStatus) {
+                                approvalStatus = statuses[i].label;
+                                break;
+                            }
+                        }
+                        component.set("v.approvalStatus", approvalStatus);
+
                         console.log('[SampleOrderForm.helper.getPicklistValues] classifications', classifications);
                         console.log('[SampleOrderForm.helper.getPicklistValues] cost centers', costCenters);
-                        console.log('[SampleOrderForm.helper.getPicklistValues] internal order numbers', internalOrderNumbers);
                         component.set("v.classifications", classifications);
                         component.set("v.costCenters", costCenters);
-                        component.set("v.internalOrderNumbers", internalOrderNumbers);
+                        component.set("v.statuses", statuses);
                     }catch(ex) {
                         console.log('[SampleOrderForm.helper.getPicklistValues] exception', ex);                        
                     }
@@ -130,14 +181,26 @@
 
     },
     setupProductTableHeaders : function(component) {
+        let lblProduct = $A.get('$Label.c.Product');
+        let lblSKU = $A.get('$Label.c.SKU');
+        let lblBrand = $A.get('$Label.c.Brand');
+        let lblInternalOrderNumber = $A.get('$Label.c.InternalOrderNumber');
+        let lblPackQty = $A.get('$Label.c.PackQty');
+        let lblPrice = $A.get('$Label.c.Price');
+        let lblQuantity = $A.get('$Label.c.Quantity');
+        let lblNumberOfBottles = $A.get('$Label.c.NumberOfBottles');
+        let lblConvertedCases = $A.get('$Label.c.ConvertedCases');
+        console.log('[setupProductTableHeaders] showCaseConversion', component.get("v.showCaseConversion"));
         component.set("v.productColumns", [
-            { label: 'Product', fieldName: 'Name', type:'text', isVisible: true },
-            { label: 'SKU', fieldName: 'ProductCode__c', type: 'text', isVisible: component.get("v.showSKU")},
-            { label: 'Brand', fieldName: 'Brand_Name__c', type: 'text', isVisible: true },
-            { label: 'Pack Qty', fieldName: 'Pack_Quantity__c', type: 'number', editable: false, isVisible: true },
-            { label: 'Price', fieldName: 'Price__c', type:'number', editable: false, isVisible: component.get("v.showPrice") },
-            { label: 'Quantity', fieldName: 'Quantity__c', type:'number', editable:'true', isVisible: true },
-            { label: '# of Bottles', fieldName: 'Units__c', type: 'number', editable: false , isVisible: true}
+            { label: lblProduct, fieldName: 'Name', type:'text', isVisible: true },
+            { label: lblSKU, fieldName: 'ProductCode__c', type: 'text', isVisible: component.get("v.showSKU")},
+            { label: lblBrand, fieldName: 'Brand_Name__c', type: 'text', isVisible: true },
+            { label: lblInternalOrderNumber, fieldName: 'Internal_Order_Number__c', type: 'text', isVisible: component.get("v.showInternalOrderNumbers")},
+            { label: lblPackQty, fieldName: 'Pack_Quantity__c', type: 'number', editable: false, isVisible: true },
+            { label: lblPrice, fieldName: 'Price__c', type:'number', editable: false, isVisible: component.get("v.showPrice") },
+            { label: lblQuantity, fieldName: 'Quantity__c', type:'number', editable:'true', isVisible: true },
+            { label: lblNumberOfBottles, fieldName: 'Units__c', type: 'number', editable: false , isVisible: component.get("v.showCaseConversion")==false},
+            { label: lblConvertedCases, fieldName: 'Total_Ordered_Cases__c', type: 'text', editable: false, isVisible: component.get("v.showCaseConversion") }
         ]);        
     },
     setupProductColumns : function(component) {
@@ -184,6 +247,7 @@
                         return 0; 
                     });
                     console.log('[SampleOrderForm.helper.getProducts] brands', brands);
+                    console.log('[SampleOrderForm.helper.getProducts] data', rv);
                     component.set("v.productData", rv);
                     component.set("v.data", rv);
                     component.set("v.brands", brands);
@@ -268,9 +332,103 @@
         });
         $A.enqueueAction(action);
     },
+    getInternalOrderNumbers : function(component) {
+    	var action = component.get("c.getInternalOrderNumbers");
+        action.setCallback(this, function(response) {
+            if (component.isValid()) {
+                var callState = response.getState();
+                if (callState === "SUCCESS") {
+                    var rv = response.getReturnValue();
+                    //component.set("v.internalOrderNumbers", rv);
+                    
+                    console.log('[SampleOrderForm.Helper.getInternalOrderNumbers] ordernumbers', rv);
+                    var ionumberMap = new Map();
+                    var ionumbers;
+                    for(var i = 0; i < rv.length; i++) {
+                        if (ionumberMap.has(rv[i].Brand__c)) {
+                            ionumbers = ionumberMap.get(rv[i].Brand__c); 
+                        } else {
+                            ionumbers = [{"label":"", "value":""}];
+                        }
+
+                        ionumbers.push({"label":rv[i].Internal_Order_Number__c, "value":rv[i].Internal_Order_Number__c});
+                        ionumberMap.set(rv[i].Brand__c, ionumbers);
+                    }
+                    console.log('[SampleOrderForm.helper.getInternalOrderNumbers] ionumbersmap', ionumberMap);
+                    component.set("v.internalOrderNumbers", ionumberMap);
+                    
+                } else if (callState === "INCOMPLETE") {
+                    console.log("[SampleOrderForm.Helper.getInternalOrderNumbers] callback returned incomplete.");                    
+                } else if (callState === "ERROR") {
+                    var errors = response.getError();
+                    console.log("[SampleOrderForm.Helper.getInternalOrderNumbers] callback returned in error.", errors);                    
+                }
+            }
+            
+        });
+        $A.enqueueAction(action);
+    },
+    getAccountDetails : function(component, accountId) {
+    	var action = component.get("c.getAccountDetails");
+        action.setParams({
+            accountId: accountId
+        });
+        action.setCallback(this, function(response) {
+            if (component.isValid()) {
+                var callState = response.getState();
+                if (callState === "SUCCESS") {
+                    var rv = response.getReturnValue();
+                    
+                    console.log('[SampleOrderForm.Helper.getAccountDetails] returnValue', rv);
+                    console.log('[SampleOrderForm.Helper.getAccountDetails] returnValue length', rv.length);
+                    var theSampleOrder = component.get('v.theSampleOrder');
+                    try {
+                        if (rv.length > 0) {
+                            theSampleOrder.Business_Name__c = rv[0].Name;
+                            theSampleOrder.Business_Address__c = rv[0].ShippingStreet;
+                            theSampleOrder.Business_City__c = rv[0].ShippingCity;
+                            theSampleOrder.Business_Country__c = rv[0].ShippingCountry;
+                            theSampleOrder.Business_Postcode__c = rv[0].ShippingPostalCode;
+                            
+                            var countryCode = '';
+                            for(var i = 0; i < this.countryOptions.length; i++) {
+                                if (this.countryOptions[i].label == rv[0].ShippingCountry) {
+                                    countryCode = this.countryOptions[i].value; break;
+                                }
+                            }
+                            component.set("v.country", countryCode);
+                            component.set("v.countyName", rv[0].ShippingCountry);                            
+                            component.set("v.businessState", rv[0].ShippingState);                        
+
+                            if (rv[0].Contacts != null && rv[0].Contacts.length > 0) {
+                                theSampleOrder.Contact_Name__c = rv[0].Contacts[0].Name;
+                                theSampleOrder.Contact_Phone__c = rv[0].Contacts[0].Phone == null || rv[0].Contacts[0].Phone == '' ? rv[0].Contacts[0].MobilePhone : rv[0].Contacts[0].Phone;    
+                            }
+        
+                            component.set("v.theSampleOrder", theSampleOrder); 
+                            console.log('[SampleOrderForm.helper.getAccountDetails] theSampleOrder', theSampleOrder);   
+                            console.log('[SampleOrderForm.helper.getAccountDetails] countryCode', countryCode);
+                        }
+                    }catch(ex) {
+                        console.log('[SampleOrderForm.helper.getAccountDetails] exception', ex);
+                    }
+                        
+                } else if (callState === "INCOMPLETE") {
+                    console.log("[SampleOrderForm.Helper.getAccountDetails] callback returned incomplete.");                    
+                } else if (callState === "ERROR") {
+                    var errors = response.getError();
+                    console.log("[SampleOrderForm.Helper.getAccountDetails] callback returned in error.", errors);                    
+                }
+            }
+            
+        });
+        $A.enqueueAction(action);
+    },
 
     initSampleOrder : function(component) {
-        var theSampleOrder = { 'sObjectType': 'SAP_Interfaced_Data__c', 'Approval_Status__c':'New' };
+        var theSampleOrder = { 'sObjectType': 'SAP_Interfaced_Data__c', 
+                               'Approval_Status__c':'New',
+                              'Business_Country__c': component.get("v.countryName")};
         console.log('[SampleOrderForm.helper.initSampleOrder] sampleorder', theSampleOrder);
 		component.set('v.theSampleOrder', theSampleOrder);  
         component.set("v.disableAddItems", false);
@@ -282,7 +440,9 @@
         component.set("v.costCenter", null);
         component.set("v.selectedBannerGroup", null);
         component.set("v.storageLocker", null);
-        component.set("v.internalOrderNumber", null);
+        component.set("v.showInternalOrderNumbers", false);
+        component.set("v.accountId", null);
+        component.set("v.accountName", null);
         
         this.initToast(component);
         let deletedRows = [];
@@ -305,6 +465,7 @@
                 rows[i].id = '';
                 rows[i].quantity = 0;
                 rows[i].units = 0;
+                rows[i].internalOrderNumber = '';
             }
             component.set("v.productData", rows);            
         }
@@ -435,12 +596,15 @@
         console.log('[SampleOrderForm.helper.validateOrder]');
     	var theSampleOrder = component.get("v.theSampleOrder");
         var businessState = component.get("v.businessState");
-        var country = component.get("v.country");
+        var country = component.get("v.countryName");
         let classification = component.get("v.classification");
         let costCenter = component.get("v.costCenter");
-        let internalOrderNumber = component.get("v.internalOrderNumber");
         let leadTime = component.get("v.leadTime");
         console.log('[validateOrder] leadTime', leadTime);
+        let userMarket = component.get("v.userMarket");
+        let countryCode = this.getCountryCode(component, userMarket);
+        console.log('[validateOrder] userMarket', userMarket);
+        console.log('[validateOrder] countryCode', countryCode);
         let isValid = true;
         let msg = '';
         let today = new Date();
@@ -507,7 +671,7 @@
                 isValid = false;
             }
         }
-        if (country != 'GB') {
+        if (countryCode != 'GB' && countryCode != 'TW') {
             if (businessState == null || businessState == '') { 
                 console.log('business state is null'); 
                 msg += 'Business State is required';
@@ -538,16 +702,11 @@
             isValid = false;
         }
         
-        if (country == 'GB') {
-            if (classification != null && classification.indexOf('SD0') == -1 && costCenter == null || costCenter == '') { 
+        if (countryCode == 'GB' && classification != null && classification.indexOf('SD0') == -1) {
+            if (costCenter == null || costCenter == '') { 
                 console.log('cost center is null'); 
                 msg += 'You must select a cost center.';
                 isValid = false; 
-            }
-            if (classification != null && classification.indexOf('SD0') > -1 && internalOrderNumber == null || internalOrderNumber == '') {
-                console.log('internal order number is null');
-                msg += 'You must select an internal order number';
-                isValid = false;
             }
         }
         return { msg: msg, isValid: isValid };
@@ -571,24 +730,48 @@
                         component.set("v.recordTypeName", rv.RecordType.Name);               
                         component.set("v.recordTypeId", rv.RecordTypeId);
                         component.set("v.classification", rv.Classification__c);
-
-                        let country = component.get("v.country");
-                        let showCostCenter = false;
-                        if (country == 'GB' && rv.Classification__c.indexOf('SD0') < 0) {
-                            showCostCenter = true;
+                        var approvalStatus = rv.Approval_Status__c;
+                        var statuses = component.get("v.statuses");
+                        if (statuses && statuses.length > 0) {
+                            for (var i = 0; i < statuses.length; i++) {
+                                if (statuses[i].value == approvalStatus) {
+                                    approvalStatus = statuses[i].label;
+                                    break;
+                                }
+                            }
                         }
+                        component.set("v.approvalStatus", approvalStatus);
+
+                        let country = this.getCountryCode(component, component.get("v.userMarket"));
+                        let showCostCenter = false;
+                        let showInternalOrderNumbers = false;
+                        if (country == 'GB') {
+                            if (rv.Classification__c.indexOf('SD0') < 0) {
+                                showCostCenter = true;
+                            } else {
+                                showInternalOrderNumbers = true;
+                            }   
+                        }
+                    
+                        console.log('showInternalOrderNumbers', showInternalOrderNumbers);
                         component.set("v.showCostCenters", showCostCenter);
                         component.set("v.costCenter", rv.Cost_Center__c);
-                        component.set("v.internalOrderNumber", rv.Internal_Order_Number__c);
+                        component.set("v.showInternalOrderNumbers", showInternalOrderNumbers);
 
                         component.set("v.storageLocker", rv.Storage_Locker__c)
                         let countryCode = rv.Business_Country__c == undefined ? 'AU' : rv.Business_Country__c;
                         component.set("v.country", countryCode);
+                        var countryFound = false;
                         for(var i = 0; i < this.countryOptions.length; i++) {
                             if (this.countryOptions[i].value == countryCode) {
                                 component.set("v.countryName", this.countryOptions[i].label);
+                                countryFound = true;
                             }
                         }
+                        if (!countryFound) {
+                            component.set("v.countryName", countryCode);
+                        }
+
                         component.set("v.businessState", rv.Business_State__c);                        
                         if (rv.Approval_Status__c == null || rv.Approval_Status__c == '') { rv.Approval_Status__c = 'New'; }
                         var banner = component.find("approvalStatus");
@@ -607,6 +790,10 @@
                         if (rv.Banner_Group__c != null) {
                             component.set("v.selectedBannerGroup", rv.Banner_Group__c);
                         }
+                        if (rv.Account__c != null) {
+                            component.set("v.accountId", rv.Account__c);
+                            component.set("v.accountName", rv.Account_Name__c);
+                        }
                         let costCenters = component.get("v.costCenters");
                         if (costCenters != null) {
                             for(var i = 0; i < costCenters.length; i++) {
@@ -615,16 +802,6 @@
                                 }
                             }
                         }
-                        let internalOrderNumbers = component.get("v.internalOrderNumbers");
-                        if (internalOrderNumbers != null) {
-                            for(var i = 0; i < internalOrderNumbers.length; i++) {
-                                if (internalOrderNumbers[i].value == rv.Internal_Order_Number__c) {
-                                    internalOrderNumbers[i].selected = true; break;
-                                }
-                            }
-                        }
-                        console.log('[loadSampleOrder] internalOrderNumbers', internalOrderNumbers);
-                        console.log('[loadSampleOrder] internal order number', rv.Internal_Order_Number__c);
                         let classifications = component.get("v.classifications");
                         if (classifications != null) {
                             for(var i = 0; i < classifications.length; i++) {
@@ -649,6 +826,7 @@
                             $A.util.addClass(banner, "bannerText_white");
                         }
                             
+                        this.setupProductTableHeaders(component);
                         if (rv.SAP_Interfaced_Data_Items__r && rv.SAP_Interfaced_Data_Items__r.length > 0) {
                             var products = component.get("v.productData");
                             for(var i = 0; i < rv.SAP_Interfaced_Data_Items__r.length; i++) {
@@ -660,6 +838,8 @@
                                         //products[j].units = products[j].quantity * products[j].packQty;
                                         products[j].units = rv.SAP_Interfaced_Data_Items__r[i].Units__c;
                                         products[j].usedFor = rv.SAP_Interfaced_Data_Items__r[i].Product__r.Used_For__c;
+                                        products[j].internalOrderNumber = rv.SAP_Interfaced_Data_Items__r[i].Internal_Order_Number__c;
+                                        products[j].convertedCases = rv.SAP_Interfaced_Data_Items__r[i].Total_Ordered_Cases__c;
                                         break;
                                     }
                                 }
@@ -694,31 +874,46 @@
         
     	var theSampleOrder = component.get("v.theSampleOrder");
         var businessState = component.get("v.businessState");
-        var country = component.get("v.country");
+        var country = component.get("v.countryName");
         var bannerGroup = component.get("v.selectedBannerGroup");
         var recordTypeId = component.get("v.recordTypeId");
         var classification = component.get("v.classification");
         var costCenter = component.get("v.costCenter");
         var storageLocker = component.get("v.storageLocker");
-        var internalOrderNumber = component.get("v.internalOrderNumber");
+        var accountId = component.get("v.accountId");
+        var marketId = component.get("v.marketId");
+        let statuses = component.get("v.statuses");
+        var approvalStatus = "New";
+        console.log('[SampleOrderForm.helper.saveSampleOrder] country', country);
+        console.log('[SampleOrderForm.helper.saveSampleOrder] marketId', marketId);
+        theSampleOrder.Approval_Status__c = "New";
+        for(var i = 0; i < statuses.length; i++) {
+            if (theSampleOrder.Approval_Status__c == statuses[i].value) {
+                approvalStatus = statuses[i].label;
+                break;
+            }
+        }
+        component.set("v.approvalStatus", approvalStatus);
 
-        theSampleOrder.Approval_Status__c = 'New';
-        theSampleOrder.Business_Country__c = country;
+        //theSampleOrder.Business_Country__c = country;
         theSampleOrder.Business_State__c = businessState;
         theSampleOrder.RecordTypeId = recordTypeId;
         theSampleOrder.Classification__c = classification;
+        if (accountId != null && accountId.length > 0) {
+            theSampleOrder.Account__c = accountId;
+        }
         if (bannerGroup != null && bannerGroup.length > 0) {
             theSampleOrder.Banner_Group__c = bannerGroup;
         }
         theSampleOrder.Cost_Center__c = costCenter;
         theSampleOrder.Storage_Locker__c = storageLocker;
-        theSampleOrder.Internal_Order_Number__c = internalOrderNumber;
 
         console.log('theSampleOrder', theSampleOrder);
 		console.log('theSampleOrder.classification', theSampleOrder.Classification__c);
 		var action = component.get("c.saveSampleOrder");
         action.setParams({
-            "theSampleOrder" : theSampleOrder 
+            "theSampleOrder" : theSampleOrder,
+            "marketId" : marketId 
         });
         action.setCallback(this, function(response) {
             var showToast = false;
@@ -763,6 +958,9 @@
                         errors[0].pageErrors.forEach(function(item) {
                             msg += item.message + '\n';
                         });
+                    }
+                    if (errors[0].message && errors[0].message.length > 0) {
+                        msg += errors[0].message;
                     }    
                 
                     component.set("v.toastMessage", "Failed to save Sample Order. " + msg);
@@ -782,6 +980,7 @@
     saveSampleOrderItems : function(component) {        
         console.log('[SampleOrderForm.helper.saveSampleOrderItems]');
         component.set("v.isLoading", true);
+        let showInternalOrderNumbers = component.get("v.showInternalOrderNumbers");
     	var rows = component.get("v.productData");
         let deletedRows = component.get("v.deletedRows");        
         var theSampleOrder = component.get("v.theSampleOrder");
@@ -792,9 +991,24 @@
             var productIds = [];
             for(var i = 0; i < rows.length; i++) {
                 if (rows[i].quantity == null) { rows[i].quantity = 0; }
+                if (showInternalOrderNumbers && rows[i].quantity > 0 && (rows[i].internalOrderNumber == null || rows[i].internalOrderNumber == '')) {
+                    throw "You must select an Internal Order Number for SD0 Sample Orders.";
+                }
                 if (rows[i].quantity > 0) {
                     console.log('[SampleOrderForm.helper.saveSampleOrderItems] row', rows[i]);                
-                    items.push(rows[i]);
+                    items.push({
+                        id: rows[i].id,
+                        internalOrderNumber: rows[i].internalOrderNumber,
+                        brandId: rows[i].brandId,
+                        brandName: rows[i].brandName,
+                        packQty: rows[i].packQty,
+                        productId: rows[i].productId,
+                        productName: rows[i].productName,
+                        quantity: rows[i].quantity,
+                        units: rows[i].units,
+                        convertedCases: rows[i].convertedCases
+                    });
+                    console.log('[SampleOrderForm.helper.saveSampleOrderItems] items', items);   
                     productIds.push(rows[i].productId);                    
                 }
             }
@@ -807,93 +1021,106 @@
             
             console.log('[SampleOrderForm.helper.saveSampleOrderItems] items', items);
            
-        var action = component.get("c.saveOrderItems");
-        action.setParams({
-            "sapId": theSampleOrder.Id,
-            "sapItems": JSON.stringify(items)
-        });
-        action.setCallback(this, function(response) {
-            var showToast = false;
-            if (component.isValid()) {
-                component.set("v.isLoading", false);
-                var callState = response.getState();
-                if (callState === "SUCCESS") {
-                    try {
-                        component.set("v.deletedRows", []);
+            var action = component.get("c.saveOrderItems");
+            action.setParams({
+                "sapId": theSampleOrder.Id,
+                "sapItems": JSON.stringify(items)
+            });
+            action.setCallback(this, function(response) {
+                var showToast = false;
+                if (component.isValid()) {
+                    component.set("v.isLoading", false);
+                    var callState = response.getState();
+                    if (callState === "SUCCESS") {
+                        try {
+                            component.set("v.deletedRows", []);
 
-                        var rv = response.getReturnValue();
-                        console.log("[SampleOrderForm.helper.saveItems] returnvalue", rv);
-                        var productData = component.get("v.productData");
-                        for(var i = 0; i < rv.length; i++) {
-                            for(var j = 0; j < rows.length; j++) {
-                                if (productData[j].productId == rv[i].Product__c) {
-                                    productData[j].id = rv[i].Id;
-                                    productData[j].quantity = rv[i].Quantity__c;
-                                    productData[j].units = productData[j].quantity * productData[j].packQty;
-                                    break;
+                            var recordType = component.get("v.recordTypeName");
+                            var classification = component.get("v.classification");
+                            var rv = response.getReturnValue();
+                            console.log("[SampleOrderForm.helper.saveItems] returnvalue", rv);
+                            var productData = component.get("v.productData");
+                            for(var i = 0; i < rv.length; i++) {
+                                for(var j = 0; j < rows.length; j++) {
+                                    if (productData[j].productId == rv[i].Product__c) {
+                                        productData[j].id = rv[i].Id;
+                                        productData[j].quantity = rv[i].Quantity__c;            
+                                        console.log('[SampleOrderForm.helper.saveItems] recordType, classification', recordType, classification);                            
+                                        if (recordType == 'Sample Order - TWN' || classification == 'AU6-Ecomm Sample Orders') {
+                                            productData[j].units = productData[j].quantity;
+                                        } else {
+                                            productData[j].units = productData[j].quantity * productData[j].packQty;
+                                        }
+                                        productData[j].internalOrderNumber = rv[i].Internal_Order_Number__c;
+                                        break;
+                                    }
+                                    /*
+                                    if (rv[i].productId == rows[j].productId) {
+                                        rows[j].id = rv[i].id; break;
+                                    }
+                                    */
                                 }
-                                /*
-                                if (rv[i].productId == rows[j].productId) {
-                                    rows[j].id = rv[i].id; break;
-                                }
-                                */
                             }
-                        }
-                        component.set("v.productData", rows); 
-                        var theSampleOrder = component.get("v.theSampleOrder");
-                        theSampleOrder.SAP_Interfaced_Data_Items__r = rv;
-                        component.set("v.theSampleOrder", theSampleOrder);
+                            component.set("v.productData", rows); 
+                            var theSampleOrder = component.get("v.theSampleOrder");
+                            theSampleOrder.SAP_Interfaced_Data_Items__r = rv;
+                            component.set("v.theSampleOrder", theSampleOrder);
 
-                        var closeAfterSave = component.get("v.closeAfterSave");
-                        console.log('[SampleOrderForm.helper.saveSampleOrder] closeAfterSave', closeAfterSave);
-                        if (closeAfterSave) {                            
-                            component.set("v.isAddingItems", false);                            
+                            var closeAfterSave = component.get("v.closeAfterSave");
+                            console.log('[SampleOrderForm.helper.saveSampleOrder] closeAfterSave', closeAfterSave);
+                            if (closeAfterSave) {                            
+                                component.set("v.isAddingItems", false);                            
+                            }
+                                
+                        } catch(ex) {
+                            console.log('[SampleOrderForm.helper.saveItems] exception', ex.toString());
                         }
-                            
-                    } catch(ex) {
-                        console.log('[SampleOrderForm.helper.saveItems] exception', ex.toString());
+                    } else if (callState === "INCOMPLETE") {
+                        console.log("[SampleOrderForm.Helper.save] callback returned incomplete.");                    
+                        component.set("v.toastTitle", "Error");
+                        component.set("v.toastMessage", "Failed to save Sample Order.  The connection may have been interrupted.  Please try again.");
+                        component.set("v.isLoading", false);
+                        showToast = true;
+                    } else if (callState === "ERROR") {
+                        var errors = response.getError();
+                        try {
+                        console.log("[SampleOrderForm.Helper.save] callback returned in error.", errors);                    
+                        component.set("v.toastTitle", "Error");
+                        var msg = '';
+                        console.log('[SampleOrderForm.Helper.save] error', errors[0]);
+                        if (errors[0].fieldErrors && errors[0].fieldErrors.length > 0) {
+                            errors[0].fieldErrors.forEach(function(item) {
+                                msg += item.message + '\n';
+                            });
+                        }
+                        if (errors[0].pageErrors && errors[0].pageErrors.length > 0) {
+                            errors[0].pageErrors.forEach(function(item) {
+                                msg += item.message + '\n';
+                            });
+                        }    
+                    
+                        component.set("v.toastMessage", "Failed to save Sample Order. " + msg);
+                        component.set("v.isLoading", false);
+                        showToast = true;
+                        } catch(ex) {
+                            console.log('[SampleOrderForm.helper.save] exception', ex);
+                        }
                     }
-                } else if (callState === "INCOMPLETE") {
-                    console.log("[SampleOrderForm.Helper.save] callback returned incomplete.");                    
-                    component.set("v.toastTitle", "Error");
-                    component.set("v.toastMessage", "Failed to save Sample Order.  The connection may have been interrupted.  Please try again.");
-                    component.set("v.isLoading", false);
-                    showToast = true;
-                } else if (callState === "ERROR") {
-                    var errors = response.getError();
-                    try {
-                    console.log("[SampleOrderForm.Helper.save] callback returned in error.", errors);                    
-                    component.set("v.toastTitle", "Error");
-                    var msg = '';
-                    console.log('[SampleOrderForm.Helper.save] error', errors[0]);
-                    if (errors[0].fieldErrors && errors[0].fieldErrors.length > 0) {
-                        errors[0].fieldErrors.forEach(function(item) {
-                            msg += item.message + '\n';
-                        });
+                    if (showToast) {
+                        var toastPanel = component.find("toastPanel");
+                        $A.util.removeClass(toastPanel, "slds-hide");
                     }
-                    if (errors[0].pageErrors && errors[0].pageErrors.length > 0) {
-                        errors[0].pageErrors.forEach(function(item) {
-                            msg += item.message + '\n';
-                        });
-                    }    
-                
-                    component.set("v.toastMessage", "Failed to save Sample Order. " + msg);
-                    component.set("v.isLoading", false);
-                    showToast = true;
-                    } catch(ex) {
-                        console.log('[SampleOrderForm.helper.save] exception', ex);
-                    }
+                    
                 }
-                if (showToast) {
-                    var toastPanel = component.find("toastPanel");
-                    $A.util.removeClass(toastPanel, "slds-hide");
-                }
-                
-            }
-        });
-        $A.enqueueAction(action);
+            });
+            $A.enqueueAction(action);
         }catch(ex) {
             console.log('[SampleOrderForm.helper.saveItems] exception: ' + ex.toString());
+            component.set("v.toastMessage", ex);
+            var toastPanel = component.find("toastPanel");
+            $A.util.removeClass(toastPanel, "slds-hide");
+        } finally {
+            component.set("v.isLoading", false);
         }
     },
         
@@ -901,6 +1128,7 @@
         component.set("v.isLoading", true);
         var theSampleOrder = component.get("v.theSampleOrder");
         var action = component.get("c.submitForApproval");
+        var self = this;
         action.setParams({
             "sapId": theSampleOrder.Id
         });
@@ -924,7 +1152,9 @@
                     var errors = response.getError();
                     console.log("[SampleOrderForm.Helper.submitForApproval] callback returned in error.", errors);                    
                     component.set("v.toastTitle", "Error");
-                    component.set("v.toastMessage", "Failed to save Sample Order. " + errors);
+                    var msg = self.getErrorMessage(errors);
+                    component.set("v.toastMessage", "Failed to save Sample Order. " + msg);
+                    
                     showToast = true;
                 }
                 if (showToast) {
@@ -934,5 +1164,32 @@
             }
         });
         $A.enqueueAction(action);            
+    },
+    getErrorMessage : function(errors) {
+        var msg = '';
+        if (errors == undefined) {
+            return;
+        }
+
+        for(var j = 0; j < errors.length; j++) {
+            if (errors[j].duplicateResults != undefined && errors[j].duplicateResults.length > 0) {
+                for(var i = 0; i < errors[j].duplicateResults.length; i++) {
+                    msg += errors[j].duplicateResults[i].message + '\n';
+                }
+            }
+            if (errors[j].fieldErrors != undefined && errors[j].fieldErrors.length > 0) {
+                for(var i = 0; i < errors[j].fieldErrors.length; i++) {
+                    msg += errors[j].fieldErrors[i].message + '\n';
+                }
+            }
+            if (errors[j].pageErrors != undefined && errors[j].pageErrors.length > 0) {
+                for(var i = 0; i < errors[j].pageErrors.length; i++) {
+                    msg += errors[j].pageErrors[i].message + '\n';
+                }
+            }
+        }
+
+        console.log('[SampleOrderForm.helper.getErrorMessage] msg', msg);
+        return msg;
     }
 })

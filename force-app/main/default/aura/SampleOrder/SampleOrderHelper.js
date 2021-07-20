@@ -17,6 +17,7 @@
                     component.set('v.userName', rv.name);
                     component.set("v.marketId", rv.value);
                     component.set('v.marketName', rv.description);
+                    component.set('v.marketISOCode', rv.itemId);
                     var leadTime = 0;
                     if (rv.label != undefined) {
                         leadTime = parseInt(rv.label);

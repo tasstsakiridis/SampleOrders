@@ -5,7 +5,9 @@
         console.log('[SampleOrderItemRow.doInit] product: ' + row.productName + ', qty: ' + row.quantity + ', units: ' + row.units);
         console.log('[SampleOrderItemRow.doInit] showPrice', component.get("v.showPrice"));
         console.log('[SampleOrderItemRow.doInit] showSKU', component.get("v.showSKU"));
+        console.log('[SampleOrderItemRow.doInit] showIONumbers', component.get("v.showInternalOrderNumbers"));
         helper.checkRowVisibility(component);
+        helper.getInternalOrderNumbersForBrand(component);
 	},
     handleBrandChange : function(component, event, helper) {
     	var brand = event.getParam("value");
@@ -15,7 +17,16 @@
         try {
             
             console.log('[SampleOrderItemRow.controller.handleBrandChange] brand', brand);
-            if ((brand == '' || brand == row.brandName) && row.usedFor.indexOf(recordTypeName) >= 0) {
+            let l = row.usedFor.split(';');
+            var productIsForRecordType = false;
+            console.log('usedFor values', l);
+            for(var i =0; i < l.length; i++) {
+                if (l[i] == recordTypeName) {
+                    productIsForRecordType = true; break;
+                }
+            }
+            
+            if ((brand == '' || brand == row.brandName) && productIsForRecordType) {
                 $A.util.removeClass(el, "slds-hide");
             } else {
                 $A.util.addClass(el, "slds-hide");
@@ -28,7 +39,12 @@
         console.log('[SampleOrderItemRow.controller.handleShowSelectedRowsChange]');
         helper.checkRowVisibility(component);
     },
-        
+    handleInternalOrderNumberChange : function(component, event, helper) {
+        var row = component.get("v.row");
+        row.internalOrderNumber = event.target.value;
+        component.set("v.row", row);
+        console.log('[handleInternalOrderNumberChange] row', row);
+    },
     handleQuantityChange : function(component, event, helper) {
         try {
             let recordType = component.get("v.recordTypeName");            
@@ -39,11 +55,13 @@
             if (qty == null || qty == '') {
                 row.quantity = 0;
                 row.units = 0;
+                row.convertedCases = '';
                 component.set("v.row", row);
             } else if (qty == 0) {
                 rowCount--;
                 row.quantity = qty;
                 row.units = 0;
+                row.convertedCases = '';
                 component.set("v.row", row);
                 
                 var found = false;
@@ -61,6 +79,7 @@
             } else if (qty < 0) {
 				row.quantity = 0;                   
 				row.units = row.quantity * row.packQty;
+                row.convertedCases = '';
                 component.set("v.row", row);
                 alert('Quantity out of range.  Please enter a number greater than or equal to zero');
             } else {
@@ -76,11 +95,25 @@
                         rowCount++;
                     }    
                     row.units = row.quantity * row.packQty;
+                } else if (recordType == 'Sample Order - TWN') {
+                    row.quantity = qty;
+                    row.units = qty;
+                    let cases = Math.floor(qty / row.packQty);
+                    let units = qty - (cases * row.packQty);
+                    var lbl_Cases = component.get("v.label_Cases");
+                    var lbl_Units = component.get("v.label_Units");
+                    if (cases == 0) {
+                        row.convertedCases = qty + lbl_Units;
+                    } else {
+                        row.convertedCases = cases + ' ' + lbl_Cases + ' ' + units + ' ' + lbl_Units;
+                    }
+                    console.log('cases, units, convertedCases ', cases, units, row.convertedCases);
+
                 } else {
                     row.quantity = qty;
                     row.units = qty;
                 }
-                console.log('row', row);
+                console.log('row', JSON.parse(JSON.stringify(row)));
                 component.set("v.row", row);
 
                 var deletedRows = component.get('v.deletedRows');
