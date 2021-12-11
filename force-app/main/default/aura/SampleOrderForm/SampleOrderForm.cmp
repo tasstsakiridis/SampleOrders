@@ -65,6 +65,8 @@
     <aura:attribute name="brands" type="List" />
     <aura:attribute name="productColumns" type="List" />
     <aura:attribute name="selectedProducts" type="SampleOrderItem[]" />
+    <aura:attribute name="approvalHistory" type="Map" default="{'TeamLeader':''},{'TeamManager':''},{'FinanceManager':''},{'items', []}" />    
+    <aura:attribute name="approvalHistoryColumns" type="List" />
 
     <!-- Handle component events -->
     <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
@@ -117,6 +119,7 @@
             <lightning:button aura:id="btnItems" variant="brand" disabled="{!v.disableAddItems}" type="button" name="additems" label="{!v.itemsButtonLabel}" onclick="{!c.handleButtonClick}" />
         </div>
         <div aura:id="approvalStatus" class="header">
+            <h2 aura:id="orderName" class="slds-text-title_caps orderName">{!v.theSampleOrder.Name}</h2>
         	<h2 aura:id="bannerText" class="slds-text-title_caps bannerText">{!v.approvalStatus}</h2>
         </div>
         <aura:if isTrue="{!v.isAddingItems}">
@@ -282,7 +285,17 @@
                     <!--<lightning:inputRichText label="Reason for Stock Order/Comments" disabled="{!v.orderLocked}" placeholder="Comments" value="{!v.theSampleOrder.Reason__c}" disabledCategories="FORMAT_FONT,FORMAT_TEXT,FORMAT_BODY,ALIGN_TEXT,INSERT_CONTENT,REMOVE_FORMATTING" />-->
                     <lightning:input label="{!$Label.c.Sample_Order_Reason}" required="true" disabled="{!v.orderLocked}" placeholder="{!$Label.c.Sample_Order_Reason}" value="{!v.theSampleOrder.Reason__c}" class="height_60" />
                 </div>
-				</aura:if>                    
+				</aura:if>  
+                <aura:if isTrue="{!v.orderLocked}">
+                    <div class="slds-m-vertical_medium slds-border_top">
+                    <lightning:card title="{!$Label.c.Approval_History}">
+                        <lightning:datatable keyField="id"
+                                            data="{!v.approvalHistory.items}"
+                                            columns="{!v.approvalHistoryColumns}"
+                                            hideCheckboxColumn="true" />
+                    </lightning:card> 
+                    </div>
+                </aura:if>                  
             </aura:set>
         </aura:if>                
         

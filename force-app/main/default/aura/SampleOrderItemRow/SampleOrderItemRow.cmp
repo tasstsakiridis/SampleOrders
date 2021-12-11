@@ -48,7 +48,7 @@
                     <div class="slds-select_container">
                     <select aura:id="i_internalOrderNumber" name="i_internalOrderNumber" class="slds-select" disabled="{!v.orderLocked}" onchange="{!c.handleInternalOrderNumberChange}">
                         <aura:iteration items="{!v.internalOrderNumbers}" var="i">
-                            <option text="{!i.label}" value="{!i.id}" selected="{!i.selected}" />
+                            <option text="{!i.label}" value="{!i.value}" selected="{!i.selected}" />
                         </aura:iteration>
                     </select>
                     </div>

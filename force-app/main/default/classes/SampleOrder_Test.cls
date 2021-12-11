@@ -23,7 +23,7 @@ public class SampleOrder_Test {
        
         Market__c mAU = helper.createMarket('Australia');
         mAU.Vistex_Clearing_Account__c = '0123456789';
-        mAU.Country_ISO_Code_2__c = 'AU';
+		mAU.Country_ISO_Code_2__c = 'AU';
         mAU.Sample_Order_Notify_Brand_Managers__c = true;
 	    insert mAU;
         
@@ -157,18 +157,18 @@ public class SampleOrder_Test {
             bfObjectDescribe obj = SampleOrder_Controller.getObjectDetails();
             System.assertEquals('SAP_Interfaced_Data__c', obj.apiName);
             
-            List<SAP_Interfaced_Data__c> lSampleOrders = SampleOrder_Controller.getSampleOrders();
+            List<Map<String, Object>> lSampleOrders = SampleOrder_Controller.getSampleOrders();
             System.assertNotEquals(0, lSampleOrders.size(), 'Sample orders have been found');
             
             SAP_Interfaced_Data__c newSampleOrder = SampleOrder_Controller.getSampleOrder(sampleOrder.Id);
             System.assertNotEquals(null, newSampleOrder, 'sample order retrieved');
             
             String json = '[{"id":"","productId":"'+lProducts.get(0).Id+'","quantity":"1"}]';
-            newSampleOrder = SampleOrder_Controller.saveSampleOrder(newSampleOrder);
+            newSampleOrder = SampleOrder_Controller.saveSampleOrder(newSampleOrder, mAU.Id);
             List<SAP_Interfaced_Data_Item__c> items = SampleOrder_Controller.saveOrderItems(newSampleOrder.Id, json);
             System.assertNotEquals(0, items.size(), 'Items saved');
             
-            newSampleOrder = SampleOrder_Controller.getInterfacedData(newSampleOrder.Id);
+            newSampleOrder = SampleOrder_Controller.getSampleOrder(newSampleOrder.Id);
             System.assertNotEquals(null, newSampleOrder);
             
             List<SampleOrderItem> newProducts = SampleOrder_Controller.getProducts(sampleOrder.Id);
@@ -177,7 +177,11 @@ public class SampleOrder_Test {
             List<Banner_Groups__c> bannerGroups = SampleOrder_Controller.getBannerGroups();
             System.assertNotEquals(bannerGroups, null);
 
-            SampleOrder_Controller.submitForApproval(sampleOrder.Id);
+            System.debug('record type id: ' + newSampleOrder.RecordTypeId);
+            System.debug('status: ' + newSampleOrder.Approval_Status__c);
+            //SampleOrder_Controller.submitForApproval(newSampleOrder.Id);
+            
+            List<Account> storageLockers = SampleOrder_Controller.getStorageLockers();
             
             SampleOrderItem soi = new SampleOrderItem();
             System.assertEquals('', soi.id);
@@ -198,7 +202,11 @@ public class SampleOrder_Test {
             sli = new SimpleListItem('id', 'name', false, '', false);
             System.assertEquals('id', sli.id);
             
-            List<Salesforce_Picklist_Controlling_Values__c> l_controllingValues = SampleOrder_Controller.getPicklistValuesForRecordType('Sample Order');
+            Map<String, bfFieldDescribe> l_controllingValues = SampleOrder_Controller.getPicklistValuesForRecordType('Sample Order');
+
+            ApprovalHistoryItem ahi = new ApprovalHistoryItem();
+            ahi = new ApprovalHistoryItem('actor','status','comments', now);
+            ahi = new ApprovalHistoryItem('actor','status','comments', now, 'role');
         }
         
         

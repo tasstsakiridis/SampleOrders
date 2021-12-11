@@ -4,6 +4,13 @@
 		component.set("v.provinceOptions", helper.getProvinceOptions(component, component.get("v.country")));
         component.set("v.itemsButtonLabel", $A.get('$Label.c.Add_Item'));
 
+        component.set("v.approvalHistoryColumns", [
+            { label: 'Step Name', fieldName: 'StepName', type: 'text' },
+            { label: 'Date', fieldName: 'CompletedDate', type: 'date' },
+            { label: 'Status', fieldName: 'Status', type: 'text' },
+            { label: 'Assigned To', fieldName: 'Actor', type: 'text' }
+        ]);
+
         helper.setupProductColumns(component);   
         helper.getBannerGroups(component);
         helper.getStorageLockers(component);
@@ -234,6 +241,7 @@
         var recordId = args.recordId;
         console.log('[SampleOrderForm.controller.loadSampleOrder] recordId', recordId);
     	helper.loadSampleOrder(component, recordId);  
+        helper.getApprovalHistory(component, recordId);
     },
     handleCloseDialogChange : function(component, event, helper) {
         helper.closeSampleOrderDialog(component);

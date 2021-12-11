@@ -351,7 +351,7 @@
                             ionumbers = [{"label":"", "value":""}];
                         }
 
-                        ionumbers.push({"label":rv[i].Internal_Order_Number__c, "value":rv[i].Internal_Order_Number__c});
+                        ionumbers.push({"label":rv[i].Description__c + ' ' + rv[i].Internal_Order_Number__c, "value":rv[i].Internal_Order_Number__c});
                         ionumberMap.set(rv[i].Brand__c, ionumbers);
                     }
                     console.log('[SampleOrderForm.helper.getInternalOrderNumbers] ionumbersmap', ionumberMap);
@@ -466,6 +466,7 @@
                 rows[i].quantity = 0;
                 rows[i].units = 0;
                 rows[i].internalOrderNumber = '';
+                rows[i].convertedCases = '';
             }
             component.set("v.productData", rows);            
         }
@@ -720,7 +721,7 @@
         action.setCallback(this, function(response) {
             if (component.isValid()) {
                 var callState = response.getState();
-                if (callState === "SUCCESS") {
+                if (callState === "SUCCESS") { 
                     var rv = response.getReturnValue();
                     console.log("[SampleOrderForm.helper.loadSampleOrder] returnvalue", rv);
                     try {
@@ -868,6 +869,40 @@
         $A.enqueueAction(action);
         
     },
+    getApprovalHistory : function(component, recordId) {
+        var action = component.get("c.getApprovalHistory");
+        action.setParams({
+            "orderId" : recordId
+        });
+        action.setCallback(this, function(response){
+            var callState = response.getState();
+            console.log('[SampleOrderForm.helper.getApprovalHistory] getApprovalHistory action callback returned with state', callState);
+            
+            if (component.isValid()) {
+                if (callState === "SUCCESS") {
+                    try {                        
+    	                var approvalHistory = response.getReturnValue();
+                        component.set("v.approvalHistory", approvalHistory);
+	                    console.log('[SampleOrderForm.helper.getApprovalHistory] returnmsg', approvalHistory);
+
+                    } catch(ex1) {
+                        console.log('[SampleOrderForm.helper.getApprovalHistory] exception', ex1);
+                    }
+                    
+                } else if (callState === "INCOMPLETE") {
+                    console.log('[SampleOrderForm.helper.getApprovalHistory] callback state is incomplete');    
+                } else if (callState === "ERROR") {
+                    var errors = response.getError();
+                    console.log('[SampleOrderForm.helper.getApprovalHistory] callback returned errors. ', errors);                    
+                    component.set("v.errors", errors);                    
+                }
+            }
+            
+        });
+        $A.enqueueAction(action);
+            
+    },
+
     saveSampleOrder : function(component) {
         console.log('[SampleOrderForm.helper.saveSampleOrder]');
         component.set("v.isLoading", true);
@@ -930,8 +965,11 @@
                         if (closeAfterSave) {
                             component.set("v.closeDialog", true);
                         } else {
+                            showToast = true;
                             component.set("v.disableAddItems", false);
-							component.set("v.canSubmit", true);                            
+							component.set("v.canSubmit", true);      
+                            component.set("v.toastTitle", $A.get("$Label.c.Success"));
+                            component.set("v.toastMessage", $A.get("$Label.c.Save_Success_Message"));                  
                         }                 
                         
                     } catch(ex) {
@@ -1071,7 +1109,10 @@
                             if (closeAfterSave) {                            
                                 component.set("v.isAddingItems", false);                            
                             }
-                                
+                            showToast = true;
+                            component.set("v.toastTitle", $A.get("$Label.c.Success"));
+                            component.set("v.toastMessage", $A.get("$Label.c.Save_Success_Message"));
+                            
                         } catch(ex) {
                             console.log('[SampleOrderForm.helper.saveItems] exception', ex.toString());
                         }

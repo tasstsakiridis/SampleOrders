@@ -85,9 +85,41 @@ public with sharing class SampleOrder_Controller {
     }
     
     @AuraEnabled
-    public static List<SAP_Interfaced_Data__c> getSampleOrders() {
+    public static List<Map<String, Object>> getSampleOrders() {
         System.debug('current user: ' + UserInfo.getLastName() + ', ' + UserInfo.getFirstName() + ', ' + UserInfo.getUserId());
-    	return Sample_Order_Helper.getSampleOrders();
+        //Schema.DescribeSObjectResult dsr = SAP_Interfaced_Data__c.SObjectType.getDescribe();
+        Schema.DescribeFieldResult dfrStatus = Schema.SObjectType.SAP_Interfaced_Data__c.fields.Approval_Status__c; 
+        List<Schema.PicklistEntry> dfrStatus_picklist_values = dfrStatus.getPicklistValues();
+        //Map<String, Schema.SObjectField> fields = d.fields.getMap();
+
+        List<Map<String, Object>> result = new List<Map<String, Object>>();
+        List<SAP_Interfaced_Data__c> orders = Sample_Order_Helper.getSampleOrders();
+        String status = '';
+        for(SAP_Interfaced_Data__c order : orders) {
+            status = order.Approval_Status__c;
+            for(Schema.PicklistEntry pe : dfrStatus_picklist_values) {
+                if (status == pe.getValue()) {
+                    status = pe.getLabel(); break;
+                }
+            }
+            result.add(new Map<String, Object> {
+                'Id' => order.Id,
+                'Name' => order.Name,
+                'Order_Number__c' => order.Order_Number__c,
+                'Approval_Status__c' => status,
+                'Requested_By__c' => order.Requested_By__c,
+                'Requested_Delivery_Date__c' => order.Requested_Delivery_Date__c,
+                'Authorised_By__c' => order.Authorised_By__c,
+                'Authorised_By__r.Name' => order.Authorised_By__r.Name,
+                'Authorised_Date__c' => order.Authorised_Date__c,
+                'Business_Name__c' => order.Business_Name__c,
+                'Contact_Name__c' => order.Contact_Name__c,
+                'CreatedById' => order.CreatedById
+            });                    
+
+        }
+        return result;
+    	//return Sample_Order_Helper.getSampleOrders();
     }
     
     @AuraEnabled
@@ -100,7 +132,7 @@ public with sharing class SampleOrder_Controller {
                        Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c,
                        (SELECT Id, Name, SAP_Interfaced_Data__c, Product__c, Brand_Name__c, Product_Code__c, Internal_Order_Number__c, 
                                Quantity__c, Units__c, Product__r.Used_For__c, Product__r.Pack_Quantity__c, Total_Ordered_Cases__c 
-                          FROM SAP_Interfaced_Data_Items__r) 
+                          FROM SAP_Interfaced_Data_Items__r)
                   FROM SAP_Interfaced_Data__c 
                  WHERE Id=:recordId];
     }
@@ -134,7 +166,7 @@ public with sharing class SampleOrder_Controller {
                         }                        
                     }
 
-                    if (config.RecordType.Name == 'General' && config.Classification__c == theSampleOrder.Classification__c && config.State__c == theSampleOrder.Business_State__c) {
+                    if (config.RecordType.Name == 'General' && config.Classification__c == theSampleOrder.Classification__c && (String.isEmpty(config.State__c) || config.State__c == theSampleOrder.Business_State__c)) {
                         theSampleOrder.SAP_ShipTo_Code__c = config.ShipTo_Code__c;
                         theSampleOrder.SAP_SoldTo_Code__c = config.SoldTo_Code__c;
                         theSampleOrder.SAP_Plant_Code__c = config.Plant_Code__c;
@@ -304,7 +336,7 @@ public with sharing class SampleOrder_Controller {
             marketId = [SELECT Id, Name FROM Market__c WHERE Name = 'United Kingdom'].Id;
         }
         
-        return [SELECT Id, Internal_Order_Number__c, Brand__c FROM Internal_Order__c WHERE Internal_Order_Type__c = 'ZBS' AND Market__c =:marketId ORDER BY Brand__c, Internal_Order_Number__c];
+        return [SELECT Id, Internal_Order_Number__c, Brand__c, Description__c FROM Internal_Order__c WHERE Internal_Order_Type__c = 'ZBS' AND Market__c =:marketId ORDER BY Brand__c, Internal_Order_Number__c];
     }
 
     @AuraEnabled
@@ -326,6 +358,50 @@ public with sharing class SampleOrder_Controller {
         
     }
     
+    @AuraEnabled
+    public static ApprovalHistory getApprovalHistory(String orderId) {
+        ApprovalHistory history = new ApprovalHistory();
+        DateTime completedDate;
+
+        if (String.isNotEmpty(orderId)) {
+			List<ProcessInstance> piList = [SELECT Id, CreatedDate, TargetObjectid, Status, ElapsedTimeInDays, ElapsedTimeInHours, ElapsedTimeInMinutes, 
+                                                (SELECT Id, CreatedDate, StepStatus, Comments, Actor.Name, ElapsedTimeInDays, ElapsedTimeInHours, 
+                                                        ElapsedTimeInMinutes, IsPending, ProcessNodeId, ProcessNode.Name 
+                                                   FROM StepsAndWorkItems 
+                                                ORDER BY ProcessNodeId) 
+                                             FROM ProcessInstance 
+                                            WHERE TargetObjectId =:orderId 
+                                         ORDER BY CreatedDate];      
+
+            if (piList != null && piList.size() > 0) {
+                history.CreatedDate = piList.get(0).CreatedDate.format('EE, dd MMM YYYY, h:mm a');
+                for (ProcessInstance pi : piList) {
+                    if (pi.StepsAndWorkItems != null) {
+                        System.debug('# of work items: ' + pi.StepsAndWorkItems.size());
+                    }
+                    if (pi.StepsAndWorkItems != null && pi.StepsAndWorkItems.size() > 0) {                        
+                        for(Integer i = 0; i < pi.StepsAndWorkitems.size(); i++) {
+                            System.debug('actor: ' + pi.StepsAndWorkItems[i].Actor.Name + ', status: ' + pi.StepsAndWorkItems[i].StepStatus + ', stepname: ' + pi.StepsAndWorkItems[i].ProcessNode.Name);
+
+                            completedDate = pi.CreatedDate;
+                            if (pi.StepsAndWorkItems[i].ElapsedTimeInMinutes != null) {
+                                completedDate = pi.CreatedDate.addMinutes((Integer)pi.StepsAndWorkItems[i].ElapsedTimeInMinutes);
+                            }
+                
+                            String stepName = 'Approval Request Submitted';
+                            if (String.isNotEmpty(pi.StepsAndWorkItems[i].ProcessNode.Name)) {
+                                stepName = pi.StepsAndWorkItems[i].ProcessNode.Name;
+                            }
+                            history.items.add(new ApprovalHistoryItem(pi.StepsAndWorkItems[i].Actor.Name, pi.StepsAndWorkItems[i].StepStatus, pi.StepsAndWorkItems[i].Comments, completedDate, '', stepName));
+                        }                    
+                    }
+                }
+            }
+        }
+
+        return history;
+    }
+
 /*
     private static void configureHighValueApproval(String sapId, List<SampleOrderItem> items) {
         Set<String> brands = new Set<String>();
