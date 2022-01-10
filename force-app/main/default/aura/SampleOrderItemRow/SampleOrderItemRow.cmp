@@ -2,6 +2,8 @@
     <!-- String Attributes -->
     <aura:attribute name="selectedBrand" type="String" default="" />
     <aura:attribute name="recordTypeName" type="String" default="" />
+    <aura:attribute name="label_Cases" type="String" default="{!$Label.c.Cases}" />
+    <aura:attribute name="label_Units" type="String" default="{!$Label.c.Units}" />
     
     <!-- Number Attributes -->
     <aura:attribute name="selectedRowCount" type="Integer" default="0" />
@@ -11,11 +13,15 @@
     <aura:attribute name="orderLocked" type="Boolean" default="false" />
     <aura:attribute name="showPrice" type="Boolean" default="false" />
     <aura:attribute name="showSKU" type="Boolean" default="false" />
+    <aura:attribute name="showInternalOrderNumbers" type="Boolean" default="false" />
+    <aura:attribute name="showCaseConversion" type="Boolean" default="false" />
     
     <!-- List & Object Attributes -->
     <aura:attribute name="row" type="SampleOrderItem" required="true" />
     <aura:attribute name="selectedProducts" type="SampleOrderItem[]" />
     <aura:attribute name="deletedRows" type="SampleOrderItem[]" />
+    <aura:attribute name="internalOrderNumbersMap" type="Map" />
+    <aura:attribute name="internalOrderNumbers" type="List" default="[]" />
     
     <!-- Handle component events -->
     <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
@@ -36,27 +42,47 @@
         <td data-label="Brand">
             <div class="slds-truncate" title="{!v.row.brandName}">{!v.row.brandName}</div>
         </td>
-        <td data-label="PackPerQty">
+        <aura:if isTrue="{!v.showInternalOrderNumbers}">
+            <td class="slds-form-element">
+                <div class="slds-form-element__control">
+                    <div class="slds-select_container">
+                    <select aura:id="i_internalOrderNumber" name="i_internalOrderNumber" class="slds-select" disabled="{!v.orderLocked}" onchange="{!c.handleInternalOrderNumberChange}">
+                        <aura:iteration items="{!v.internalOrderNumbers}" var="i">
+                            <option text="{!i.label}" value="{!i.value}" selected="{!i.selected}" />
+                        </aura:iteration>
+                    </select>
+                    </div>
+                </div>
+            </td>
+        </aura:if>
+        <td data-label="{!$Label.c.PackQty}">
             <div class="slds-truncate" title="{!v.row.packQty}">{!v.row.packQty}</div>
         </td>
         <aura:if isTrue="{!v.showPrice}">
-            <td data-label="Price">
+            <td data-label="{!$Label.c.Price}">
                 <div class="slds-truncate" title="{!v.row.price}">{!v.row.price}</div>
             </td>
         </aura:if>
         <td class="slds-cell-edit" role="gridcell">
             <div class="slds-from-element slds-grid slds-wrap">
                 <label class="slds-form-element__Label slds-form-element__label_edit slds-no-flex" for="{!'quantity_'+v.row.id}">
-                    <span class="slds-assistive-text">Quantity</span>
+                    <span class="slds-assistive-text">{!$Label.c.Quantity}</span>
                 </label>
                 <div class='slds-form-element__control slds-grow'>
                     <input type="number" style="text-align: right;" id="{!v.row.productId}" disabled="{!v.orderLocked}" class="slds-input" value="{!v.row.quantity}" onchange="{!c.handleQuantityChange}" />
                 </div>
             </div>
         </td>
-        <td data-label="BottleQty">
-            <div class="slds-truncate" >{!v.row.units}</div>
-        </td>
+        <aura:if isTrue="{!v.showCaseConversion}">
+            <td data-label="{!$Label.c.ConvertedCases}">
+                <div class="slds-truncate">{!v.row.convertedCases}</div>
+            </td>
+        <aura:set attribute="else">
+            <td data-label="{!$Label.c.BottleQty}">
+                <div class="slds-truncate" >{!v.row.units}</div>
+            </td>    
+        </aura:set>
+        </aura:if>
         
     </tr>
     

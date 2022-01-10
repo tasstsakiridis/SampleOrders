@@ -4,6 +4,7 @@
     <aura:attribute name="userName" type="String" default="" />
     <aura:attribute name="marketId" type="String" default="" />
     <aura:attribute name="marketName" type="String" default="" />
+    <aura:attribute name="marketISOCode" type="String" default="" />
     <aura:attribute name="userContext" type="String" />
     <aura:attribute name="recordId" type="String" />
     <aura:attribute name="recordTypeId" type="String" />
@@ -40,7 +41,7 @@
     <!-- Register component events -->
     <aura:registerEvent name="bfLightningEvent" type="c:bfLightningEvent" />
 
-       <c:SampleOrderForm aura:id="orderForm" userId="{!v.userId}" userName="{!v.userName}" marketId="{!v.marketId}" country="{!v.marketName}" userContext="{!v.userContext}" objectDescribe="{!v.objectDescribe}" recordTypeName="{!v.recordTypeName}" recordTypeId="{!v.recordTypeId}" leadTime="{!v.leadTime}" />
+       <c:SampleOrderForm aura:id="orderForm" userId="{!v.userId}" userName="{!v.userName}" userMarket="{!v.marketName}" marketId="{!v.marketId}" country="{!v.marketISOCode}" countryName="{!v.marketName}" userContext="{!v.userContext}" objectDescribe="{!v.objectDescribe}" recordTypeName="{!v.recordTypeName}" recordTypeId="{!v.recordTypeId}" leadTime="{!v.leadTime}" />
                     
             <article aura:id="listView" class="slds-card">
             	<div class="slds-card__header slds-grid">
@@ -65,13 +66,13 @@
                             </aura:set>
                             </aura:if>
                             <aura:if isTrue="{!v.recordTypes.length > 1}">
-                                <lightning:buttonMenu aura:id="btnNewMenu" label="New" class="slds-m-right_medium" onselect="{!c.handleNewButtonSelect}" alternativeText="New">
+                                <lightning:buttonMenu aura:id="btnNewMenu" label="{!$Label.c.New}" class="slds-m-right_medium" onselect="{!c.handleNewButtonSelect}" alternativeText="New">
                                     <aura:iteration items="{!v.recordTypes}" var="rt">
                                         <lightning:menuItem value="{!rt.value}" label="{!rt.label}" />
                                     </aura:iteration>
                                 </lightning:buttonMenu>
                             <aura:set attribute="else">
-                                <button aura:id="btnNew" id="btnNew" name="new" class="slds-button slds-button_neutral" disabled="{!v.objectDescribe.canInsert==false}" onclick="{!c.handleNewButtonClick}">New</button>
+                                <button aura:id="btnNew" id="btnNew" name="new" class="slds-button slds-button_neutral" disabled="{!v.objectDescribe.canInsert==false}" onclick="{!c.handleNewButtonClick}">{!$Label.c.New}</button>
                             </aura:set>    
                             </aura:if>
                             <button aura:id="btnRefresh" id="btnRefresh" name="refresh" class="slds-button slds-button_icon slds-button_icon-border-filled slds-m-right_small" onclick="{!c.handleRefreshButtonClick}">
@@ -88,13 +89,13 @@
                     	<thead>
                         	<tr class="slds-text-title_caps">
                             	<th scope="col">
-                                	<div class="slds-truncate" title="Order Number">Order Number</div>
+                                	<div class="slds-truncate" title="Order Number">{!$Label.c.Order_Number}</div>
                                 </th>
                                 <th scope="col" class="slds-is-rezisable" data-id="Requested_By__c" onclick="{!c.handleSortByRequestedBy}">
                                     <a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="0">
                                         <span class="slds-assistive-text">Sort By Requested By</span>                                        
                                         <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
-                                            <span class="slds-truncate" title="Requested By">Requested By</span>
+                                            <span class="slds-truncate" title="Requested By">{!$Label.c.RequestedBy}</span>
                                             <aura:if isTrue="{!v.isRequestedBySort}">
                                                 <aura:if isTrue="{!v.isAsc}">
                                                     &#8595;
@@ -110,7 +111,7 @@
                                     <a class="slds-th__action slds-text-link_reset" href="javascript:void(0);" role="button" tabindex="0">
                                         <span class="slds-assistive-text">Sort By Requested Date</span>                                        
                                         <div class="slds-grid slds-grid_vertical-align-center slds-has-flexi-truncate">
-                                            <span class="slds-truncate" title="Requested By">Requested Date</span>
+                                            <span class="slds-truncate" title="Requested By">{!$Label.c.Requested_Date}</span>
                                             <aura:if isTrue="{!v.isRequestedDateSort}">
                                                 <aura:if isTrue="{!v.isAsc}">
                                                     &#8595;
@@ -123,19 +124,19 @@
                                     </a>
                                 </th>
                                 <th scope="col">
-                                	<div class="slds-truncate" title="Status">Approval Status</div>
+                                	<div class="slds-truncate" title="Status">{!$Label.c.Approval_Status}</div>
                                 </th>                                
                                 <th scope="col">
-                                	<div class="slds-truncate" title="Authorised By">Authorised By</div>
+                                	<div class="slds-truncate" title="Authorised By">{!$Label.c.Authorised_By}</div>
                                 </th>
                                 <th scope="col">
-                                	<div class="slds-truncate" title="Authorised Date">Authorised Date</div>
+                                	<div class="slds-truncate" title="Authorised Date">{!$Label.c.Authorised_Date}</div>
                                 </th>
                                 <th scope="col">
-                                	<div class="slds-truncate" title="Business Name">Business Name</div>
+                                	<div class="slds-truncate" title="Business Name">{!$Label.c.Business_Name}</div>
                                 </th>
                                 <th scope="col">
-                                	<div class="slds-truncate" title="Contact">Contact</div>
+                                	<div class="slds-truncate" title="Contact">{!$Label.c.Contact}</div>
                                 </th>
                             </tr>
                         </thead>

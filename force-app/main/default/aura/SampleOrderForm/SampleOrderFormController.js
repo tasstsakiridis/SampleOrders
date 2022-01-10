@@ -4,36 +4,60 @@
 		component.set("v.provinceOptions", helper.getProvinceOptions(component, component.get("v.country")));
         component.set("v.itemsButtonLabel", $A.get('$Label.c.Add_Item'));
 
+        component.set("v.approvalHistoryColumns", [
+            { label: 'Step Name', fieldName: 'StepName', type: 'text' },
+            { label: 'Date', fieldName: 'CompletedDate', type: 'date' },
+            { label: 'Status', fieldName: 'Status', type: 'text' },
+            { label: 'Assigned To', fieldName: 'Actor', type: 'text' }
+        ]);
+
         helper.setupProductColumns(component);   
         helper.getBannerGroups(component);
         helper.getStorageLockers(component);
+        helper.getInternalOrderNumbers(component);
         helper.getPicklistValuesForRecordType(component);
 	},
     handleCountryChange : function(component, event, helper) {
+        //component.set("v.countryName", event.target.value);
+    },
+    handleUserMarketChange : function(component, event, helper) {
+        console.log('[handleCountryChange] countryName', component.get("v.countryName"));
+        console.log('[handleCountryChange] userMarket', component.get('v.userMarket'));
+        console.log('[handleCountryChange] marketId', component.get("v.marketId"));
         component.set("v.provinceOptions", helper.getProvinceOptions(component, component.get("v.country")));
         var showPrice = false;
         var showInternationalOrder = false;
         var showCostCenters = false;
+        var showAccounts = false;
         var showInternalOrderNumbers = false;
         var useStandardAddressComponent = true;
-        var country = component.get("v.country");
-        if (country == 'GB') {
+        var showCaseConversion = false;
+        var userMarket = helper.getCountryCode(component, component.get("v.userMarket"));
+        if (userMarket == 'GB') {
             showPrice = true;   
             showCostCenters = true;            
-            useStandardAddressComponent = false;    
+            useStandardAddressComponent = false;         
             showInternalOrderNumbers = true;     
         }
-        if (country == 'AU') {
+        if (userMarket == 'TW') {
+            showPrice = true;
+            useStandardAddressComponent = false;
+            showAccounts = true;
+            showCaseConversion = true;
+        }
+        if (userMarket == 'AU') {
             showInternationalOrder = true;
         }
-        console.log('country', country);
+        console.log('userMarket', userMarket);
         console.log('showPrice', showPrice);
         console.log('useStandardAddress', useStandardAddressComponent);
         component.set("v.showPrice", showPrice);
         component.set("v.showInternationalOrder", showInternationalOrder);
         component.set("v.showCostCenters", showCostCenters);
+        component.set("v.showAccounts", showAccounts);
         component.set("v.useStandardAddressComponent", useStandardAddressComponent);
         component.set("v.showInternalOrderNumbers", showInternalOrderNumbers);
+        component.set("v.showCaseConversion", showCaseConversion);
         helper.setupProductTableHeaders(component);
         //helper.updateProvinceOptions(component);
     },
@@ -122,6 +146,7 @@
         //console.log('classification', theSampleOrder.Classification__c);
         //component.set("v.classification", theSampleOrder.Classification__c);
         let classification = component.get("v.classification");
+        console.log('[handleClassificationChange] classification', classification);
         if (classification.indexOf('Duty Free') >= 0) {
             component.set("v.showDutyFreeBanners", true);
         } else {
@@ -136,8 +161,24 @@
                 component.set("v.showCostCenters", true);
                 component.set("v.showInternalOrderNumbers", false);
             }    
+
+            helper.setupProductTableHeaders(component);
         }
     },
+    handleLookupIdChanged : function(component, event, helper) {
+        let instanceId = event.getParam('instanceId');
+        let recordId = event.getParam('sObjectId');
+        let recordName = event.getParam('sObjectName');
+        console.log('[SampleOrderForm.controller.handleLookupIdChange] instanceId, recordId, recordName', instanceId, recordId, recordName);
+        try {
+            component.set("v.accountId", recordId);
+            component.set("v.accountName", recordName);
+            helper.getAccountDetails(component, recordId);
+        }catch(ex) {
+            console.log('[SampleOorderrForm.controller.handleLookupIdChanged] exception', ex);
+        }
+    },
+
     handleBannerGroupChange : function(component, event, helper) {
         try {
         var bannerGroup = component.find("bannerGroup").get("v.value");
@@ -170,8 +211,6 @@
             console.log('[handleCostCenterChange] exception', ex);
         }
     },
-    handleInternalOrderNumberChange : function(component, event, helper) {
-    },
     handleBrandChange : function(component, event, helper) {
         //var brand = event.getParam("value");
         var brand = component.find('brands').get('v.value');
@@ -202,6 +241,7 @@
         var recordId = args.recordId;
         console.log('[SampleOrderForm.controller.loadSampleOrder] recordId', recordId);
     	helper.loadSampleOrder(component, recordId);  
+        helper.getApprovalHistory(component, recordId);
     },
     handleCloseDialogChange : function(component, event, helper) {
         helper.closeSampleOrderDialog(component);
