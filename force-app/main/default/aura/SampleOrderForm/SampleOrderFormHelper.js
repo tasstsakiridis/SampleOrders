@@ -784,9 +784,10 @@
                         $A.util.addClass(banner, "status_"+rv.Approval_Status__c);
                         
                         if (rv.Classification__c.indexOf('Duty Free') >= 0) {
-                            component.set("v.showBannerGroups", true);                            
+                            console.log('[loadSampleOrders] showing banner groups for duty free');
+                            component.set("v.showDutyFreeBanners", true);                            
                         } else {
-                            component.set("v.showBannerGroups", false);
+                            component.set("v.showDutyFreeBanners", false);
                         }
                         if (rv.Banner_Group__c != null) {
                             component.set("v.selectedBannerGroup", rv.Banner_Group__c);
