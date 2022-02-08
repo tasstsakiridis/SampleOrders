@@ -181,9 +181,9 @@
 
     handleBannerGroupChange : function(component, event, helper) {
         try {
-        var bannerGroup = component.find("bannerGroup").get("v.value");
-        component.set("v.selectedBannerGroup", bannerGroup);
-        console.log('bannergroup', bannerGroup);
+            var bannerGroup = component.find("bannerGroup").get("v.value");
+            component.set("v.selectedBannerGroup", bannerGroup);
+            console.log('bannergroup', bannerGroup);
         } catch(ex) {
             console.log('[handleBannerGroupChange] exception', ex);
         }

@@ -176,7 +176,7 @@
                             </aura:iteration>
                         </lightning:select>
                         <aura:if isTrue="{!v.showDutyFreeBanners}">
-                            <lightning:select name="bannergroup" label="Banner Group" aura:id="bannerGroup" disabled="{!v.orderLocked}" onchange="{!c.handleBannerGroupChange}">
+                            <lightning:select name="bannerGroup" label="Banner Group" aura:id="bannerGroup" disabled="{!v.orderLocked}" value="{!v.selectedBannerGroup}" onchange="{!c.handleBannerGroupChange}">
                                 <aura:iteration items="{!v.bannerGroups}" var="bg">
                                     <option text="{!bg.label}" value="{!bg.value}" selected="{!bg.selected}" />
                                 </aura:iteration>
