@@ -32,6 +32,7 @@
         var showInternalOrderNumbers = false;
         var useStandardAddressComponent = true;
         var showCaseConversion = false;
+        var showShippingInstructions = false;
         var userMarket = helper.getCountryCode(component, component.get("v.userMarket"));
         if (userMarket == 'GB') {
             showPrice = true;   
@@ -44,6 +45,7 @@
             useStandardAddressComponent = false;
             showAccounts = true;
             showCaseConversion = true;
+            showShippingInstructions = true;
         }
         if (userMarket == 'AU') {
             showInternationalOrder = true;
@@ -58,6 +60,7 @@
         component.set("v.useStandardAddressComponent", useStandardAddressComponent);
         component.set("v.showInternalOrderNumbers", showInternalOrderNumbers);
         component.set("v.showCaseConversion", showCaseConversion);
+        component.set("v.showShippingInstructions", showShippingInstructions);
         helper.setupProductTableHeaders(component);
         //helper.updateProvinceOptions(component);
     },
@@ -164,7 +167,7 @@
 
             helper.setupProductTableHeaders(component);
         }
-    },
+   },
     handleLookupIdChanged : function(component, event, helper) {
         let instanceId = event.getParam('instanceId');
         let recordId = event.getParam('sObjectId');
@@ -181,9 +184,9 @@
 
     handleBannerGroupChange : function(component, event, helper) {
         try {
-        var bannerGroup = component.find("bannerGroup").get("v.value");
-        component.set("v.selectedBannerGroup", bannerGroup);
-        console.log('bannergroup', bannerGroup);
+            var bannerGroup = component.find("bannerGroup").get("v.value");
+            component.set("v.selectedBannerGroup", bannerGroup);
+            console.log('bannergroup', bannerGroup);
         } catch(ex) {
             console.log('[handleBannerGroupChange] exception', ex);
         }

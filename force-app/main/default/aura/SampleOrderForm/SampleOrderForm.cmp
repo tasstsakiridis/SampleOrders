@@ -46,6 +46,7 @@
     <aura:attribute name="showAccounts" type="Boolean" default="true" />
     <aura:attribute name="useStandardAddressComponent" type="Boolean" default="true" />
     <aura:attribute name="showCaseConversion" type="Boolean" default="false" />
+    <aura:attribute name="showShippingInstructions" type="Boolean" default="false" />
 
     <!-- List & Object Attributes -->
     <aura:attribute name="theSampleOrder" type="SAP_Interfaced_Data__c" default="{ }" />
@@ -176,7 +177,7 @@
                             </aura:iteration>
                         </lightning:select>
                         <aura:if isTrue="{!v.showDutyFreeBanners}">
-                            <lightning:select name="bannergroup" label="Banner Group" aura:id="bannerGroup" disabled="{!v.orderLocked}" onchange="{!c.handleBannerGroupChange}">
+                            <lightning:select name="bannerGroup" label="Banner Group" aura:id="bannerGroup" disabled="{!v.orderLocked}" value="{!v.selectedBannerGroup}" onchange="{!c.handleBannerGroupChange}">
                                 <aura:iteration items="{!v.bannerGroups}" var="bg">
                                     <option text="{!bg.label}" value="{!bg.value}" selected="{!bg.selected}" />
                                 </aura:iteration>
@@ -280,6 +281,11 @@
                         <lightning:input aura:id="i_ContactPhone" type="tel" name="i_ContactPhone" label="{!v.objectDescribe.fields.Contact_Phone__c.label}" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Contact_Phone__c}" placeholder="{!v.objectDescribe.fields.Contact_Phone__c.label}" required="true" />
                     </div>            
                 </div>
+                <aura:if isTrue="{!v.showShippingInstructions}">
+                    <div class="slds-m-top_small">
+                        <lightning:input label="{!$Label.c.Shipping_Instructions}" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Shipping_Instructions__c}" class="height_60" />
+                    </div>
+                </aura:if>
                 <div class="slds-m-top_small">
                     <!--<span class="slds-form-element__label">Reason for Stock Order/Comments</span>-->
                     <!--<lightning:inputRichText label="Reason for Stock Order/Comments" disabled="{!v.orderLocked}" placeholder="Comments" value="{!v.theSampleOrder.Reason__c}" disabledCategories="FORMAT_FONT,FORMAT_TEXT,FORMAT_BODY,ALIGN_TEXT,INSERT_CONTENT,REMOVE_FORMATTING" />-->
