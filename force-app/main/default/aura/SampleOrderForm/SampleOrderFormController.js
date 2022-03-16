@@ -167,7 +167,16 @@
 
             helper.setupProductTableHeaders(component);
         }
-   },
+    },
+    handleInternationalOrderChange : function(component, event, helper) {
+        /*
+        const theSampleOrder = component.get("v.theSampleOrder");
+        console.log('[handleInternationalOrderChange] internationalOrder', theSampleOrder.Is_International_Order__c);
+        const userStandardAddressComponent = !theSampleOrder.Is_International_Order__c;
+        console.log('[handleInternationOrderChange] use standard address component', userStandardAddressComponent);
+        component.set("v.useStandardAddressComponent", userStandardAddressComponent);
+        */
+    },
     handleLookupIdChanged : function(component, event, helper) {
         let instanceId = event.getParam('instanceId');
         let recordId = event.getParam('sObjectId');

@@ -672,7 +672,7 @@
                 isValid = false;
             }
         }
-        if (countryCode != 'GB' && countryCode != 'TW') {
+        if (countryCode != 'GB' && countryCode != 'TW' && !theSampleOrder.Is_International_Order__c) {
             if (businessState == null || businessState == '') { 
                 console.log('business state is null'); 
                 msg += 'Business State is required';

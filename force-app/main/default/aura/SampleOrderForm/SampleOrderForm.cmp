@@ -186,7 +186,7 @@
                     </div>
                     <aura:if isTrue="{!v.showInternationalOrder}">
                         <div class="slds-col slds-has-flexi-truncate" role="listitem">
-                            <lightning:input type="toggle" label="International Order" name="i_IsInternationalOrder" checked="{!v.theSampleOrder.Is_International_Order__c}" messageToggleActive="" messageToggleInactive="" class="slds-align_absolute-center" />
+                            <lightning:input type="toggle" label="International Order" name="i_IsInternationalOrder" checked="{!v.theSampleOrder.Is_International_Order__c}" messageToggleActive="" messageToggleInactive="" onchange="{!c.handleInternationalOrderChange}" class="slds-align_absolute-center" />
                         </div>    
                     </aura:if>
                     <aura:if isTrue="{!v.showCostCenters}">
