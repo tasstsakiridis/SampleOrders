@@ -16,4 +16,12 @@
         <shortDescription>MyOrders</shortDescription>
         <value>My Orders</value>
     </labels>
+    <labels>
+        <fullName>Shipping_Instructions</fullName>
+        <categories>labels</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Shipping Instructions</shortDescription>
+        <value>Shipping Instructions</value>
+    </labels>
 </CustomLabels>

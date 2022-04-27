@@ -2,13 +2,14 @@ public with sharing class SampleOrder_Controller {
 
     @AuraEnabled
     public static SimpleListItem getCurrentUserInfo() {
-    	User u = [SELECT Id, Name, Market__c FROM User WHERE Id =:UserInfo.getUserId()];
+    	User u = [SELECT Id, Name, Market__c, MobilePhone FROM User WHERE Id =:UserInfo.getUserId()];
         Market__c m = [SELECT Id, Name, Country_ISO_Code_2__c, Sample_Order_Lead_Time__c FROM Market__c WHERE Name =:u.Market__c LIMIT 1];
         SimpleListItem sli = new SimpleListItem(u.Id, u.Name);
         sli.value = m.Id;
         sli.itemId = m.Country_ISO_Code_2__c;
         sli.label = String.valueOf(m.Sample_Order_Lead_Time__c);
         sli.description = m.Name;
+        sli.record = u;
         return sli;
     }
     
@@ -129,7 +130,8 @@ public with sharing class SampleOrder_Controller {
                        Authorised_By__c, Authorised_By__r.Name, Authorised_Date__c, Finance_Authorised_By__c, Finance_Authorised_Date__c, 
                        Classification__c, Banner_Group__c, Business_Name__c, Business_Address__c, Business_City__c, Business_State__c, 
                        Business_Postcode__c, Business_Country__c, Contact_Name__c, Contact_Phone__c, Reason__c, Is_International_Order__c, 
-                       Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c,
+                       Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c, Is_Gift__c, Gift_Register_Acknowledgement__c,
+                       Budget_Type__c, Reason_Code__c,
                        (SELECT Id, Name, SAP_Interfaced_Data__c, Product__c, Brand_Name__c, Product_Code__c, Internal_Order_Number__c, 
                                Quantity__c, Units__c, Product__r.Used_For__c, Product__r.Pack_Quantity__c, Total_Ordered_Cases__c 
                           FROM SAP_Interfaced_Data_Items__r)
@@ -315,6 +317,17 @@ public with sharing class SampleOrder_Controller {
 
         return [SELECT Id, Name FROM Banner_Groups__c WHERE Market__c =:marketId AND Ship_To_Code__c <> NULL];
 
+    }
+
+    @AuraEnabled 
+    public static List<Account> getStorerooms() {
+        SimpleListItem u = getCurrentUserInfo();
+        String marketId = u.value;
+        if (marketId == null) {
+            marketId = [SELECT Id, Name FROM Market__c WHERE Name = 'Australia'].Id;
+        }
+
+        return [SELECT Id, Name, ShippingStreet, ShippingCity, ShippingPostalCode, ShippingState, ShippingCountry FROM Account WHERE Market__c =:marketId AND RecordType.Name = 'Storeroom' AND Status__c ='Active'];
     }
 
     @AuraEnabled 

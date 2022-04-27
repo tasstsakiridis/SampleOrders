@@ -100,15 +100,20 @@
                     try {
                         var rv = response.getReturnValue();
                         console.log('[SampleOrderForm.Helper.getPicklistValues] picklistValues', rv);
+                        component.set("v.allPicklistValues", rv);
+
                         let classification = component.get("v.classification");
                         let costCenter = component.get("v.costCenter");
                         let statuses = component.get("v.statuses");
+                        let reasonCode = component.get("v.reasonCode");
 
                         var classifications = [{"label":"", "value":""}];
                         var costCenters = [{"label":"", "value":""}];
+                        var reasonCodes = [{"label":"", "value":""}];
                         var classificationPicklistValues = rv["Classification__c"].picklistValues;
                         var costCentersPicklistValues = rv["Cost_Center__c"].picklistValues;
                         var statusPicklistValues = rv["Approval_Status__c"].picklistValues;
+                        const reasonCodePicklistValues = rv["Reason_Code__c"].picklistValues;
                         console.log('[SampleOrderForm.Helper.getPicklistValues] classificationPicklistValues', classificationPicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] costCentersPicklistValues', costCentersPicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] statusPicklistValues', statusPicklistValues);
@@ -120,6 +125,13 @@
                         }
                         for(var i = 0; i < costCentersPicklistValues.length; i++) {
                             costCenters.push({"label":costCentersPicklistValues[i].label, "value":costCentersPicklistValues[i].value, "selected":costCenter == costCentersPicklistValues[i].value});
+                        }
+                        if (classification && classification.length > 0) {
+                            const classificationPicklistValues = reasonCodePicklistValues.filter(r => r.description == classification);
+                            for(var i = 0; i < classificationPicklistValues.length; i++) {
+                                reasonCodes.push({"label":classificationPicklistValues[i].label, "value":classificationPicklistValues[i].value, "selected":reasonCode == classificationPicklistValues[i].value});
+                            }
+    
                         }
                         console.log('[SampleOrderForm.Helper.getPicklistValues] classification', classifications);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] costCenters', costCenters);
@@ -149,6 +161,13 @@
                             if (x > y) { return 1; }
                             return 0; 
                         });
+                        reasonCodes.sort(function(a, b) {
+                            let x = a.label.toLowerCase();
+                            let y = b.label.toLowerCase();
+                            if (x < y) { return -1; }
+                            if (x > y) { return 1; }
+                            return 0; 
+                        });
                     
                         var approvalStatus = component.get("v.approvalStatus");
                         for(var i = 0; i < statuses.length; i++) {
@@ -164,6 +183,7 @@
                         component.set("v.classifications", classifications);
                         component.set("v.costCenters", costCenters);
                         component.set("v.statuses", statuses);
+                        component.set("v.reasonCodes", reasonCodes);
                     }catch(ex) {
                         console.log('[SampleOrderForm.helper.getPicklistValues] exception', ex);                        
                     }
@@ -332,6 +352,41 @@
         });
         $A.enqueueAction(action);
     },
+    getStorerooms : function(component) {
+        console.log('getStorerooms');
+    	var action = component.get("c.getStorerooms");
+        action.setCallback(this, function(response) {
+            if (component.isValid()) {
+                var callState = response.getState();
+                if (callState === "SUCCESS") {
+                    var rv = response.getReturnValue();
+                    console.log('[SampleOrderForm.Helper.getStorerooms] storerooms', rv);
+                    var rooms = [{"label":"", value:""}];
+                    for(var i = 0; i < rv.length; i++) {
+                        rooms.push({"label":rv[i].Name + '-' + rv[i].ShippingCity,"value":rv[i].Id, account: rv[i]});
+                    }
+                    rooms.sort(function(a, b) { 
+                        let x = a.label.toLowerCase();
+                        let y = b.label.toLowerCase();
+                        if (x < y) { return -1; }
+                        if (x > y) { return 1; }
+                        return 0; 
+                    });
+                    console.log('[SampleOrderForm.helper.getStorerooms] storerooms', rooms);
+                    component.set("v.storerooms", rooms);
+                    //component.set("v.showStorerooms", rooms.length > 1);
+                    
+                } else if (callState === "INCOMPLETE") {
+                    console.log("[SampleOrderForm.Helper.getStorerooms] callback returned incomplete.");                    
+                } else if (callState === "ERROR") {
+                    var errors = response.getError();
+                    console.log("[SampleOrderForm.Helper.getStorerooms] callback returned in error.", errors);                    
+                }
+            }
+            
+        });
+        $A.enqueueAction(action);
+    },
     getInternalOrderNumbers : function(component) {
     	var action = component.get("c.getInternalOrderNumbers");
         action.setCallback(this, function(response) {
@@ -426,10 +481,25 @@
     },
 
     initSampleOrder : function(component) {
+        let recordTypeName = component.get("v.recordTypeName");
+        var userName = component.get("v.userName");
+        var userPhone = component.get("v.userPhone");
+        console.log('userName', userName);
+        console.log('userPhone', userPhone);
+        var contactName = '';
+        var contactPhone = '';
+        if (recordTypeName == 'Sample Order - Storeroom Request') {
+            contactName = userName;
+            contactPhone = userPhone;
+        } 
+
         var theSampleOrder = { 'sObjectType': 'SAP_Interfaced_Data__c', 
                                'Approval_Status__c':'New',
-                              'Business_Country__c': component.get("v.countryName")};
-        console.log('[SampleOrderForm.helper.initSampleOrder] sampleorder', theSampleOrder);
+                              'Business_Country__c': component.get("v.countryName"),
+                              'Contact_Name__c' : contactName,
+                              'Contact_Phone__c' : contactPhone};
+        console.log('[SampleOrderForm.helper.initSampleOrder] sampleorder', theSampleOrder); 
+
 		component.set('v.theSampleOrder', theSampleOrder);  
         component.set("v.disableAddItems", false);
         component.set("v.isAddingItems", false);
@@ -443,6 +513,7 @@
         component.set("v.showInternalOrderNumbers", false);
         component.set("v.accountId", null);
         component.set("v.accountName", null);
+        component.set("v.storeroom", null);
         
         this.initToast(component);
         let deletedRows = [];
@@ -593,6 +664,34 @@
             }    
         }
     },
+    setBusinessDetailsFromStoreroom : function(component) {
+        let storeroom = component.get("v.accountId");
+        let storerooms = component.get("v.storerooms");
+        var theSampleOrder = component.get("v.theSampleOrder");
+        if (storeroom == '') {
+            theSampleOrder.Business_Name__c = '';
+            theSampleOrder.Business_Address__c = '';
+            theSampleOrder.Business_City__c = '';
+            theSampleOrder.Business_Postcode__c = '';
+            theSampleOrder.Business_State__c = '';
+
+            component.set("v.theSampleOrder", theSampleOrder);
+            component.set("v.businessState", '');
+        } else {
+            if (storerooms != null && storerooms.length > 0) {
+                let room = storerooms.find(r => r.value == storeroom);
+                if (room != undefined) {
+                    theSampleOrder.Business_Name__c = room.account.Name;
+                    theSampleOrder.Business_Address__c = room.account.ShippingStreet;
+                    theSampleOrder.Business_City__c = room.account.ShippingCity;
+                    theSampleOrder.Business_Postcode__c = room.account.ShippingPostalCode;
+
+                    component.set("v.theSampleOrder", theSampleOrder);
+                    component.set("v.businessState", room.account.ShippingState);
+                }
+            }
+        }
+    },
     validateOrder : function(component) {
         console.log('[SampleOrderForm.helper.validateOrder]');
     	var theSampleOrder = component.get("v.theSampleOrder");
@@ -604,6 +703,8 @@
         console.log('[validateOrder] leadTime', leadTime);
         let userMarket = component.get("v.userMarket");
         let countryCode = this.getCountryCode(component, userMarket);
+        let storeroom = component.get("v.storeroom");
+        
         console.log('[validateOrder] userMarket', userMarket);
         console.log('[validateOrder] countryCode', countryCode);
         let isValid = true;
@@ -710,6 +811,11 @@
                 isValid = false; 
             }
         }
+        if (theSampleOrder.Is_Gift__c == true && (theSampleOrder.Gift_Register_Acknowledgement__c == null || theSampleOrder.Gift_Register_Acknowledgement__c == false)) {
+            console.log('gift hasnt been acknowledged');
+            msg += 'You must acknowledge that you have completed the gift register for this gift';
+            isValid = false;
+        }
         return { msg: msg, isValid: isValid };
     },
     loadSampleOrder : function(component, recordId) {
@@ -731,6 +837,8 @@
                         component.set("v.recordTypeName", rv.RecordType.Name);               
                         component.set("v.recordTypeId", rv.RecordTypeId);
                         component.set("v.classification", rv.Classification__c);
+                        component.set("v.reasonCode", rv.Reason_Code__c);
+                        component.set("v.accountId", rv.Account__c);
                         var approvalStatus = rv.Approval_Status__c;
                         var statuses = component.get("v.statuses");
                         if (statuses && statuses.length > 0) {
@@ -760,6 +868,8 @@
                         component.set("v.showInternalOrderNumbers", showInternalOrderNumbers);
 
                         component.set("v.storageLocker", rv.Storage_Locker__c)
+                        component.set("v.storeroom", rv.Account__c);
+
                         let countryCode = rv.Business_Country__c == undefined ? 'AU' : rv.Business_Country__c;
                         component.set("v.country", countryCode);
                         var countryFound = false;
@@ -809,6 +919,14 @@
                             for(var i = 0; i < classifications.length; i++) {
                                 if (classifications[i].value == rv.Classification__c) {
                                     classifications[i].selected = true; break;
+                                }
+                            }
+                        }
+                        let reasonCodes = component.get("v.reasonCodes");
+                        if (reasonCodes != null) {
+                            for(var i = 0; i < reasonCodes.length; i++) {
+                                if (reasonCodes[i].value == rv.Reason_Code__c) {
+                                    reasonCodes[i].selected = true;
                                 }
                             }
                         }
@@ -919,6 +1037,9 @@
         var accountId = component.get("v.accountId");
         var marketId = component.get("v.marketId");
         let statuses = component.get("v.statuses");
+        const reasonCode = component.get("v.reasonCode");
+        const marketName = component.get("v.marketName");
+        const recordTypeName = component.get("v.recordTypeName");
         var approvalStatus = "New";
         console.log('[SampleOrderForm.helper.saveSampleOrder] country', country);
         console.log('[SampleOrderForm.helper.saveSampleOrder] marketId', marketId);
@@ -931,10 +1052,22 @@
         }
         component.set("v.approvalStatus", approvalStatus);
 
+        if (marketName == 'Australia' && recordTypeName == 'Sample Order - Storeroom Request') {
+            theSampleOrder.Account__c = storeroom;
+            if (classification.indexOf('Sales') > -1) {
+                theSampleOrder.Budget_Type__c = 'Brand Expense - Sales';
+            } else if (classification.indexOf('Marketing') > -1) {
+                theSampleOrder.Budget_Type__c = 'Brand Expense - Marketing';
+            } else if (classification == 'Admin') {
+                theSampleOrder.Budget_Type__c = 'SG&A';
+            }
+        }
+        if (classification == 'S')
         //theSampleOrder.Business_Country__c = country;
         theSampleOrder.Business_State__c = businessState;
         theSampleOrder.RecordTypeId = recordTypeId;
         theSampleOrder.Classification__c = classification;
+        theSampleOrder.Reason_Code__c = reasonCode;
         if (accountId != null && accountId.length > 0) {
             theSampleOrder.Account__c = accountId;
         }

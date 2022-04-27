@@ -15,6 +15,7 @@
                     console.log('[SampleOrder.Helper.getUserDetails] user', rv);
                     component.set('v.userId', rv.id);
                     component.set('v.userName', rv.name);
+                    component.set("v.userPhone", rv.record.MobilePhone);
                     component.set("v.marketId", rv.value);
                     component.set('v.marketName', rv.description);
                     component.set('v.marketISOCode', rv.itemId);

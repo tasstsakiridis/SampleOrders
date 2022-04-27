@@ -2,6 +2,7 @@
 	<!-- String Attributes -->
     <aura:attribute name="userId" type="String" default="" />
     <aura:attribute name="userName" type="String" default="" />
+    <aura:attribute name="userPhone" type="String" default="" />
     <aura:attribute name="marketId" type="String" default="" />
     <aura:attribute name="marketName" type="String" default="" />
     <aura:attribute name="marketISOCode" type="String" default="" />
@@ -41,7 +42,7 @@
     <!-- Register component events -->
     <aura:registerEvent name="bfLightningEvent" type="c:bfLightningEvent" />
 
-       <c:SampleOrderForm aura:id="orderForm" userId="{!v.userId}" userName="{!v.userName}" userMarket="{!v.marketName}" marketId="{!v.marketId}" country="{!v.marketISOCode}" countryName="{!v.marketName}" userContext="{!v.userContext}" objectDescribe="{!v.objectDescribe}" recordTypeName="{!v.recordTypeName}" recordTypeId="{!v.recordTypeId}" leadTime="{!v.leadTime}" />
+       <c:SampleOrderForm aura:id="orderForm" userId="{!v.userId}" userName="{!v.userName}" userPhone="{!v.userPhone}" userMarket="{!v.marketName}" marketId="{!v.marketId}" country="{!v.marketISOCode}" countryName="{!v.marketName}" userContext="{!v.userContext}" objectDescribe="{!v.objectDescribe}" recordTypeName="{!v.recordTypeName}" recordTypeId="{!v.recordTypeId}" leadTime="{!v.leadTime}" />
                     
             <article aura:id="listView" class="slds-card">
             	<div class="slds-card__header slds-grid">

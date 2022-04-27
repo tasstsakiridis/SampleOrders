@@ -4,6 +4,11 @@
 		component.set("v.provinceOptions", helper.getProvinceOptions(component, component.get("v.country")));
         component.set("v.itemsButtonLabel", $A.get('$Label.c.Add_Item'));
 
+        var maxInputLengthStr = component.get("v.maxInputLength");
+        maxInputLengthStr = maxInputLengthStr.replace("{0}", "35");
+        console.log('maxInputLenght', maxInputLengthStr);
+        component.set("v.maxInputLength", maxInputLengthStr);
+
         component.set("v.approvalHistoryColumns", [
             { label: 'Step Name', fieldName: 'StepName', type: 'text' },
             { label: 'Date', fieldName: 'CompletedDate', type: 'date' },
@@ -15,6 +20,7 @@
         helper.getBannerGroups(component);
         helper.getStorageLockers(component);
         helper.getInternalOrderNumbers(component);
+        helper.getStorerooms(component);
         helper.getPicklistValuesForRecordType(component);
 	},
     handleCountryChange : function(component, event, helper) {
@@ -74,7 +80,32 @@
     },
     handleRecordTypeChange : function(component, event, helper) {
         console.log('[SampleOrderForm.controller.handleRecordTypeChange]');
-        helper.getPicklistValuesForRecordType(component);
+        try {
+            var theSampleOrder = component.get("v.theSampleOrder");
+            var isStoreroomRequest = false;
+            var useStandardAddressComponent = component.get("v.useStandardAddressComponent");
+            let recordTypeName = component.get("v.recordTypeName");
+            var userName = component.get("v.userName");
+            var userPhone = component.get("v.userPhone");
+            var showInternationalOrder = component.get("v.showInternationalOrder");
+            console.log('userName', userName);
+            console.log('userPhone', userPhone);
+            if (recordTypeName == 'Sample Order - Storeroom Request') {
+                isStoreroomRequest = true;
+                useStandardAddressComponent = false;
+                theSampleOrder.Contact_Name__c = userName;
+                theSampleOrder.Contact_Phone__c = userPhone;
+                showInternationalOrder = false;
+            } 
+            console.log('[SampleOrderForm.controller.handleRecordTypeChange] use standard address component', useStandardAddressComponent);
+            component.set("v.theSampleOrder", theSampleOrder);
+            component.set("v.isStoreroomRequest", isStoreroomRequest);
+            component.set("v.useStandardAddressComponent", useStandardAddressComponent);
+            component.set("v.showInternationalOrder", showInternationalOrder);
+            helper.getPicklistValuesForRecordType(component);
+        }catch(ex) {
+            console.log('[SampleOrderForm.controller.handleRecordTypeChange] exception', ex);
+        }
     },
     handleCloseToastButtonClick : function(component, event, helper) {
         helper.hideToast(component);
@@ -145,27 +176,50 @@
 
     handleClassificationChange : function(component, event, helper) {
         console.log('[handleClassificationChange]');
-        //let theSampleOrder = component.get("v.theSampleOrder");
-        //console.log('classification', theSampleOrder.Classification__c);
-        //component.set("v.classification", theSampleOrder.Classification__c);
-        let classification = component.get("v.classification");
-        console.log('[handleClassificationChange] classification', classification);
-        if (classification.indexOf('Duty Free') >= 0) {
-            component.set("v.showDutyFreeBanners", true);
-        } else {
-            component.set("v.showDutyFreeBanners", false);
-        }
-        let country = component.get("v.country");
-        if (country == 'GB') {
-            if (classification.indexOf('SD0') >= 0) {
-                component.set("v.showCostCenters", false);
-                component.set("v.showInternalOrderNumbers", true);
+        try {
+            let classification = component.get("v.classification");
+            console.log('[handleClassificationChange] classification', classification);
+            if (classification.indexOf('Duty Free') >= 0) {
+                component.set("v.showDutyFreeBanners", true);
             } else {
-                component.set("v.showCostCenters", true);
-                component.set("v.showInternalOrderNumbers", false);
-            }    
+                component.set("v.showDutyFreeBanners", false);
+            }
+            let country = component.get("v.country");
+            if (country == 'GB') {
+                if (classification.indexOf('SD0') >= 0) {
+                    component.set("v.showCostCenters", false);
+                    component.set("v.showInternalOrderNumbers", true);
+                } else {
+                    component.set("v.showCostCenters", true);
+                    component.set("v.showInternalOrderNumbers", false);
+                }    
 
-            helper.setupProductTableHeaders(component);
+                helper.setupProductTableHeaders(component);
+            }
+            const picklistValues = component.get("v.allPicklistValues");
+            const reasonCode = component.get("v.reasonCode");
+            var reasonCodePicklistValues = picklistValues["Reason_Code__c"].picklistValues;
+            var picklistValuesForClassification = reasonCodePicklistValues.filter(r => r.description == classification);
+            console.log('[SampleOrderForm.controller.handleClassificationChange] picklistValuesForClassification', picklistValuesForClassification);
+            var reasonCodes = [{"label":"", "value":""}];
+
+
+            for(var i = 0; i < picklistValuesForClassification.length; i++) {
+                reasonCodes.push({"label":picklistValuesForClassification[i].label, "value":picklistValuesForClassification[i].value, "selected":reasonCode == picklistValuesForClassification[i].value});
+            }
+            console.log('[SampleOrderForm.controller.handleClassificationChange] picklistValue', picklistValues);
+            console.log('[SampleOrderForm.controller.handleClassificationChange] reasoncodePicklistValues', reasonCodePicklistValues);
+            console.log('[SampleOrderForm.controller.handleClassificationChange] reasonCodes', reasonCodes);
+            reasonCodes.sort(function(a, b) {
+                let x = a.label.toLowerCase();
+                let y = b.label.toLowerCase();
+                if (x < y) { return -1; }
+                if (x > y) { return 1; }
+                return 0; 
+            });
+            component.set("v.reasonCodes", reasonCodes);
+        }catch(ex) {
+            console.log('[handleClassificationChange] exception', ex);
         }
     },
     handleInternationalOrderChange : function(component, event, helper) {
@@ -176,6 +230,10 @@
         console.log('[handleInternationOrderChange] use standard address component', userStandardAddressComponent);
         component.set("v.useStandardAddressComponent", userStandardAddressComponent);
         */
+    },
+    handleIsGiftChange : function(component, event, helper) {
+        const theSampleOrder = component.get('v.theSampleOrder');
+        console.log('[handleGiftChange] is gift', theSampleOrder.Is_Gift__c);
     },
     handleLookupIdChanged : function(component, event, helper) {
         let instanceId = event.getParam('instanceId');
@@ -222,6 +280,16 @@
         } catch(ex) {
             console.log('[handleCostCenterChange] exception', ex);
         }
+    },
+    handleStoreroomSelectionChange : function(component, event, helper) {
+        try {
+            helper.setBusinessDetailsFromStoreroom(component);
+        } catch(ex) {
+            console.log('[handleStoreroomSelectionChange] exception', ex);
+        }
+    },
+    handleReasonCodeSelectionChange : function(component, event, helper) {
+
     },
     handleBrandChange : function(component, event, helper) {
         //var brand = event.getParam("value");
