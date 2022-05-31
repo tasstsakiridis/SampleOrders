@@ -31,12 +31,16 @@
             {label:'London', value:'London'},
             {label:'Essex', value:'Essex'},
             {label:'Sussex', value:'Sussex'}
+        ],
+        MX: [
+            {label:'Mexico City', value:'Mexico City'},
         ]  
     },
     countryOptions: [
         {'label': 'Australia', 'value': 'AU'},
         {'label': 'United Kingdom', 'value': 'GB' },
-        {'label': 'Taiwan', 'value': 'TW' }
+        {'label': 'Taiwan', 'value': 'TW' },
+        {'label': 'Mexico', 'value': 'MX' },
     ],
 
     getProvinceOptions: function(component, country) {
@@ -100,15 +104,20 @@
                     try {
                         var rv = response.getReturnValue();
                         console.log('[SampleOrderForm.Helper.getPicklistValues] picklistValues', rv);
+                        component.set("v.allPicklistValues", rv);
+
                         let classification = component.get("v.classification");
                         let costCenter = component.get("v.costCenter");
                         let statuses = component.get("v.statuses");
+                        let reasonCode = component.get("v.reasonCode");
 
                         var classifications = [{"label":"", "value":""}];
                         var costCenters = [{"label":"", "value":""}];
+                        var reasonCodes = [{"label":"", "value":""}];
                         var classificationPicklistValues = rv["Classification__c"].picklistValues;
                         var costCentersPicklistValues = rv["Cost_Center__c"].picklistValues;
                         var statusPicklistValues = rv["Approval_Status__c"].picklistValues;
+                        const reasonCodePicklistValues = rv["Reason_Code__c"].picklistValues;
                         console.log('[SampleOrderForm.Helper.getPicklistValues] classificationPicklistValues', classificationPicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] costCentersPicklistValues', costCentersPicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] statusPicklistValues', statusPicklistValues);
@@ -120,6 +129,13 @@
                         }
                         for(var i = 0; i < costCentersPicklistValues.length; i++) {
                             costCenters.push({"label":costCentersPicklistValues[i].label, "value":costCentersPicklistValues[i].value, "selected":costCenter == costCentersPicklistValues[i].value});
+                        }
+                        if (classification && classification.length > 0) {
+                            const classificationPicklistValues = reasonCodePicklistValues.filter(r => r.description == classification);
+                            for(var i = 0; i < classificationPicklistValues.length; i++) {
+                                reasonCodes.push({"label":classificationPicklistValues[i].label, "value":classificationPicklistValues[i].value, "selected":reasonCode == classificationPicklistValues[i].value});
+                            }
+    
                         }
                         console.log('[SampleOrderForm.Helper.getPicklistValues] classification', classifications);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] costCenters', costCenters);
@@ -149,6 +165,13 @@
                             if (x > y) { return 1; }
                             return 0; 
                         });
+                        reasonCodes.sort(function(a, b) {
+                            let x = a.label.toLowerCase();
+                            let y = b.label.toLowerCase();
+                            if (x < y) { return -1; }
+                            if (x > y) { return 1; }
+                            return 0; 
+                        });
                     
                         var approvalStatus = component.get("v.approvalStatus");
                         for(var i = 0; i < statuses.length; i++) {
@@ -164,6 +187,7 @@
                         component.set("v.classifications", classifications);
                         component.set("v.costCenters", costCenters);
                         component.set("v.statuses", statuses);
+                        component.set("v.reasonCodes", reasonCodes);
                     }catch(ex) {
                         console.log('[SampleOrderForm.helper.getPicklistValues] exception', ex);                        
                     }
@@ -332,6 +356,41 @@
         });
         $A.enqueueAction(action);
     },
+    getStorerooms : function(component) {
+        console.log('getStorerooms');
+    	var action = component.get("c.getStorerooms");
+        action.setCallback(this, function(response) {
+            if (component.isValid()) {
+                var callState = response.getState();
+                if (callState === "SUCCESS") {
+                    var rv = response.getReturnValue();
+                    console.log('[SampleOrderForm.Helper.getStorerooms] storerooms', rv);
+                    var rooms = [{"label":"", value:""}];
+                    for(var i = 0; i < rv.length; i++) {
+                        rooms.push({"label":rv[i].Name + '-' + rv[i].ShippingCity,"value":rv[i].Id, account: rv[i]});
+                    }
+                    rooms.sort(function(a, b) { 
+                        let x = a.label.toLowerCase();
+                        let y = b.label.toLowerCase();
+                        if (x < y) { return -1; }
+                        if (x > y) { return 1; }
+                        return 0; 
+                    });
+                    console.log('[SampleOrderForm.helper.getStorerooms] storerooms', rooms);
+                    component.set("v.storerooms", rooms);
+                    //component.set("v.showStorerooms", rooms.length > 1);
+                    
+                } else if (callState === "INCOMPLETE") {
+                    console.log("[SampleOrderForm.Helper.getStorerooms] callback returned incomplete.");                    
+                } else if (callState === "ERROR") {
+                    var errors = response.getError();
+                    console.log("[SampleOrderForm.Helper.getStorerooms] callback returned in error.", errors);                    
+                }
+            }
+            
+        });
+        $A.enqueueAction(action);
+    },
     getInternalOrderNumbers : function(component) {
     	var action = component.get("c.getInternalOrderNumbers");
         action.setCallback(this, function(response) {
@@ -424,12 +483,64 @@
         });
         $A.enqueueAction(action);
     },
+    getPromotionActivities : function(component) {
+        console.log('getPromotionActivities');
+    	var action = component.get("c.getPromotionActivities");
+        action.setParams({
+            'activityType' : 'MX - PSA'
+        });
+        action.setCallback(this, function(response) {
+            if (component.isValid()) {
+                var callState = response.getState();
+                if (callState === "SUCCESS") {
+                    var rv = response.getReturnValue();
+                    console.log('[SampleOrderForm.Helper.getPromotionActivities] activities', rv);
+                    var activities = [{"label":"", value:""}];
+                    for(var i = 0; i < rv.length; i++) {
+                        activities.push({"label":rv[i].Name,"value":rv[i].Id, activity: rv[i]});
+                    }
+                    activities.sort(function(a, b) { 
+                        let x = a.label.toLowerCase();
+                        let y = b.label.toLowerCase();
+                        if (x < y) { return -1; }
+                        if (x > y) { return 1; }
+                        return 0; 
+                    });
+                    console.log('[SampleOrderForm.helper.getPromotionActivities] activities', activities);
+                    component.set("v.activities", activities);
+                    
+                } else if (callState === "INCOMPLETE") {
+                    console.log("[SampleOrderForm.Helper.getPromotionActivities] callback returned incomplete.");                    
+                } else if (callState === "ERROR") {
+                    var errors = response.getError();
+                    console.log("[SampleOrderForm.Helper.getPromotionActivities] callback returned in error.", errors);                    
+                }
+            }
+            
+        });
+        $A.enqueueAction(action);
+    },
 
     initSampleOrder : function(component) {
+        let recordTypeName = component.get("v.recordTypeName");
+        var userName = component.get("v.userName");
+        var userPhone = component.get("v.userPhone");
+        console.log('userName', userName);
+        console.log('userPhone', userPhone);
+        var contactName = '';
+        var contactPhone = '';
+        if (recordTypeName == 'Sample Order - Storeroom Request') {
+            contactName = userName;
+            contactPhone = userPhone;
+        } 
+
         var theSampleOrder = { 'sObjectType': 'SAP_Interfaced_Data__c', 
                                'Approval_Status__c':'New',
-                              'Business_Country__c': component.get("v.countryName")};
-        console.log('[SampleOrderForm.helper.initSampleOrder] sampleorder', theSampleOrder);
+                              'Business_Country__c': component.get("v.countryName"),
+                              'Contact_Name__c' : contactName,
+                              'Contact_Phone__c' : contactPhone};
+        console.log('[SampleOrderForm.helper.initSampleOrder] sampleorder', theSampleOrder); 
+
 		component.set('v.theSampleOrder', theSampleOrder);  
         component.set("v.disableAddItems", false);
         component.set("v.isAddingItems", false);
@@ -443,6 +554,7 @@
         component.set("v.showInternalOrderNumbers", false);
         component.set("v.accountId", null);
         component.set("v.accountName", null);
+        component.set("v.storeroom", null);
         
         this.initToast(component);
         let deletedRows = [];
@@ -536,6 +648,46 @@
         }
         */
     },
+    filterProductsToActivityProducts : function(component) {
+        const activityId = component.get("v.promotionActivity");
+        console.log('[filterProductsToActivityProducts] activityId', activityId);
+        const activities = component.get("v.activities");
+        console.log('[filterProductsToActivityProducts] activities', activities);
+        const activity = activities.find(a => a.value == activityId).activity;
+        console.log('[filterProductsToActivityProducts] activity', activity);
+        const allProducts = component.get("v.productData");
+        console.log('[filterProductsToActivityProducts] allProducts', allProducts);
+        
+        let activityProducts = activity.Promotion_Material_Items__r;
+        console.log('[filterProductsToActivityProducts] activityProducts', activityProducts);
+        let products = [];
+        allProducts.forEach(p => {
+            const ap = activityProducts.find(pmi => pmi.Product_Custom__c == p.productId);
+            if (ap != undefined) {
+                console.log('[filterProductsToActivityProducts] p', p);
+                products.push({
+                    brandId : p.brandId,
+                    brandName : p.brandName,
+                    productId : p.productId,
+                    productName: p.productName,
+                    cogs: p.cogs,
+                    convertedCases: p.convertedCases,
+                    id: p.id,
+                    internalOrderNumber : p.internalOrderNumber,
+                    packQty : p.packQty,
+                    price: p.price,
+                    quantity : p.quantity,
+                    units : p.units,
+                    usedFor : p.usedFor,
+                    totalActualQty : ap.Total_Actual_Free_Bottle_Qty__c * p.packQty,
+                    totalPlannedQty : ap.Free_Bottle_Quantity__c * p.packQty
+                });
+            }
+        });
+        console.log('[filterProductsToActivityProducts] products', products);
+        component.set("v.data", products);
+        component.set("v.productData", products);
+    },
     canAddItems : function(component) {
     	var order = component.get("v.theSampleOrder");        
         if (order == null || order.Id == null || order.Id == '') {
@@ -593,6 +745,64 @@
             }    
         }
     },
+    setBusinessDetailsFromStoreroom : function(component) {
+        let storeroom = component.get("v.accountId");
+        let storerooms = component.get("v.storerooms");
+        var theSampleOrder = component.get("v.theSampleOrder");
+        if (storeroom == '') {
+            theSampleOrder.Business_Name__c = '';
+            theSampleOrder.Business_Address__c = '';
+            theSampleOrder.Business_City__c = '';
+            theSampleOrder.Business_Postcode__c = '';
+            theSampleOrder.Business_State__c = '';
+
+            component.set("v.theSampleOrder", theSampleOrder);
+            component.set("v.businessState", '');
+        } else {
+            if (storerooms != null && storerooms.length > 0) {
+                let room = storerooms.find(r => r.value == storeroom);
+                if (room != undefined) {
+                    theSampleOrder.Business_Name__c = room.account.Name;
+                    theSampleOrder.Business_Address__c = room.account.ShippingStreet;
+                    theSampleOrder.Business_City__c = room.account.ShippingCity;
+                    theSampleOrder.Business_Postcode__c = room.account.ShippingPostalCode;
+
+                    component.set("v.theSampleOrder", theSampleOrder);
+                    component.set("v.businessState", room.account.ShippingState);
+                }
+            }
+        }
+    },
+    setBusinessDetailsFromActivity : function(component) {
+        let activity = component.get("v.promotionActivity");
+        let activities = component.get("v.activities");
+        var theSampleOrder = component.get("v.theSampleOrder");
+        if (activity == '') {
+            theSampleOrder.Business_Name__c = '';
+            theSampleOrder.Business_Address__c = '';
+            theSampleOrder.Business_City__c = '';
+            theSampleOrder.Business_Postcode__c = '';
+            theSampleOrder.Business_State__c = '';
+
+            component.set("v.theSampleOrder", theSampleOrder);
+            component.set("v.businessState", '');
+        } else {
+            if (activities != null && activities.length > 0) {
+                let pa = activities.find(r => r.value == activity);
+                if (pa != undefined) {
+                    theSampleOrder.Business_Name__c = pa.activity.Account__r.Name;
+                    theSampleOrder.Business_Address__c = pa.activity.Account__r.ShippingStreet,
+                    theSampleOrder.Business_City__c = pa.activity.Account__r.ShippingCity;
+                    theSampleOrder.Business_Postcode__c = pa.activity.Account__r.ShippingPostalCode;
+                    theSampleOrder.Contact_Name__c = pa.activity.Contact__r.Name;
+                    theSampleOrder.Contact_Phone__c = pa.activity.Contact__r.Phone;
+
+                    component.set("v.theSampleOrder", theSampleOrder);
+                    component.set("v.businessState", pa.Account.ShippingState);
+                }
+            }
+        }
+    },
     validateOrder : function(component) {
         console.log('[SampleOrderForm.helper.validateOrder]');
     	var theSampleOrder = component.get("v.theSampleOrder");
@@ -604,6 +814,8 @@
         console.log('[validateOrder] leadTime', leadTime);
         let userMarket = component.get("v.userMarket");
         let countryCode = this.getCountryCode(component, userMarket);
+        let storeroom = component.get("v.storeroom");
+        
         console.log('[validateOrder] userMarket', userMarket);
         console.log('[validateOrder] countryCode', countryCode);
         let isValid = true;
@@ -672,7 +884,7 @@
                 isValid = false;
             }
         }
-        if (countryCode != 'GB' && countryCode != 'TW') {
+        if (countryCode != 'GB' && countryCode != 'TW' && !theSampleOrder.Is_International_Order__c) {
             if (businessState == null || businessState == '') { 
                 console.log('business state is null'); 
                 msg += 'Business State is required';
@@ -710,6 +922,11 @@
                 isValid = false; 
             }
         }
+        if (theSampleOrder.Is_Gift__c == true && (theSampleOrder.Gift_Register_Acknowledgement__c == null || theSampleOrder.Gift_Register_Acknowledgement__c == false)) {
+            console.log('gift hasnt been acknowledged');
+            msg += 'You must acknowledge that you have completed the gift register for this gift';
+            isValid = false;
+        }
         return { msg: msg, isValid: isValid };
     },
     loadSampleOrder : function(component, recordId) {
@@ -731,6 +948,9 @@
                         component.set("v.recordTypeName", rv.RecordType.Name);               
                         component.set("v.recordTypeId", rv.RecordTypeId);
                         component.set("v.classification", rv.Classification__c);
+                        component.set("v.reasonCode", rv.Reason_Code__c);
+                        component.set("v.accountId", rv.Account__c);
+                        component.set("v.promotionActivity", rv.Activity__c);
                         var approvalStatus = rv.Approval_Status__c;
                         var statuses = component.get("v.statuses");
                         if (statuses && statuses.length > 0) {
@@ -760,6 +980,8 @@
                         component.set("v.showInternalOrderNumbers", showInternalOrderNumbers);
 
                         component.set("v.storageLocker", rv.Storage_Locker__c)
+                        component.set("v.storeroom", rv.Account__c);
+
                         let countryCode = rv.Business_Country__c == undefined ? 'AU' : rv.Business_Country__c;
                         component.set("v.country", countryCode);
                         var countryFound = false;
@@ -784,9 +1006,10 @@
                         $A.util.addClass(banner, "status_"+rv.Approval_Status__c);
                         
                         if (rv.Classification__c.indexOf('Duty Free') >= 0) {
-                            component.set("v.showBannerGroups", true);                            
+                            console.log('[loadSampleOrders] showing banner groups for duty free');
+                            component.set("v.showDutyFreeBanners", true);                            
                         } else {
-                            component.set("v.showBannerGroups", false);
+                            component.set("v.showDutyFreeBanners", false);
                         }
                         if (rv.Banner_Group__c != null) {
                             component.set("v.selectedBannerGroup", rv.Banner_Group__c);
@@ -794,6 +1017,15 @@
                         if (rv.Account__c != null) {
                             component.set("v.accountId", rv.Account__c);
                             component.set("v.accountName", rv.Account_Name__c);
+                        }
+                        let activities = component.get("v.activities");
+                        if (activities != null) {
+                            for(var i = 0; i < activities.length; i++) {
+                                if (activities[i].value == rv.Activity__c) {
+                                    activities[i].selected = true; break;
+                                }
+                            }
+                            this.filterProductsToActivityProducts(component);
                         }
                         let costCenters = component.get("v.costCenters");
                         if (costCenters != null) {
@@ -808,6 +1040,14 @@
                             for(var i = 0; i < classifications.length; i++) {
                                 if (classifications[i].value == rv.Classification__c) {
                                     classifications[i].selected = true; break;
+                                }
+                            }
+                        }
+                        let reasonCodes = component.get("v.reasonCodes");
+                        if (reasonCodes != null) {
+                            for(var i = 0; i < reasonCodes.length; i++) {
+                                if (reasonCodes[i].value == rv.Reason_Code__c) {
+                                    reasonCodes[i].selected = true;
                                 }
                             }
                         }
@@ -917,7 +1157,11 @@
         var storageLocker = component.get("v.storageLocker");
         var accountId = component.get("v.accountId");
         var marketId = component.get("v.marketId");
+        var activityId = component.get("v.promotionActivity");
         let statuses = component.get("v.statuses");
+        const reasonCode = component.get("v.reasonCode");
+        const marketName = component.get("v.marketName");
+        const recordTypeName = component.get("v.recordTypeName");
         var approvalStatus = "New";
         console.log('[SampleOrderForm.helper.saveSampleOrder] country', country);
         console.log('[SampleOrderForm.helper.saveSampleOrder] marketId', marketId);
@@ -930,10 +1174,22 @@
         }
         component.set("v.approvalStatus", approvalStatus);
 
+        if (marketName == 'Australia' && recordTypeName == 'Sample Order - Storeroom Request') {
+            theSampleOrder.Account__c = storeroom;
+            if (classification.indexOf('Sales') > -1) {
+                theSampleOrder.Budget_Type__c = 'Brand Expense - Sales';
+            } else if (classification.indexOf('Marketing') > -1) {
+                theSampleOrder.Budget_Type__c = 'Brand Expense - Marketing';
+            } else if (classification == 'Admin') {
+                theSampleOrder.Budget_Type__c = 'SG&A';
+            }
+        }
+        if (classification == 'S')
         //theSampleOrder.Business_Country__c = country;
         theSampleOrder.Business_State__c = businessState;
         theSampleOrder.RecordTypeId = recordTypeId;
         theSampleOrder.Classification__c = classification;
+        theSampleOrder.Reason_Code__c = reasonCode;
         if (accountId != null && accountId.length > 0) {
             theSampleOrder.Account__c = accountId;
         }
@@ -942,7 +1198,8 @@
         }
         theSampleOrder.Cost_Center__c = costCenter;
         theSampleOrder.Storage_Locker__c = storageLocker;
-
+        theSampleOrder.Activity__c = activityId;
+        
         console.log('theSampleOrder', theSampleOrder);
 		console.log('theSampleOrder.classification', theSampleOrder.Classification__c);
 		var action = component.get("c.saveSampleOrder");
@@ -1018,6 +1275,8 @@
     saveSampleOrderItems : function(component) {        
         console.log('[SampleOrderForm.helper.saveSampleOrderItems]');
         component.set("v.isLoading", true);
+        const recordTypeName = component.get("v.recordTypeName");
+        const marketName = component.get("v.userMarket");
         let showInternalOrderNumbers = component.get("v.showInternalOrderNumbers");
     	var rows = component.get("v.productData");
         let deletedRows = component.get("v.deletedRows");        
@@ -1044,7 +1303,9 @@
                         productName: rows[i].productName,
                         quantity: rows[i].quantity,
                         units: rows[i].units,
-                        convertedCases: rows[i].convertedCases
+                        convertedCases: rows[i].convertedCases,
+                        totalActualQty: rows[i].totalActualQty,
+                        totalPlannedQty: rows[i].totalPlannedQty
                     });
                     console.log('[SampleOrderForm.helper.saveSampleOrderItems] items', items);   
                     productIds.push(rows[i].productId);                    
@@ -1062,6 +1323,9 @@
             var action = component.get("c.saveOrderItems");
             action.setParams({
                 "sapId": theSampleOrder.Id,
+                "recordTypeName": recordTypeName,
+                "market": marketName,
+                "activityId": theSampleOrder.Activity__c,
                 "sapItems": JSON.stringify(items)
             });
             action.setCallback(this, function(response) {

@@ -2,6 +2,7 @@
 	<!-- String Attributes -->
     <aura:attribute name="userId" type="String" default="" />
     <aura:attribute name="userName" type="String" default="" />
+    <aura:attribute name="userPhone" type="String" default="" />
     <aura:attribute name="marketId" type="String" default="" />
     <aura:attribute name="userMarket" type="String" default="" />
     <aura:attribute name="userContext" type="String" />
@@ -21,6 +22,10 @@
     <aura:attribute name="recordTypeId" type="String" default="" />
     <aura:attribute name="recordTypeName" type="String" default="" />
     <aura:attribute name="approvalStatus" type="String" default="New" />
+    <aura:attribute name="storeroom" type="String" default="" />
+    <aura:attribute name="promotionActivity" type="String" default="" />
+    <aura:attribute name="reasonCode" type="String" default="" />
+    <aura:attribute name="maxInputLength" type="String" default="{!$Label.c.Max_Input_Length}" />
 
     <!-- Number Attributes -->
     <aura:attribute name="selectedRowCount" type="Integer" default="0" />
@@ -44,8 +49,12 @@
     <aura:attribute name="showInternationalOrder" type="Boolean" default="false" />
     <aura:attribute name="showCostCenters" type="Boolean" default="false" />
     <aura:attribute name="showAccounts" type="Boolean" default="true" />
+    <aura:attribute name="showActivities" type="Boolean" default="false" />
     <aura:attribute name="useStandardAddressComponent" type="Boolean" default="true" />
     <aura:attribute name="showCaseConversion" type="Boolean" default="false" />
+    <aura:attribute name="showShippingInstructions" type="Boolean" default="false" />
+    <aura:attribute name="isStoreroomRequest" type="Boolean" default="false" />
+    <aura:attribute name="showSubmitForApproval" type="Boolean" default="true" />
 
     <!-- List & Object Attributes -->
     <aura:attribute name="theSampleOrder" type="SAP_Interfaced_Data__c" default="{ }" />
@@ -62,11 +71,15 @@
     <aura:attribute name="storageLockers" type="List" />
     <aura:attribute name="accounts" type="List" />
     <aura:attribute name="internalOrderNumbers" type="Map" />
+    <aura:attribute name="allPicklistValues" type="Map" />
     <aura:attribute name="brands" type="List" />
     <aura:attribute name="productColumns" type="List" />
     <aura:attribute name="selectedProducts" type="SampleOrderItem[]" />
     <aura:attribute name="approvalHistory" type="Map" default="{'TeamLeader':''},{'TeamManager':''},{'FinanceManager':''},{'items', []}" />    
     <aura:attribute name="approvalHistoryColumns" type="List" />
+    <aura:attribute name="reasonCodes" type="List" />
+    <aura:attribute name="storerooms" type="List" />
+    <aura:attribute name="activities" type="List" />
 
     <!-- Handle component events -->
     <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
@@ -76,7 +89,6 @@
     <!--<aura:handler name="change" value="{!v.objectDescribe}" action="{!c.handleDescribeInfoChange}" />-->
     <aura:handler name="change" value="{!v.closeDialog}" action="{!c.handleCloseDialogChange}" />
     <aura:handler name="change" value="{!v.recordTypeId}" action="{!c.handleRecordTypeChange}" />
-    <!--<aura:handler name="change" value="{!v.storageLocker}" action="{!c.handleStorageLockerChange}" />-->
     
     <!-- handle Component events -->
     <aura:handler name="bfLightningEvent" event="c:bfLightningEvent" action="{!c.handleLightningEvent}" />
@@ -115,7 +127,9 @@
             <lightning:button aura:id="btnSave" variant="brand" type="submit" disabled="{!v.orderLocked}" name="save" label="{!$Label.c.Save}" onclick="{!c.handleButtonClick}" />
             <lightning:button aura:id="btnSaveClose" variant="brand" type="submit" disabled="{!v.orderLocked}"  name="saveclose" label="{!$Label.c.Save_and_Close}"  onclick="{!c.handleButtonClick}"/>
             <lightning:button aura:id="btnCancel" variant="brand" type="button" name="cancel" label="{!$Label.c.Cancel}" onclick="{!c.handleButtonClick}" />
-            <lightning:button aura:id="btnSubmit" variant="brand" type="button" disabled="{!v.canSubmit==false}"  name="submit" label="{!$Label.c.Submit_For_Approval}" onclick="{!c.handleButtonClick}" />
+            <aura:if isTrue="{v.showSubmitForApproval}">
+                <lightning:button aura:id="btnSubmit" variant="brand" type="button" disabled="{!v.canSubmit==false}"  name="submit" label="{!$Label.c.Submit_For_Approval}" onclick="{!c.handleButtonClick}" />
+            </aura:if>        
             <lightning:button aura:id="btnItems" variant="brand" disabled="{!v.disableAddItems}" type="button" name="additems" label="{!v.itemsButtonLabel}" onclick="{!c.handleButtonClick}" />
         </div>
         <div aura:id="approvalStatus" class="header">
@@ -176,7 +190,7 @@
                             </aura:iteration>
                         </lightning:select>
                         <aura:if isTrue="{!v.showDutyFreeBanners}">
-                            <lightning:select name="bannergroup" label="Banner Group" aura:id="bannerGroup" disabled="{!v.orderLocked}" onchange="{!c.handleBannerGroupChange}">
+                            <lightning:select name="bannerGroup" label="Banner Group" aura:id="bannerGroup" disabled="{!v.orderLocked}" value="{!v.selectedBannerGroup}" onchange="{!c.handleBannerGroupChange}">
                                 <aura:iteration items="{!v.bannerGroups}" var="bg">
                                     <option text="{!bg.label}" value="{!bg.value}" selected="{!bg.selected}" />
                                 </aura:iteration>
@@ -185,7 +199,7 @@
                     </div>
                     <aura:if isTrue="{!v.showInternationalOrder}">
                         <div class="slds-col slds-has-flexi-truncate" role="listitem">
-                            <lightning:input type="toggle" label="International Order" name="i_IsInternationalOrder" checked="{!v.theSampleOrder.Is_International_Order__c}" messageToggleActive="" messageToggleInactive="" class="slds-align_absolute-center" />
+                            <lightning:input type="toggle" label="International Order" name="i_IsInternationalOrder" checked="{!v.theSampleOrder.Is_International_Order__c}" messageToggleActive="" messageToggleInactive="" onchange="{!c.handleInternationalOrderChange}" class="slds-align_absolute-center" />
                         </div>    
                     </aura:if>
                     <aura:if isTrue="{!v.showCostCenters}">
@@ -202,6 +216,24 @@
                     <div class="slds-col slds-has-flexi-truncate slds-m-top_large" role="listitem">
                         <lightning:select name="storageLockers" label="Storage Lockers" aura:id="storageLockers" disabled="{!v.orderLocked}" value="{!v.storageLocker}" onchange="{!c.handleStorageLockerSelectionChange}">
                             <aura:iteration items="{!v.storageLockers}" var="st">
+                                <option text="{!st.label}" value="{!st.value}" selected="{!st.selected}" />
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>                        
+                </aura:if>
+                <aura:if isTrue="{!v.showActivities}">
+                    <div class="slds-col slds-has-flexi-truncate slds-m-top_large" role="listitem">
+                        <lightning:select name="promotionActivities" label="Activities" aura:id="promotionActivities" disabled="{!v.orderLocked}" value="{!v.promotionActivity}" onchange="{!c.handlePromotionActivitySelectionChange}">
+                            <aura:iteration items="{!v.activities}" var="pa">
+                                <option text="{!pa.label}" value="{!pa.value}" selected="{!pa.selected}" />
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>                        
+                </aura:if>
+                <aura:if isTrue="{!v.isStoreroomRequest}">
+                    <div class="slds-col slds-has-flexi-truncate slds-m-top_large" role="listitem">
+                        <lightning:select name="storerooms" label="Storerooms" aura:id="storerooms" disabled="{!v.orderLocked}" value="{!v.accountId}" onchange="{!c.handleStoreroomSelectionChange}">
+                            <aura:iteration items="{!v.storerooms}" var="st">
                                 <option text="{!st.label}" value="{!st.value}" selected="{!st.selected}" />
                             </aura:iteration>
                         </lightning:select>
@@ -246,10 +278,10 @@
                     <aura:set attribute="else">
                         <h4>{!$Label.c.Business_Address}</h4>
                         <div>
-                            <lightning:textarea aura:id="i_BusinessAddress" name="i_BusinessAddress" label="{!v.objectDescribe.fields.Business_Address__c.label}" value="{!v.theSampleOrder.Business_Address__c}" required="true"  disabled="{!v.orderLocked}" />
+                            <lightning:textarea aura:id="i_BusinessAddress" name="i_BusinessAddress" label="{!v.objectDescribe.fields.Business_Address__c.label + ' (' + v.maxInputLength + ')'}" value="{!v.theSampleOrder.Business_Address__c}" required="true" maxlength="35" messageWhenTooLong="{!$Label.c.Input_Too_Long}"  disabled="{!v.orderLocked}" />
                         </div>
                         <div>
-                            <lightning:textarea aura:id="i_BusinessAddress2" name="i_BusinessAddress2" label="{!v.objectDescribe.fields.Business_Address2__c.label}" value="{!v.theSampleOrder.Business_Address2__c}" required="false"  disabled="{!v.orderLocked}"/>
+                            <lightning:textarea aura:id="i_BusinessAddress2" name="i_BusinessAddress2" label="{!v.objectDescribe.fields.Business_Address2__c.label + ' (' + v.maxInputLength + ')'}" value="{!v.theSampleOrder.Business_Address2__c}" required="false" maxlength="35" messageWhenTooLong="{!$Label.c.Input_Too_Long}"  disabled="{!v.orderLocked}"/>
                         </div>
                         <div class="slds-m-top_small">
                             <lightning:layout>
@@ -280,6 +312,37 @@
                         <lightning:input aura:id="i_ContactPhone" type="tel" name="i_ContactPhone" label="{!v.objectDescribe.fields.Contact_Phone__c.label}" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Contact_Phone__c}" placeholder="{!v.objectDescribe.fields.Contact_Phone__c.label}" required="true" />
                     </div>            
                 </div>
+                <aura:if isTrue="{!v.isStoreroomRequest}">
+                    <div class="slds-grid slds-gutters_small slds-m-top_small">
+                        <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                            <lightning:select name="reasonCodes" label="Reason" aura:id="reasonCodes" disabled="{!v.orderLocked}" value="{!v.reasonCode}" onchange="{!c.handleReasonCodeSelectionChange}">
+                                <aura:iteration items="{!v.reasonCodes}" var="st">
+                                    <option text="{!st.label}" value="{!st.value}" selected="{!st.selected}" />
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>            
+                        <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                            <h4>{!$Label.c.Is_Gift_Above_100}</h4>
+                            <lightning:input type="toggle" label="" name="i_IsGift" checked="{!v.theSampleOrder.Is_Gift__c}" messageToggleActive="" messageToggleInactive="" onchange="{!c.handleIsGiftChange}" class="slds-align_absolute-center slds-m-top_x-small" />
+                        </div>            
+                    </div>    
+                </aura:if>
+                <aura:if isTrue="{!v.theSampleOrder.Is_Gift__c}">
+                    <h4 class="slds-m-top_small">{!$Label.c.Gift_Register}</h4>
+                    <div class="slds-grid slds-gutters_small">
+                        <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                            <lightning:formattedUrl  value="https://docs.google.com/forms/d/e/1FAIpQLScCnGQCwki9ck2qMCrwlB8dqvfvZNlxOQvKM9czhf5-j9cgBw/viewform?vc=0&amp;c=0&amp;w=1&amp;flr=0" tooltip="Click link to view Gift &amp; Entertainment Register" target="_blank" />
+                        </div>            
+                        <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                            <lightning:input type="toggle" label="Compliance Acknowledgement" name="i_confirmGiftRegistered" checked="{!v.theSampleOrder.Gift_Register_Acknowledgement__c}" messageToggleActive="" messageToggleInactive="" class="slds-align_absolute-center" />
+                        </div>            
+                    </div>    
+                </aura:if>
+                <aura:if isTrue="{!v.showShippingInstructions}">
+                    <div class="slds-m-top_small">
+                        <lightning:input label="{!$Label.c.Shipping_Instructions}" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Shipping_Instructions__c}" class="height_60" />
+                    </div>
+                </aura:if>
                 <div class="slds-m-top_small">
                     <!--<span class="slds-form-element__label">Reason for Stock Order/Comments</span>-->
                     <!--<lightning:inputRichText label="Reason for Stock Order/Comments" disabled="{!v.orderLocked}" placeholder="Comments" value="{!v.theSampleOrder.Reason__c}" disabledCategories="FORMAT_FONT,FORMAT_TEXT,FORMAT_BODY,ALIGN_TEXT,INSERT_CONTENT,REMOVE_FORMATTING" />-->
@@ -303,7 +366,9 @@
             <lightning:button aura:id="btnSave" variant="brand" type="submit" disabled="{!v.orderLocked}"  name="save" label="{!$Label.c.Save}" onclick="{!c.handleButtonClick}" />
             <lightning:button aura:id="btnSaveClose" variant="brand" type="submit" disabled="{!v.orderLocked}"  name="saveclose" label="{!$Label.c.Save_and_Close}" onclick="{!c.handleButtonClick}"/>
             <lightning:button aura:id="btnCancel" variant="brand" type="button" name="cancel" label="{!$Label.c.Cancel}" onclick="{!c.handleButtonClick}" />
-            <lightning:button aura:id="btnSubmit" variant="brand" type="button" disabled="{!v.canSubmit==false}"  name="submit" label="{!$Label.c.Submit_For_Approval}" onclick="{!c.handleButtonClick}" />
+            <aura:if isTrue="{!v.showSubmitForApproval}">
+                <lightning:button aura:id="btnSubmit" variant="brand" type="button" disabled="{!v.canSubmit==false}"  name="submit" label="{!$Label.c.Submit_For_Approval}" onclick="{!c.handleButtonClick}" />
+            </aura:if>
             <lightning:button aura:id="btnItems" variant="brand" disabled="{!v.disableAddItems}" type="button" name="additems" label="{!v.itemsButtonLabel}" onclick="{!c.handleButtonClick}" />
         </div>
     </lightning:card>    

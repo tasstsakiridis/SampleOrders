@@ -2,13 +2,14 @@ public with sharing class SampleOrder_Controller {
 
     @AuraEnabled
     public static SimpleListItem getCurrentUserInfo() {
-    	User u = [SELECT Id, Name, Market__c FROM User WHERE Id =:UserInfo.getUserId()];
+    	User u = [SELECT Id, Name, Market__c, MobilePhone FROM User WHERE Id =:UserInfo.getUserId()];
         Market__c m = [SELECT Id, Name, Country_ISO_Code_2__c, Sample_Order_Lead_Time__c FROM Market__c WHERE Name =:u.Market__c LIMIT 1];
         SimpleListItem sli = new SimpleListItem(u.Id, u.Name);
         sli.value = m.Id;
         sli.itemId = m.Country_ISO_Code_2__c;
         sli.label = String.valueOf(m.Sample_Order_Lead_Time__c);
         sli.description = m.Name;
+        sli.record = u;
         return sli;
     }
     
@@ -129,7 +130,8 @@ public with sharing class SampleOrder_Controller {
                        Authorised_By__c, Authorised_By__r.Name, Authorised_Date__c, Finance_Authorised_By__c, Finance_Authorised_Date__c, 
                        Classification__c, Banner_Group__c, Business_Name__c, Business_Address__c, Business_City__c, Business_State__c, 
                        Business_Postcode__c, Business_Country__c, Contact_Name__c, Contact_Phone__c, Reason__c, Is_International_Order__c, 
-                       Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c,
+                       Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c, Is_Gift__c, Gift_Register_Acknowledgement__c,
+                       Budget_Type__c, Reason_Code__c, Activity__c,
                        (SELECT Id, Name, SAP_Interfaced_Data__c, Product__c, Brand_Name__c, Product_Code__c, Internal_Order_Number__c, 
                                Quantity__c, Units__c, Product__r.Used_For__c, Product__r.Pack_Quantity__c, Total_Ordered_Cases__c 
                           FROM SAP_Interfaced_Data_Items__r)
@@ -190,12 +192,32 @@ public with sharing class SampleOrder_Controller {
     }
     
     @AuraEnabled
-    public static List<SAP_Interfaced_Data_Item__c> saveOrderItems(String sapId, String sapItems) {
+    public static List<SAP_Interfaced_Data_Item__c> saveOrderItems(String sapId, String recordTypeName, String market, String activityId, String sapItems) {
         if (sapId == null || sapId == '') { return null; }
         if (sapItems == null || sapItems.length() == 0) { return null; }
         
         Map<String, RecordTypeInfo> rtList = SAP_Interfaced_Data_Item__c.SObjectType.getDescribe().getRecordTypeInfosByName();
         String rtSampleOrder = rtList.get('Sample Order').getRecordTypeId();
+        if (rtList.containsKey(recordTypeName)) {
+            rtSampleOrder = rtList.get(recordTypeName).getRecordTypeId();
+        }
+
+        Map<String, RecordTypeInfo> rtPMIActual = PMI_Actual__c.SObjectType.getDescribe().getRecordTypeInfosByName();
+        String rtPSA = '';
+
+        Promotion_Activity__c thePSA;
+        if (String.isNotEmpty(activityId)) {
+            thePSA = [SELECT Id, Name, RecordType.Name,
+                            (SELECT Id, Name, Account__c FROM Promotions__r), 
+                            (SELECT Id, Name, Product_Custom__c, Promotion__c FROM Promotion_Material_Items__r) 
+                        FROM Promotion_Activity__c 
+                       WHERE Id =:activityId];
+
+        if (rtPMIActual.containsKey(thePSA.RecordType.Name)) {
+            rtPSA = rtPMIActual.get(thePSA.RecordType.Name).getRecordTypeId();
+        }
+            
+        }
         
         System.debug('sapId: ' + sapId);
         List<SAP_Interfaced_Data_Item__c> l_SAPItems = new List<SAP_Interfaced_Data_Item__c>();
@@ -203,6 +225,7 @@ public with sharing class SampleOrder_Controller {
         System.debug('# of items to save: ' + items.size());
         Boolean hasHighValueItems = false; 
         SAP_Interfaced_Data_Item__c sapItem;
+        List<PMI_Actual__c> actuals = new List<PMI_Actual__c>();
         try {
             for(SampleOrderItem s : items) {
                 System.debug('items.key id: ' + s.id + ', product: ' + s.productId);
@@ -223,14 +246,38 @@ public with sharing class SampleOrder_Controller {
                     hasHighValueItems = true;
                 }
                 l_SAPItems.add(sapItem);
+
+                if (market == 'Mexico' && thePSA != null && thePSA.Promotion_Material_Items__r != null) {
+                    for(Promotion_Material_Item__c pmi : thePSA.Promotion_Material_Items__r) {
+                        if (pmi.Product_Custom__c == i.productId) {
+                            PMI_Actual__c pmia = new PMI_Actual__c();
+                            pmia.RecordTypeId = rtPSA;
+                            pmia.Activity__c = activityId;
+                            pmia.Promotion__c = pmi.Promotion__c;
+                            pmia.Promotion_Material_Item__c = pmi.Id;
+                            pmia.Rebate_Type__c = 'Free Goods';
+                            pmia.Act_Qty__c = i.quantity;
+                            pmia.Rebate_Amount__c = i.quantity;
+                            pmia.Period__c = 0;
+                            pmia.External_Key__c = pmi.Promotion__c + '_' + pmi.Id + '_Free Goods-0';
+                            actuals.add(pmia);
+                            break;
+                        }
+                    }
+                }
+
             }
         } catch(Exception ex) {
             System.debug('exception: ' + ex.getMessage());
         }     
         
         upsert l_SAPItems;
+
+        if (actuals.size() > 0) {
+            insert actuals;
+        }
         
-        SAP_Interfaced_Data__c sampleOrder = [SELECT Id, Classification__c, Business_State__c, Has_HighValue_Items__c, Market__c, SAP_ShipTo_Code__c, SAP_SoldTo_Code__c, SAP_Plant_Code__c
+        SAP_Interfaced_Data__c sampleOrder = [SELECT Id, Approval_Status__c, Classification__c, Business_State__c, Has_HighValue_Items__c, Market__c, SAP_ShipTo_Code__c, SAP_SoldTo_Code__c, SAP_Plant_Code__c
                                                 FROM SAP_Interfaced_Data__c 
                                                WHERE Id =:sapId];
         sampleOrder.Has_HighValue_Items__c = hasHighValueItems;
@@ -290,12 +337,12 @@ public with sharing class SampleOrder_Controller {
                                        FROM Product__c 
                                       WHERE IsActive__c = true 
                                         AND Market__c=:marketId 
-                                        AND Used_For__c INCLUDES ('Sample Order','Sample Order - E-Premise', 'Sample Order - UK', 'Sample Order - TWN')
+                                        AND Used_For__c INCLUDES ('Sample Order','Sample Order - E-Premise', 'Sample Order - UK', 'Sample Order - TWN','Sample Order - MEX')
                                    ORDER BY Name];
         
         List<SampleOrderItem> items = new List<SampleOrderItem>();
         for(Product__c p : products) {
-            items.add(new SampleOrderItem('', p.Id, p.Name, p.ProductCode__c, p.Brand__c, p.Brand_Name__c, p.Used_For__c, (Integer)p.Pack_Quantity__c, 0, (Decimal)p.Price__c, (Decimal)p.COGS__c, '', ''));
+            items.add(new SampleOrderItem('', p.Id, p.Name, p.ProductCode__c, p.Brand__c, p.Brand_Name__c, p.Used_For__c, (Integer)p.Pack_Quantity__c, 0, (Decimal)p.Price__c, (Decimal)p.COGS__c, '', '', 0, 0));
         }
         return items;
     }
@@ -318,6 +365,17 @@ public with sharing class SampleOrder_Controller {
     }
 
     @AuraEnabled 
+    public static List<Account> getStorerooms() {
+        SimpleListItem u = getCurrentUserInfo();
+        String marketId = u.value;
+        if (marketId == null) {
+            marketId = [SELECT Id, Name FROM Market__c WHERE Name = 'Australia'].Id;
+        }
+
+        return [SELECT Id, Name, ShippingStreet, ShippingCity, ShippingPostalCode, ShippingState, ShippingCountry FROM Account WHERE Market__c =:marketId AND RecordType.Name = 'Storeroom' AND Status__c ='Active'];
+    }
+
+    @AuraEnabled 
     public static List<Account> getStorageLockers() {
         SimpleListItem u = getCurrentUserInfo();
         String marketId = u.value;
@@ -337,6 +395,17 @@ public with sharing class SampleOrder_Controller {
         }
         
         return [SELECT Id, Internal_Order_Number__c, Brand__c, Description__c FROM Internal_Order__c WHERE Internal_Order_Type__c = 'ZBS' AND Market__c =:marketId ORDER BY Brand__c, Internal_Order_Number__c];
+    }
+
+    @AuraEnabled 
+    public static List<Promotion_Activity__c> getPromotionActivities(String activityType) {
+        return [SELECT Id, Name, Begin_Date__c, End_Date__c, Account__c, Account__r.Name, Account__r.ShippingStreet, Account__r.ShippingCity,
+                    Account__r.ShippingPostalCode, Account__r.ShippingState, Account__r.ShippingCountry, Contact__c, Contact__r.Name, Contact__r.Phone,
+                    (SELECT Id, Product_Custom__c, Product_Name__c, Plan_Volume__c, Free_Bottle_Quantity__c, Total_Actual_Free_Bottle_Qty__c
+                       FROM Promotion_Material_Items__r)
+                  FROM Promotion_Activity__c 
+                  WHERE OwnerId =:UserInfo.getUserId()
+                    AND RecordType.Name =:activityType];
     }
 
     @AuraEnabled

@@ -111,11 +111,21 @@
                         row.convertedCases = cases + ' ' + lbl_Cases + ' ' + units + ' ' + lbl_Units;
                     }
                     console.log('cases, units, convertedCases ', cases, units, row.convertedCases);
-
+                } else if (recordType == 'Sample Order - MEX') {
+                    let totalActualQty = parseInt(row.totalActualQty) + parseInt(qty);
+                    console.log('totalActualQty', totalActualQty);
+                    console.log('totalPlanQty', row.totalPlannedQty);
+                    if (totalActualQty > row.totalPlannedQty) {
+                        alert('Total free goods given cannot be more than what was planned ['+row.totalPlannedQty + ']');
+                    } else {
+                        row.quantity = qty;
+                        row.units = qty;
+                    }
                 } else {
                     row.quantity = qty;
                     row.units = qty;
                 }
+
                 console.log('row', JSON.parse(JSON.stringify(row)));
                 component.set("v.row", row);
 
