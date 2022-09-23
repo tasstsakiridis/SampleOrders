@@ -113,8 +113,9 @@
                     console.log('cases, units, convertedCases ', cases, units, row.convertedCases);
                 } else if (recordType == 'Sample Order - MEX') {
                     let totalActualQty = parseInt(row.totalActualQty) + parseInt(qty);
-                    console.log('totalActualQty', totalActualQty);
-                    console.log('totalPlanQty', row.totalPlannedQty);
+                    console.log('[SampleOrderItemRow.controller.handleQuantityChange] totalActualQty', totalActualQty);
+                    console.log('[SampleOrderItemRow.controller.handleQuantityChange] totalPlanQty', row.totalPlannedQty);
+                    console.log('[SampleOrderItemRow.controller.handleQuantityChange] row', row);
                     if (totalActualQty > row.totalPlannedQty) {
                         alert('Total free goods given cannot be more than what was planned ['+row.totalPlannedQty + ']');
                     } else {
@@ -126,7 +127,7 @@
                     row.units = qty;
                 }
 
-                console.log('row', JSON.parse(JSON.stringify(row)));
+                console.log('[SampleOrderItemRow.controller.handleQuantityChange] row', JSON.parse(JSON.stringify(row)));
                 component.set("v.row", row);
 
                 var deletedRows = component.get('v.deletedRows');

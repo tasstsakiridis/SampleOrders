@@ -653,7 +653,10 @@
         console.log('[filterProductsToActivityProducts] activityId', activityId);
         const activities = component.get("v.activities");
         console.log('[filterProductsToActivityProducts] activities', activities);
-        const activity = activities.find(a => a.value == activityId).activity;
+        const activityRecord = activities.find(a => a.value == activityId);
+        if (activityRecord == undefined) { return; }
+        
+        const activity = activityRecord.activity;
         console.log('[filterProductsToActivityProducts] activity', activity);
         const allProducts = component.get("v.productData");
         console.log('[filterProductsToActivityProducts] allProducts', allProducts);
@@ -665,6 +668,7 @@
             const ap = activityProducts.find(pmi => pmi.Product_Custom__c == p.productId);
             if (ap != undefined) {
                 console.log('[filterProductsToActivityProducts] p', p);
+                
                 products.push({
                     brandId : p.brandId,
                     brandName : p.brandName,
@@ -679,8 +683,8 @@
                     quantity : p.quantity,
                     units : p.units,
                     usedFor : p.usedFor,
-                    totalActualQty : ap.Total_Actual_Free_Bottle_Qty__c * p.packQty,
-                    totalPlannedQty : ap.Free_Bottle_Quantity__c * p.packQty
+                    totalActualQty : ap.Total_Actual_Free_Bottle_Qty__c,
+                    totalPlannedQty : ap.Free_Bottle_Quantity__c
                 });
             }
         });
@@ -1019,7 +1023,7 @@
                             component.set("v.accountName", rv.Account_Name__c);
                         }
                         let activities = component.get("v.activities");
-                        if (activities != null) {
+                        if (activities != null && rv.Activity__c != undefined) {
                             for(var i = 0; i < activities.length; i++) {
                                 if (activities[i].value == rv.Activity__c) {
                                     activities[i].selected = true; break;
@@ -1305,7 +1309,8 @@
                         units: rows[i].units,
                         convertedCases: rows[i].convertedCases,
                         totalActualQty: rows[i].totalActualQty,
-                        totalPlannedQty: rows[i].totalPlannedQty
+                        totalPlannedQty: rows[i].totalPlannedQty,
+                        pmiActualId: rows[i].pmiActualId
                     });
                     console.log('[SampleOrderForm.helper.saveSampleOrderItems] items', items);   
                     productIds.push(rows[i].productId);                    
@@ -1348,12 +1353,13 @@
                                         productData[j].id = rv[i].Id;
                                         productData[j].quantity = rv[i].Quantity__c;            
                                         console.log('[SampleOrderForm.helper.saveItems] recordType, classification', recordType, classification);                            
-                                        if (recordType == 'Sample Order - TWN' || classification == 'AU6-Ecomm Sample Orders') {
+                                        if (recordType == 'Sample Order - MEX' || recordType == 'Sample Order - TWN' || classification == 'AU6-Ecomm Sample Orders') {
                                             productData[j].units = productData[j].quantity;
                                         } else {
                                             productData[j].units = productData[j].quantity * productData[j].packQty;
                                         }
                                         productData[j].internalOrderNumber = rv[i].Internal_Order_Number__c;
+                                        productData[j].pmiActualId = rv[i].PMI_Actual__c;
                                         break;
                                     }
                                     /*

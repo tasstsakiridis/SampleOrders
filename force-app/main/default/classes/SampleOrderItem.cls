@@ -47,6 +47,9 @@ global class SampleOrderItem {
     @AuraEnabled
     public Decimal totalPlannedQty { get; set; }
 
+    @AuraEnabled
+    public String pmiActualId { get; set; }
+
     public SampleOrderItem() {
         this.id = '';
         this.productId = '';
@@ -64,9 +67,10 @@ global class SampleOrderItem {
         this.convertedCases = '';
         this.totalActualQty = 0;
         this.totalPlannedQty = 0;
+        this.pmiActualId = '';
     }
     
-    public SampleOrderItem(String id, String productId, String productName, String productCode, String brandId, String brandName, String usedFor, Integer packQty, Integer quantity, Decimal price, Decimal cogs, String internalOrderNumber, String convertedCases, Decimal totalActualQty, Decimal totalPlannedQty) {
+    public SampleOrderItem(String id, String productId, String productName, String productCode, String brandId, String brandName, String usedFor, Integer packQty, Integer quantity, Decimal price, Decimal cogs, String internalOrderNumber, String convertedCases, Decimal totalActualQty, Decimal totalPlannedQty, String pmiActualId) {
         this.id = (id == null || id == '' ? productId : id);
         this.productId = productId;
         this.productName = productName;
@@ -83,5 +87,6 @@ global class SampleOrderItem {
         this.convertedCases = convertedCases;
         this.totalActualQty = totalActualQty;
         this.totalPlannedQty = totalPlannedQty;
+        this.pmiActualId = pmiActualId;
     }
 }

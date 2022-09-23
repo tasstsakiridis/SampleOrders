@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Reason_Code__c</fullName>
+    <externalId>false</externalId>
+    <label>Reason Code</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <controllingField>Classification__c</controllingField>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Sampling stock with customers at a venue or sending to customers</fullName>
+                <default>false</default>
+                <label>Sampling stock with customers at a venue or sending to customers</label>
+            </value>
+            <value>
+                <fullName>NPD launch</fullName>
+                <default>false</default>
+                <label>NPD launch</label>
+            </value>
+            <value>
+                <fullName>Promotional event or function</fullName>
+                <default>false</default>
+                <label>Promotional event or function</label>
+            </value>
+            <value>
+                <fullName>Photoshoots</fullName>
+                <default>false</default>
+                <label>Photoshoots</label>
+            </value>
+            <value>
+                <fullName>Marketing Agencies</fullName>
+                <default>false</default>
+                <label>Marketing Agencies</label>
+            </value>
+            <value>
+                <fullName>Tastings</fullName>
+                <default>false</default>
+                <label>Tastings</label>
+            </value>
+            <value>
+                <fullName>Welcome basket</fullName>
+                <default>false</default>
+                <label>Welcome basket</label>
+            </value>
+            <value>
+                <fullName>Raise the bar</fullName>
+                <default>false</default>
+                <label>Raise the bar</label>
+            </value>
+            <value>
+                <fullName>Gifting external (e.g., Christmas)</fullName>
+                <default>false</default>
+                <label>Gifting external (e.g., Christmas)</label>
+            </value>
+            <value>
+                <fullName>Employee engagement</fullName>
+                <default>false</default>
+                <label>Employee engagement</label>
+            </value>
+            <value>
+                <fullName>Conference</fullName>
+                <default>false</default>
+                <label>Conference</label>
+            </value>
+            <value>
+                <fullName>Donations</fullName>
+                <default>false</default>
+                <label>Donations</label>
+            </value>
+        </valueSetDefinition>
+        <valueSettings>
+            <controllingFieldValue>AU1-Samples for Marketing Related Activities</controllingFieldValue>
+            <controllingFieldValue>AU2-Samples for Sales Related Activities</controllingFieldValue>
+            <valueName>Promotional event or function</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>AU1-Samples for Marketing Related Activities</controllingFieldValue>
+            <valueName>Photoshoots</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>AU1-Samples for Marketing Related Activities</controllingFieldValue>
+            <valueName>Marketing Agencies</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>AU1-Samples for Marketing Related Activities</controllingFieldValue>
+            <valueName>Tastings</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>AU2-Samples for Sales Related Activities</controllingFieldValue>
+            <valueName>Sampling stock with customers at a venue or sending to customers</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>AU2-Samples for Sales Related Activities</controllingFieldValue>
+            <valueName>NPD launch</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>AU5-Samples for Admin Activities</controllingFieldValue>
+            <valueName>Welcome basket</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>AU5-Samples for Admin Activities</controllingFieldValue>
+            <valueName>Raise the bar</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>AU5-Samples for Admin Activities</controllingFieldValue>
+            <valueName>Gifting external (e.g., Christmas)</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>AU5-Samples for Admin Activities</controllingFieldValue>
+            <valueName>Employee engagement</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>AU5-Samples for Admin Activities</controllingFieldValue>
+            <valueName>Conference</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>AU5-Samples for Admin Activities</controllingFieldValue>
+            <valueName>Donations</valueName>
+        </valueSettings>
+    </valueSet>
+</CustomField>

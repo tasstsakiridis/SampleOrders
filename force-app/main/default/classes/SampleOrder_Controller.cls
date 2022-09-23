@@ -130,10 +130,9 @@ public with sharing class SampleOrder_Controller {
                        Authorised_By__c, Authorised_By__r.Name, Authorised_Date__c, Finance_Authorised_By__c, Finance_Authorised_Date__c, 
                        Classification__c, Banner_Group__c, Business_Name__c, Business_Address__c, Business_City__c, Business_State__c, 
                        Business_Postcode__c, Business_Country__c, Contact_Name__c, Contact_Phone__c, Reason__c, Is_International_Order__c, 
-                       Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c, Is_Gift__c, Gift_Register_Acknowledgement__c,
-                       Budget_Type__c, Reason_Code__c, Activity__c,
+                       Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c, Activity__c,
                        (SELECT Id, Name, SAP_Interfaced_Data__c, Product__c, Brand_Name__c, Product_Code__c, Internal_Order_Number__c, 
-                               Quantity__c, Units__c, Product__r.Used_For__c, Product__r.Pack_Quantity__c, Total_Ordered_Cases__c 
+                               Quantity__c, Units__c, Product__r.Used_For__c, Product__r.Pack_Quantity__c, Total_Ordered_Cases__c, PMI_Actual__c 
                           FROM SAP_Interfaced_Data_Items__r)
                   FROM SAP_Interfaced_Data__c 
                  WHERE Id=:recordId];
@@ -205,18 +204,33 @@ public with sharing class SampleOrder_Controller {
         Map<String, RecordTypeInfo> rtPMIActual = PMI_Actual__c.SObjectType.getDescribe().getRecordTypeInfosByName();
         String rtPSA = '';
 
+        Map<String, Integer> pmiActualsMap = new Map<String, Integer>();
         Promotion_Activity__c thePSA;
         if (String.isNotEmpty(activityId)) {
             thePSA = [SELECT Id, Name, RecordType.Name,
                             (SELECT Id, Name, Account__c FROM Promotions__r), 
-                            (SELECT Id, Name, Product_Custom__c, Promotion__c FROM Promotion_Material_Items__r) 
+                            (SELECT Id, Name, Product_Custom__c, Promotion__c FROM Promotion_Material_Items__r),
+                            (SELECT Id, Promotion_Material_Item__c FROM PMI_Actuals__r WHERE Rebate_Type__c = 'Free Goods') 
                         FROM Promotion_Activity__c 
                        WHERE Id =:activityId];
 
-        if (rtPMIActual.containsKey(thePSA.RecordType.Name)) {
-            rtPSA = rtPMIActual.get(thePSA.RecordType.Name).getRecordTypeId();
-        }
+            if (rtPMIActual.containsKey(thePSA.RecordType.Name)) {
+                rtPSA = rtPMIActual.get(thePSA.RecordType.Name).getRecordTypeId();
+            }
             
+            Integer count = 0;
+            if (thePSA.PMI_Actuals__r != null && thePSA.PMI_Actuals__r.size() > 0) {
+                for(PMI_Actual__c p : thePSA.PMI_Actuals__r) {
+                    count = 0;
+                    if (pmiActualsMap.containsKey(p.Promotion_Material_Item__c)) {
+                        count = pmiActualsMap.get(p.Promotion_Material_Item__c);
+                    }
+
+                    count++;
+                    pmiActualsMap.put(p.Promotion_Material_Item__c, count);
+                }
+            }
+
         }
         
         System.debug('sapId: ' + sapId);
@@ -226,6 +240,7 @@ public with sharing class SampleOrder_Controller {
         Boolean hasHighValueItems = false; 
         SAP_Interfaced_Data_Item__c sapItem;
         List<PMI_Actual__c> actuals = new List<PMI_Actual__c>();
+        Map<String, String> sapProductMap = new Map<String, String>();
         try {
             for(SampleOrderItem s : items) {
                 System.debug('items.key id: ' + s.id + ', product: ' + s.productId);
@@ -249,18 +264,31 @@ public with sharing class SampleOrder_Controller {
 
                 if (market == 'Mexico' && thePSA != null && thePSA.Promotion_Material_Items__r != null) {
                     for(Promotion_Material_Item__c pmi : thePSA.Promotion_Material_Items__r) {
-                        if (pmi.Product_Custom__c == i.productId) {
+                        if (pmi.Product_Custom__c == i.productId) {                            
+                            Integer count = 1;
+                            if (pmiActualsMap.containsKey(pmi.Id)) {
+                                count = pmiActualsMap.get(pmi.Id);
+                            }
                             PMI_Actual__c pmia = new PMI_Actual__c();
-                            pmia.RecordTypeId = rtPSA;
-                            pmia.Activity__c = activityId;
-                            pmia.Promotion__c = pmi.Promotion__c;
-                            pmia.Promotion_Material_Item__c = pmi.Id;
-                            pmia.Rebate_Type__c = 'Free Goods';
+                            if (String.isNotEmpty(i.pmiActualId)) {
+                                pmia.Id = i.pmiActualId;
+                            } else {
+                                pmia.Sample_Order__c = sapId;
+                                pmia.RecordTypeId = rtPSA;
+                                pmia.Activity__c = activityId;
+                                pmia.Promotion__c = pmi.Promotion__c;
+                                pmia.Promotion_Material_Item__c = pmi.Id;
+                                pmia.Rebate_Type__c = 'Free Goods';
+                                pmia.Approval_Status__c = 'Paid';
+                                pmia.Period__c = 0;
+                                pmia.External_Key__c = pmi.Promotion__c + '_' + pmi.Id + '_Free Goods-'+count;
+                            }
                             pmia.Act_Qty__c = i.quantity;
                             pmia.Rebate_Amount__c = i.quantity;
-                            pmia.Period__c = 0;
-                            pmia.External_Key__c = pmi.Promotion__c + '_' + pmi.Id + '_Free Goods-0';
                             actuals.add(pmia);
+
+                            sapProductMap.put(pmia.External_Key__c, i.productId);
+
                             break;
                         }
                     }
@@ -270,12 +298,25 @@ public with sharing class SampleOrder_Controller {
         } catch(Exception ex) {
             System.debug('exception: ' + ex.getMessage());
         }     
+
+        if (actuals.size() > 0) {
+            upsert actuals;
+            for(PMI_Actual__c pmia : actuals) {
+                String productId = sapProductMap.get(pmia.External_Key__c);
+                for(SAP_Interfaced_Data_Item__c sapi : l_SAPItems) {
+                    if (sapi.Product__c == productId) {
+                        sapi.PMI_Actual__c = pmia.Id;
+                        break;
+                    }
+                }
+            }
+
+            String result = PromotionalSalesAgreement_Controller.updateActualTotals(activityId);
+
+        }
         
         upsert l_SAPItems;
 
-        if (actuals.size() > 0) {
-            insert actuals;
-        }
         
         SAP_Interfaced_Data__c sampleOrder = [SELECT Id, Approval_Status__c, Classification__c, Business_State__c, Has_HighValue_Items__c, Market__c, SAP_ShipTo_Code__c, SAP_SoldTo_Code__c, SAP_Plant_Code__c
                                                 FROM SAP_Interfaced_Data__c 
@@ -342,7 +383,7 @@ public with sharing class SampleOrder_Controller {
         
         List<SampleOrderItem> items = new List<SampleOrderItem>();
         for(Product__c p : products) {
-            items.add(new SampleOrderItem('', p.Id, p.Name, p.ProductCode__c, p.Brand__c, p.Brand_Name__c, p.Used_For__c, (Integer)p.Pack_Quantity__c, 0, (Decimal)p.Price__c, (Decimal)p.COGS__c, '', '', 0, 0));
+            items.add(new SampleOrderItem('', p.Id, p.Name, p.ProductCode__c, p.Brand__c, p.Brand_Name__c, p.Used_For__c, (Integer)p.Pack_Quantity__c, 0, (Decimal)p.Price__c, (Decimal)p.COGS__c, '', '', 0, 0, ''));
         }
         return items;
     }

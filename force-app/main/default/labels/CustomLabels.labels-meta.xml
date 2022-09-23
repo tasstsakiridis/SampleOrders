@@ -24,4 +24,36 @@
         <shortDescription>Shipping Instructions</shortDescription>
         <value>Shipping Instructions</value>
     </labels>
+    <labels>
+        <fullName>Input_Too_Long</fullName>
+        <categories>messages</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Input Too Long</shortDescription>
+        <value>Input is too long</value>
+    </labels>
+    <labels>
+        <fullName>Is_Gift_Above_100</fullName>
+        <categories>labels</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Is Gift Above 100</shortDescription>
+        <value>Is this Gift above $100?</value>
+    </labels>
+    <labels>
+        <fullName>Gift_Register</fullName>
+        <categories>labels</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Gift Register</shortDescription>
+        <value>Click the link below to complete the Gift Register for any gifts above $100 and then mark the Compliance Acknowledgement.</value>
+    </labels>
+    <labels>
+        <fullName>Max_Input_Length</fullName>
+        <categories>labels</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Max Input Length</shortDescription>
+        <value>max {0} characters</value>
+    </labels>
 </CustomLabels>
