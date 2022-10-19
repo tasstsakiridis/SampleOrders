@@ -19,12 +19,14 @@
                     component.set("v.marketId", rv.value);
                     component.set('v.marketName', rv.description);
                     component.set('v.marketISOCode', rv.itemId);
+                    component.set('v.userRole', rv.record == undefined || rv.record.UserRole == undefined ? '' : rv.record.UserRole.Name);
                     var leadTime = 0;
                     if (rv.label != undefined) {
                         leadTime = parseInt(rv.label);
                     }
                     component.set('v.leadTime', leadTime);
                     console.log('[SampleOrder.helper.getUserDetails] marketName', rv.description);
+                    console.log('[SampleOrder.helper.getUserDetails] userRole', rv.record.UserRole.Name);
                     console.log('[SampleOrder.helper.getUserDetails] leadTime, rv.label', leadTime, rv.label);
                 } else if (callState === "INCOMPLETE") {
                     console.log("[SampleOrder.Helper.getUserDetails] callback returned incomplete.");                    

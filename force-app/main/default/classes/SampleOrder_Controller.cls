@@ -2,7 +2,7 @@ public with sharing class SampleOrder_Controller {
 
     @AuraEnabled
     public static SimpleListItem getCurrentUserInfo() {
-    	User u = [SELECT Id, Name, Market__c, MobilePhone FROM User WHERE Id =:UserInfo.getUserId()];
+    	User u = [SELECT Id, Name, Market__c, MobilePhone, UserRoleId, UserRole.Name FROM User WHERE Id =:UserInfo.getUserId()];
         Market__c m = [SELECT Id, Name, Country_ISO_Code_2__c, Sample_Order_Lead_Time__c FROM Market__c WHERE Name =:u.Market__c LIMIT 1];
         SimpleListItem sli = new SimpleListItem(u.Id, u.Name);
         sli.value = m.Id;
@@ -130,7 +130,8 @@ public with sharing class SampleOrder_Controller {
                        Authorised_By__c, Authorised_By__r.Name, Authorised_Date__c, Finance_Authorised_By__c, Finance_Authorised_Date__c, 
                        Classification__c, Banner_Group__c, Business_Name__c, Business_Address__c, Business_City__c, Business_State__c, 
                        Business_Postcode__c, Business_Country__c, Contact_Name__c, Contact_Phone__c, Reason__c, Is_International_Order__c, 
-                       Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c, Activity__c,
+                       Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c, Activity__c, Is_Approved__c,
+                       Order_Status__c,
                        (SELECT Id, Name, SAP_Interfaced_Data__c, Product__c, Brand_Name__c, Product_Code__c, Internal_Order_Number__c, 
                                Quantity__c, Units__c, Product__r.Used_For__c, Product__r.Pack_Quantity__c, Total_Ordered_Cases__c, PMI_Actual__c 
                           FROM SAP_Interfaced_Data_Items__r)
@@ -347,7 +348,7 @@ public with sharing class SampleOrder_Controller {
         
         SAP_Interfaced_Data__c sap = [SELECT Id, Name, RecordTypeId, RecordType.Name, Requested_Delivery_Date__c, Classification__c, 
                                         Business_Name__c, Business_Address__c, Business_City__c, Business_State__c, Business_Country__c, 
-                                        Contact_Name__c, Contact_Phone__c, Reason__c, 
+                                        Contact_Name__c, Contact_Phone__c, Reason__c, Is_Approved__c, Order_Status__c,
                                         (SELECT Id, Name, Product__c, SAP_Interfaced_Data__c, Brand_Name__c, Product_Code__c, 
                                                 Internal_Order_Number__c, Total_Ordered_Cases__c 
                                            FROM SAP_Interfaced_Data_Items__r) 
@@ -446,7 +447,8 @@ public with sharing class SampleOrder_Controller {
                        FROM Promotion_Material_Items__r)
                   FROM Promotion_Activity__c 
                   WHERE OwnerId =:UserInfo.getUserId()
-                    AND RecordType.Name =:activityType];
+                    AND RecordType.Name =:activityType
+                    AND Status__c = 'Approved'];
     }
 
     @AuraEnabled

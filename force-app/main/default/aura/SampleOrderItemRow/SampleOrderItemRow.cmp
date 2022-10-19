@@ -15,6 +15,7 @@
     <aura:attribute name="showSKU" type="Boolean" default="false" />
     <aura:attribute name="showInternalOrderNumbers" type="Boolean" default="false" />
     <aura:attribute name="showCaseConversion" type="Boolean" default="false" />
+    <aura:attribute name="showRemainingQty" type="Boolean" default="false" />
     
     <!-- List & Object Attributes -->
     <aura:attribute name="row" type="SampleOrderItem" required="true" />
@@ -61,6 +62,11 @@
         <aura:if isTrue="{!v.showPrice}">
             <td data-label="{!$Label.c.Price}">
                 <div class="slds-truncate" title="{!v.row.price}">{!v.row.price}</div>
+            </td>
+        </aura:if>
+        <aura:if isTrue="{!v.showRemainingQty}">
+            <td data-label="{!$Label.c.Remaining}">
+                <div class="slds-truncate" title="{!v.row.totalActualQty}">{!v.row.remainingFreeBottleQty}</div>
             </td>
         </aura:if>
         <td class="slds-cell-edit" role="gridcell">

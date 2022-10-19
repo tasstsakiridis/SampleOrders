@@ -3,6 +3,7 @@
     <aura:attribute name="userId" type="String" default="" />
     <aura:attribute name="userName" type="String" default="" />
     <aura:attribute name="userPhone" type="String" default="" />
+    <aura:attribute name="userRole" type="String" default="" />
     <aura:attribute name="marketId" type="String" default="" />
     <aura:attribute name="userMarket" type="String" default="" />
     <aura:attribute name="userContext" type="String" />
@@ -22,6 +23,7 @@
     <aura:attribute name="recordTypeId" type="String" default="" />
     <aura:attribute name="recordTypeName" type="String" default="" />
     <aura:attribute name="approvalStatus" type="String" default="New" />
+    <aura:attribute name="orderStatus" type="String" default="" />
     <aura:attribute name="storeroom" type="String" default="" />
     <aura:attribute name="promotionActivity" type="String" default="" />
     <aura:attribute name="reasonCode" type="String" default="" />
@@ -55,6 +57,10 @@
     <aura:attribute name="showShippingInstructions" type="Boolean" default="false" />
     <aura:attribute name="isStoreroomRequest" type="Boolean" default="false" />
     <aura:attribute name="showSubmitForApproval" type="Boolean" default="true" />
+    <aura:attribute name="lockStatusInput" type="Boolean" default="false" />
+    <aura:attribute name="showStatusInput" type="Boolean" default="false" />
+    <aura:attribute name="showRemainingQty" type="Boolean" default="false" />
+    <aura:attribute name="disableButtons" type="Boolean" default="false" />
 
     <!-- List & Object Attributes -->
     <aura:attribute name="theSampleOrder" type="SAP_Interfaced_Data__c" default="{ }" />
@@ -65,6 +71,7 @@
     <aura:attribute name="costCenters" type="List" default="[]" />
     <aura:attribute name="bannerGroups" type="List" default="[]" />
     <aura:attribute name="statuses" type="List" default="[]" />
+    <aura:attribute name="orderStatuses" type="List" default="[]" />
     <aura:attribute name="productData" type="SampleOrderItem[]" />
     <aura:attribute name="deletedRows" type="SampleOrderItem[]" />
     <aura:attribute name="data" type="SampleOrderItem[]" />
@@ -80,6 +87,7 @@
     <aura:attribute name="reasonCodes" type="List" />
     <aura:attribute name="storerooms" type="List" />
     <aura:attribute name="activities" type="List" />
+    <aura:attribute name="validApprovalStatuses" type="List" default="['Approved','Delivered','Out of Stock','Processing']" />
 
     <!-- Handle component events -->
     <aura:handler name="init" value="{!this}" action="{!c.doInit}" />
@@ -124,8 +132,8 @@
     </div>
     <lightning:card aura:id="theOrderForm" title="Sample Order" class="slds-card__body slds-card__body_inner slds-hide" iconName="custom:custom62">                
         <div class="slds-text-align_center slds-m-top_medium">
-            <lightning:button aura:id="btnSave" variant="brand" type="submit" disabled="{!v.orderLocked}" name="save" label="{!$Label.c.Save}" onclick="{!c.handleButtonClick}" />
-            <lightning:button aura:id="btnSaveClose" variant="brand" type="submit" disabled="{!v.orderLocked}"  name="saveclose" label="{!$Label.c.Save_and_Close}"  onclick="{!c.handleButtonClick}"/>
+            <lightning:button aura:id="btnSave" variant="brand" type="submit" disabled="{!v.disableButtons}" name="save" label="{!$Label.c.Save}" onclick="{!c.handleButtonClick}" />
+            <lightning:button aura:id="btnSaveClose" variant="brand" type="submit" disabled="{!v.disableButtons}"  name="saveclose" label="{!$Label.c.Save_and_Close}"  onclick="{!c.handleButtonClick}"/>
             <lightning:button aura:id="btnCancel" variant="brand" type="button" name="cancel" label="{!$Label.c.Cancel}" onclick="{!c.handleButtonClick}" />
             <aura:if isTrue="{!v.showSubmitForApproval}">
                 <lightning:button aura:id="btnSubmit" variant="brand" type="button" disabled="{!v.canSubmit==false}"  name="submit" label="{!$Label.c.Submit_For_Approval}" onclick="{!c.handleButtonClick}" />
@@ -175,7 +183,11 @@
                         </thead>
                         <tbody>                    
                             <aura:iteration items="{!v.data}" var="r">
-                                <c:SampleOrderItemRow row="{!r}" selectedProducts="{!v.selectedProducts}" selectedRowCount="{!v.selectedRowCount}" selectedBrand="{!v.selectedBrand}" showSelectedRows="{!v.showSelectedProducts}" orderLocked="{!v.orderLocked}" recordTypeName="{!v.recordTypeName}" showPrice="{!v.showPrice}" showSKU="{!v.showSKU}" showCaseConversion="{!v.showCaseConversion}" deletedRows="{!v.deletedRows}" showInternalOrderNumbers="{!v.showInternalOrderNumbers}" internalOrderNumbersMap="{!v.internalOrderNumbers}" />
+                                <c:SampleOrderItemRow row="{!r}" selectedProducts="{!v.selectedProducts}" selectedRowCount="{!v.selectedRowCount}" selectedBrand="{!v.selectedBrand}" 
+                                                showSelectedRows="{!v.showSelectedProducts}" orderLocked="{!v.orderLocked}" recordTypeName="{!v.recordTypeName}" showRemainingQty="{!v.showRemainingQty}"
+                                                showPrice="{!v.showPrice}" showSKU="{!v.showSKU}" showCaseConversion="{!v.showCaseConversion}" 
+                                                deletedRows="{!v.deletedRows}" showInternalOrderNumbers="{!v.showInternalOrderNumbers}" 
+                                                internalOrderNumbersMap="{!v.internalOrderNumbers}" />
                             </aura:iteration>
                         </tbody>                
                     </table>
@@ -212,6 +224,16 @@
                             <lightning:select name="costCenters" label="Cost Center" aura:id="costCenters" disabled="{!v.orderLocked}" value="{!v.costCenter}" required="true" onchange="{!c.handleCostCenterChange}">
                                 <aura:iteration items="{!v.costCenters}" var="cc">
                                     <option text="{!cc.label}" value="{!cc.id}" selected="{!cc.selected}" />
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                    </aura:if>
+                    <aura:if isTrue="{!v.showStatusInput}">
+                        <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                            <lightning:select name="orderStatuses" label="{!v.objectDescribe.fields.Order_Status__c.label}" value="{!v.orderStatus}"
+                                            onchange="{!c.handleOrderStatusChange}" disabled="{!v.lockStatusInput}">
+                                <aura:iteration items="{!v.orderStatuses}" var="s">
+                                    <option text="{!s.label}" value="{!s.id}" selected="{!s.selected}" />
                                 </aura:iteration>
                             </lightning:select>
                         </div>

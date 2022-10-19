@@ -48,6 +48,12 @@ global class SampleOrderItem {
     public Decimal totalPlannedQty { get; set; }
 
     @AuraEnabled
+    public Decimal totalFreeBottleQty { get; set; }
+
+    @AuraEnabled
+    public Decimal totalActualFreeBottleQty { get; set; }
+
+    @AuraEnabled
     public String pmiActualId { get; set; }
 
     public SampleOrderItem() {
@@ -67,6 +73,8 @@ global class SampleOrderItem {
         this.convertedCases = '';
         this.totalActualQty = 0;
         this.totalPlannedQty = 0;
+        this.totalFreeBottleQty = 0;
+        this.totalActualFreeBottleQty = 0;
         this.pmiActualId = '';
     }
     
@@ -87,6 +95,31 @@ global class SampleOrderItem {
         this.convertedCases = convertedCases;
         this.totalActualQty = totalActualQty;
         this.totalPlannedQty = totalPlannedQty;
+        this.totalActualFreeBottleQty = totalFreeBottleQty;
+        this.totalFreeBottleQty = totalFreeBottleQty;
         this.pmiActualId = pmiActualId;
     }
+
+    public SampleOrderItem(String id, String productId, String productName, String productCode, String brandId, String brandName, String usedFor, Integer packQty, Integer quantity, Decimal price, Decimal cogs, String internalOrderNumber, String convertedCases, Decimal totalActualQty, Decimal totalPlannedQty, Decimal totalFreeBottleQty, Decimal totalActualFreeBottleQty, String pmiActualId) {
+        this.id = (id == null || id == '' ? productId : id);
+        this.productId = productId;
+        this.productName = productName;
+        this.productCode = productCode;
+        this.brandId = brandId;
+        this.brandName = brandName;
+        this.usedFor = usedFor;
+        this.packQty = packQty == null ? 1 : packQty;
+        this.quantity = quantity == null ? 0 : quantity;
+        this.units = this.quantity * this.packQty;        
+        this.cogs = cogs == null ? 0 : cogs;
+        this.price = price == null || price == 0 ? this.cogs : price;
+        this.internalOrderNumber = internalOrderNumber;
+        this.convertedCases = convertedCases;
+        this.totalActualQty = totalActualQty;
+        this.totalPlannedQty = totalPlannedQty;
+        this.totalActualFreeBottleQty = totalFreeBottleQty;
+        this.totalFreeBottleQty = totalFreeBottleQty;
+        this.pmiActualId = pmiActualId;
+    }
+
 }

@@ -31,6 +31,7 @@
         console.log('[handleCountryChange] countryName', component.get("v.countryName"));
         console.log('[handleCountryChange] userMarket', component.get('v.userMarket'));
         console.log('[handleCountryChange] marketId', component.get("v.marketId"));
+        console.log('[handleCountryChange] userRole', component.get('v.userRole'));
         component.set("v.provinceOptions", helper.getProvinceOptions(component, component.get("v.country")));
         var showPrice = false;
         var showInternationalOrder = false;
@@ -42,7 +43,12 @@
         var showShippingInstructions = false;
         var showActivities = false;
         var showSubmitForApproval = true;
+        var showRemainingQty = false;
+        var showStatusInput = false;
+        var lockStatusInput = false;
         var userMarket = helper.getCountryCode(component, component.get("v.userMarket"));
+        let approvalStatus = component.get("v.approvalStatus");
+        const userRole = component.get("v.userRole");
         console.log('[handleCountryChange] userMarket', userMarket);
         if (userMarket == 'GB') {
             showPrice = true;   
@@ -55,7 +61,10 @@
             useStandardAddressComponent = false;
             showAccounts = true;
             showCaseConversion = true;
+            showCostCenters = true;
             showShippingInstructions = true;
+            showStatusInput = true;
+            lockStatusInput = !((userRole == 'Global Administraotr' || userRole == 'TWN_Supplier Chain Manager') && approvalStatus == 'Approved');
         }
         if (userMarket == 'AU') {
             showInternationalOrder = true;
@@ -63,11 +72,13 @@
         if (userMarket == 'MX') {
             showActivities = true;
             useStandardAddressComponent = false;  
-            showSubmitForApproval = false;       
+            showSubmitForApproval = false;      
+            showRemainingQty = true; 
         }
         console.log('userMarket', userMarket);
         console.log('showPrice', showPrice);
         console.log('useStandardAddress', useStandardAddressComponent);
+        console.log('lockStatusInput', lockStatusInput);
         component.set("v.showPrice", showPrice);
         component.set("v.showInternationalOrder", showInternationalOrder);
         component.set("v.showCostCenters", showCostCenters);
@@ -78,6 +89,9 @@
         component.set("v.showShippingInstructions", showShippingInstructions);
         component.set("v.showActivities", showActivities);
         component.set("v.showSubmitForApproval", showSubmitForApproval);
+        component.set("v.showRemainingQty", showRemainingQty);
+        component.set("v.showStatusInput", showStatusInput);
+        component.set("v.lockStatusInput", lockStatusInput);
         helper.setupProductTableHeaders(component);
         //helper.updateProvinceOptions(component);
     },
@@ -101,6 +115,7 @@
             var showInternationalOrder = component.get("v.showInternationalOrder");
             console.log('userName', userName);
             console.log('userPhone', userPhone);
+            console.log('userRole', component.get("v.userRole"));
             if (recordTypeName == 'Sample Order - Storeroom Request') {
                 isStoreroomRequest = true;
                 useStandardAddressComponent = false;
@@ -125,6 +140,10 @@
         var btn = event.getSource().get("v.name");
         console.log('btn', btn);
         helper.initToast(component);
+        const orderLocked = component.get("v.orderLocked");
+        const userMarket = component.get("v.userMarket");
+        const lockStatusInput = component.get("v.lockStatusInput");
+        const theSampleOrder = component.get("v.theSampleOrder");
         try {
         if (btn.substr(0,4) == "save") {
             console.log('[SampleOrderForm.controller.handleButtonClick] save button clicked');
@@ -152,11 +171,15 @@
                 //helper.initProductData(component);
                 helper.revertProductChanges(component);
 	            component.set("v.isAddingItems", false);                
+                if (userMarket == 'Taiwan' && orderLocked == true) {
+                    component.set("v.disableButtons", lockStatusInput);
+                }
             } else {
 	            helper.closeSampleOrderDialog(component);                
             }
         } else if (btn == "additems") {  
             if (helper.canAddItems(component)) {
+                component.set("v.disableButtons", orderLocked);
 	            component.set("v.isAddingItems", true);                
             } else {
                 helper.alertUser(component, 'Warning', 'warning', 'Save Order details first before you add items');
@@ -302,6 +325,16 @@
             helper.filterProductsToActivityProducts(component);
         } catch(ex) {
             console.log('[handlePromotionActivityChange] exception', ex);
+        }
+    },
+    handleOrderStatusChange : function(component, event, helper) {
+        try {
+            let status = component.get("v.orderStatus");
+            let sampleOrder = component.get("v.theSampleOrder");
+            sampleOrder.Order_Status__c = status;
+            component.set("v.theSampleOrder", sampleOrder);
+        }catch(ex) {
+            console.log('[handleApprovalStatusChange] exception', ex);
         }
     },
     handleReasonCodeSelectionChange : function(component, event, helper) {

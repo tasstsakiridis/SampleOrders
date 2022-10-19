@@ -110,17 +110,22 @@
                         let costCenter = component.get("v.costCenter");
                         let statuses = component.get("v.statuses");
                         let reasonCode = component.get("v.reasonCode");
+                        let orderStatus = component.get("v.orderStatus");
 
+                        var approvalStatus = component.get("v.approvalStatus");
                         var classifications = [{"label":"", "value":""}];
                         var costCenters = [{"label":"", "value":""}];
                         var reasonCodes = [{"label":"", "value":""}];
+                        var orderStatuses = [{"label":"", "value":""}];
                         var classificationPicklistValues = rv["Classification__c"].picklistValues;
                         var costCentersPicklistValues = rv["Cost_Center__c"].picklistValues;
                         var statusPicklistValues = rv["Approval_Status__c"].picklistValues;
-                        const reasonCodePicklistValues = rv["Reason_Code__c"].picklistValues;
+                        var orderStatusPicklistValues = rv["Order_Status__c"].picklistValues;
+                        //const reasonCodePicklistValues = rv["Reason_Code__c"].picklistValues;
                         console.log('[SampleOrderForm.Helper.getPicklistValues] classificationPicklistValues', classificationPicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] costCentersPicklistValues', costCentersPicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] statusPicklistValues', statusPicklistValues);
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] orderStatuses', orderStatusPicklistValues);
                         for(var i = 0; i < statusPicklistValues.length; i++) {
                             statuses.push({"label":statusPicklistValues[i].label, "value":statusPicklistValues[i].value});
                         }
@@ -131,15 +136,23 @@
                             costCenters.push({"label":costCentersPicklistValues[i].label, "value":costCentersPicklistValues[i].value, "selected":costCenter == costCentersPicklistValues[i].value});
                         }
                         if (classification && classification.length > 0) {
-                            const classificationPicklistValues = reasonCodePicklistValues.filter(r => r.description == classification);
-                            for(var i = 0; i < classificationPicklistValues.length; i++) {
-                                reasonCodes.push({"label":classificationPicklistValues[i].label, "value":classificationPicklistValues[i].value, "selected":reasonCode == classificationPicklistValues[i].value});
-                            }
+                            //const classificationPicklistValues = reasonCodePicklistValues.filter(r => r.description == classification);
+                            //for(var i = 0; i < classificationPicklistValues.length; i++) {
+                            //    reasonCodes.push({"label":classificationPicklistValues[i].label, "value":classificationPicklistValues[i].value, "selected":reasonCode == classificationPicklistValues[i].value});
+                            //}
     
                         }
+                        if (orderStatusPicklistValues && orderStatusPicklistValues.length > 0) {
+                            for(var i = 0; i < orderStatusPicklistValues.length; i++) {
+                                orderStatuses.push({"label":orderStatusPicklistValues[i].label, "value":orderStatusPicklistValues[i].value, "selected":orderStatus == orderStatusPicklistValues[i].value});
+                            }
+                        }
+
                         console.log('[SampleOrderForm.Helper.getPicklistValues] classification', classifications);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] costCenters', costCenters);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] statuses', statuses);
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] orderStatuses', orderStatuses);
+                        
                         
                         /*
                         for(var i = 0; i < rv.length; i++) {
@@ -172,8 +185,14 @@
                             if (x > y) { return 1; }
                             return 0; 
                         });
+                        orderStatuses.sort(function(a, b) {
+                            let x = a.label.toLowerCase();
+                            let y = b.label.toLowerCase();
+                            if (x < y) { return -1; }
+                            if (x > y) { return 1; }
+                            return 0; 
+                        });
                     
-                        var approvalStatus = component.get("v.approvalStatus");
                         for(var i = 0; i < statuses.length; i++) {
                             if (statuses[i].value == approvalStatus) {
                                 approvalStatus = statuses[i].label;
@@ -188,6 +207,7 @@
                         component.set("v.costCenters", costCenters);
                         component.set("v.statuses", statuses);
                         component.set("v.reasonCodes", reasonCodes);
+                        component.set("v.orderStatuses", orderStatuses);
                     }catch(ex) {
                         console.log('[SampleOrderForm.helper.getPicklistValues] exception', ex);                        
                     }
@@ -212,6 +232,7 @@
         let lblPackQty = $A.get('$Label.c.PackQty');
         let lblPrice = $A.get('$Label.c.Price');
         let lblQuantity = $A.get('$Label.c.Quantity');
+        let lblRemaining = $A.get('$Label.c.Remaining');
         let lblNumberOfBottles = $A.get('$Label.c.NumberOfBottles');
         let lblConvertedCases = $A.get('$Label.c.ConvertedCases');
         console.log('[setupProductTableHeaders] showCaseConversion', component.get("v.showCaseConversion"));
@@ -222,6 +243,7 @@
             { label: lblInternalOrderNumber, fieldName: 'Internal_Order_Number__c', type: 'text', isVisible: component.get("v.showInternalOrderNumbers")},
             { label: lblPackQty, fieldName: 'Pack_Quantity__c', type: 'number', editable: false, isVisible: true },
             { label: lblPrice, fieldName: 'Price__c', type:'number', editable: false, isVisible: component.get("v.showPrice") },
+            { label: lblRemaining, fieldName: 'Total_Actual_Free_Bottle_Qty__c', type:'number', editable: false, isVisible: component.get("v.showRemainingQty") },
             { label: lblQuantity, fieldName: 'Quantity__c', type:'number', editable:'true', isVisible: true },
             { label: lblNumberOfBottles, fieldName: 'Units__c', type: 'number', editable: false , isVisible: component.get("v.showCaseConversion")==false},
             { label: lblConvertedCases, fieldName: 'Total_Ordered_Cases__c', type: 'text', editable: false, isVisible: component.get("v.showCaseConversion") }
@@ -495,6 +517,7 @@
                 if (callState === "SUCCESS") {
                     var rv = response.getReturnValue();
                     console.log('[SampleOrderForm.Helper.getPromotionActivities] activities', rv);
+
                     var activities = [{"label":"", value:""}];
                     for(var i = 0; i < rv.length; i++) {
                         activities.push({"label":rv[i].Name,"value":rv[i].Id, activity: rv[i]});
@@ -507,7 +530,7 @@
                         return 0; 
                     });
                     console.log('[SampleOrderForm.helper.getPromotionActivities] activities', activities);
-                    component.set("v.activities", activities);
+                    component.set("v.activities", activities);                    
                     
                 } else if (callState === "INCOMPLETE") {
                     console.log("[SampleOrderForm.Helper.getPromotionActivities] callback returned incomplete.");                    
@@ -555,6 +578,9 @@
         component.set("v.accountId", null);
         component.set("v.accountName", null);
         component.set("v.storeroom", null);
+        component.set("v.showStatusInput", false);
+        component.set("v.lockStatusInput", false);
+        component.set("v.canSave", true);
         
         this.initToast(component);
         let deletedRows = [];
@@ -684,7 +710,8 @@
                     units : p.units,
                     usedFor : p.usedFor,
                     totalActualQty : ap.Total_Actual_Free_Bottle_Qty__c,
-                    totalPlannedQty : ap.Free_Bottle_Quantity__c
+                    totalPlannedQty : ap.Free_Bottle_Quantity__c,
+                    remainingFreeBottleQty: ap.Free_Bottle_Quantity__c - ap.Total_Actual_Free_Bottle_Qty__c
                 });
             }
         });
@@ -888,7 +915,7 @@
                 isValid = false;
             }
         }
-        if (countryCode != 'GB' && countryCode != 'TW' && !theSampleOrder.Is_International_Order__c) {
+        if (countryCode != 'GB' && countryCode != 'TW' && countryCode != 'MX' && !theSampleOrder.Is_International_Order__c) {
             if (businessState == null || businessState == '') { 
                 console.log('business state is null'); 
                 msg += 'Business State is required';
@@ -955,6 +982,18 @@
                         component.set("v.reasonCode", rv.Reason_Code__c);
                         component.set("v.accountId", rv.Account__c);
                         component.set("v.promotionActivity", rv.Activity__c);
+                        component.set("v.orderStatus", rv.Order_Status__c);
+                        let orderStatuses = component.get("v.orderStatuses");
+                        if (orderStatuses != null) {
+                            for(var i = 0; i < orderStatuses.length; i++) {
+                                orderStatuses[i].selected = false;
+                                if (orderStatuses[i].value == rv.Order_Status__c) {
+                                    orderStatuses[i].selected = true;
+                                }
+                            }
+                        }
+                        component.set("v.orderStatuses", orderStatuses);
+
                         var approvalStatus = rv.Approval_Status__c;
                         var statuses = component.get("v.statuses");
                         if (statuses && statuses.length > 0) {
@@ -967,9 +1006,13 @@
                         }
                         component.set("v.approvalStatus", approvalStatus);
 
+                        let disableButtons = rv.Approval_Status__c != 'New';
+                        let userRole = component.get('v.userRole');
                         let country = this.getCountryCode(component, component.get("v.userMarket"));
                         let showCostCenter = false;
                         let showInternalOrderNumbers = false;
+                        let showStatusInput = false;
+                        let lockStatusInput = false;
                         if (country == 'GB') {
                             if (rv.Classification__c.indexOf('SD0') < 0) {
                                 showCostCenter = true;
@@ -977,11 +1020,23 @@
                                 showInternalOrderNumbers = true;
                             }   
                         }
+                        if (country == 'TW') {
+                            showStatusInput = true;
+                            showCostCenter = true;
+                            lockStatusInput = !((userRole == 'Global Administrator' || userRole == 'TWN-Supply Chain Manager') && rv.Is_Approved__c == true);
+                            disableButtons = lockStatusInput;
+                        }
                     
                         console.log('showInternalOrderNumbers', showInternalOrderNumbers);
+                        console.log('showCostCenters', showCostCenter);
+                        console.log('lockStatusInput', lockStatusInput);
+                        console.log('disableButtons', disableButtons);
                         component.set("v.showCostCenters", showCostCenter);
                         component.set("v.costCenter", rv.Cost_Center__c);
                         component.set("v.showInternalOrderNumbers", showInternalOrderNumbers);
+                        component.set("v.showStatusInput", showStatusInput);
+                        component.set("v.lockStatusInput", lockStatusInput);
+                        component.set("v.disableButtons", disableButtons);
 
                         component.set("v.storageLocker", rv.Storage_Locker__c)
                         component.set("v.storeroom", rv.Account__c);
@@ -1007,7 +1062,8 @@
                         $A.util.removeClass(banner, "status_Approved");
                         $A.util.removeClass(banner, "status_Declined");
                         $A.util.removeClass(banner, "status_Canceled");
-                        $A.util.addClass(banner, "status_"+rv.Approval_Status__c);
+                        let className = "status_"+rv.Approval_Status__c;
+                        $A.util.addClass(banner, className);
                         
                         if (rv.Classification__c.indexOf('Duty Free') >= 0) {
                             console.log('[loadSampleOrders] showing banner groups for duty free');
@@ -1163,13 +1219,19 @@
         var marketId = component.get("v.marketId");
         var activityId = component.get("v.promotionActivity");
         let statuses = component.get("v.statuses");
+
         const reasonCode = component.get("v.reasonCode");
         const marketName = component.get("v.marketName");
         const recordTypeName = component.get("v.recordTypeName");
-        var approvalStatus = "New";
+        const orderStatus = component.get("v.orderStatus");
+            
+        var approvalStatus = component.get("v.approvalStatus");
+        if (approvalStatus == undefined || approvalStatus == null) {
+            approvalStatus = 'New';
+        }
         console.log('[SampleOrderForm.helper.saveSampleOrder] country', country);
         console.log('[SampleOrderForm.helper.saveSampleOrder] marketId', marketId);
-        theSampleOrder.Approval_Status__c = "New";
+        //theSampleOrder.Approval_Status__c = approvalStatus;
         for(var i = 0; i < statuses.length; i++) {
             if (theSampleOrder.Approval_Status__c == statuses[i].value) {
                 approvalStatus = statuses[i].label;
@@ -1203,8 +1265,9 @@
         theSampleOrder.Cost_Center__c = costCenter;
         theSampleOrder.Storage_Locker__c = storageLocker;
         theSampleOrder.Activity__c = activityId;
+        theSampleOrder.Order_Status__c = orderStatus;
         
-        console.log('theSampleOrder', theSampleOrder);
+        console.log('theSampleOrder', JSON.parse(JSON.stringify(theSampleOrder)));
 		console.log('theSampleOrder.classification', theSampleOrder.Classification__c);
 		var action = component.get("c.saveSampleOrder");
         action.setParams({
@@ -1227,8 +1290,11 @@
                             component.set("v.closeDialog", true);
                         } else {
                             showToast = true;
-                            component.set("v.disableAddItems", false);
-							component.set("v.canSubmit", true);      
+                            const isApproved = rv.Is_Approved__c;
+                            if (!isApproved) {
+                                component.set("v.disableAddItems", false);
+                                component.set("v.canSubmit", true);      
+                            }
                             component.set("v.toastTitle", $A.get("$Label.c.Success"));
                             component.set("v.toastMessage", $A.get("$Label.c.Save_Success_Message"));                  
                         }                 
@@ -1377,7 +1443,12 @@
                             var closeAfterSave = component.get("v.closeAfterSave");
                             console.log('[SampleOrderForm.helper.saveSampleOrder] closeAfterSave', closeAfterSave);
                             if (closeAfterSave) {                            
-                                component.set("v.isAddingItems", false);                            
+                                component.set("v.isAddingItems", false);   
+                                let orderLocked = component.get("v.orderLocked");
+                                let lockStatusInput = component.get("v.lockStatusInput");
+                                if (orderLocked && userMarket == 'Taiwan') {
+                                    component.set("v.disableButtons", lockStatusInput);
+                                }                         
                             }
                             showToast = true;
                             component.set("v.toastTitle", $A.get("$Label.c.Success"));

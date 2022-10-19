@@ -6,12 +6,14 @@ public class SampleOrder_Test {
 
         INFW_TestHelper helper = new INFW_TestHelper();
 
+        Map<String, RecordTypeInfo> aRecordTypes = Schema.SObjectType.Account.getRecordTypeInfosByName();
         Map<String, RecordTypeInfo> pRecordTypes = Schema.SObjectType.Product__c.getRecordTypeInfosByName();
         Map<String, RecordTypeInfo> sapRecordTypes = Schema.SObjectType.SAP_Interfaced_Data__c.getRecordTypeInfosByName();
         Map<String, RecordTypeInfo> sapiRecordTypes = Schema.SObjectType.SAP_Interfaced_Data_Item__c.getRecordTypeInfosByName();
         Map<String, RecordTypeInfo> bannerRecordTypes = Schema.SObjectType.Banner_Groups__c.getRecordTypeInfosByName();
         Map<String, RecordTypeInfo> sapConfigRecordTypes = Schema.SObjectType.SAP_Interfaced_Data_Configuration__c.getRecordTypeInfosByName();
 
+        String rtAUAccount = aRecordTypes.get('AUD - Outlet').getRecordTypeId();
         String rtSampleOrder = sapRecordTypes.get('Sample Order').getRecordTypeId(); 
         String rtSampleOrderLocked = sapRecordTypes.get('Sample Order Locked').getRecordTypeId();
         String rtSampleOrderItem = sapiRecordTypes.get('Sample Order').getRecordTypeId();
@@ -37,7 +39,13 @@ public class SampleOrder_Test {
         user1.Manages_Brand__c = 'Gentleman Jack';
         user1.Email = 'tass_tsakiridis@b-f.com';
         insert user1;
-		       
+		      
+        Account account1 = new Account();
+        account1.RecordTypeId = rtAUAccount;
+        account1.Market__c = mAU.Id;
+        account1.Name = 'Test Account';
+        insert account1;
+        
 		SAP_Interfaced_Data_Configuration__c sapConfig1 = new SAP_Interfaced_Data_Configuration__c();
         sapConfig1.RecordTypeId = rtShipTo;
         sapConfig1.Market__c = mAU.Id;
@@ -204,6 +212,15 @@ public class SampleOrder_Test {
             
             Map<String, bfFieldDescribe> l_controllingValues = SampleOrder_Controller.getPicklistValuesForRecordType('Sample Order');
 
+            List<Internal_Order__c> internalOrderNumbers = SampleOrder_Controller.getInternalOrderNumbers();
+            System.debug('internalOrderNumbers: ' + internalOrderNumbers);
+            
+            List<Account> accountDetails = SampleOrder_Controller.getAccountDetails(account1.Id);
+            System.assertNotEquals(null, accountDetails);
+            
+            ApprovalHistory ahist = SampleOrder_Controller.getApprovalHistory(sampleOrder.Id);
+            System.debug('approvalhistory: ' + ahist);
+            
             ApprovalHistoryItem ahi = new ApprovalHistoryItem();
             ahi = new ApprovalHistoryItem('actor','status','comments', now);
             ahi = new ApprovalHistoryItem('actor','status','comments', now, 'role');
