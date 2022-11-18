@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Sticker_Type__c</fullName>
+    <externalId>false</externalId>
+    <label>Sticker Type</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <controllingField>Classification__c</controllingField>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>No Sticker</fullName>
+                <default>false</default>
+                <label>No Sticker</label>
+            </value>
+            <value>
+                <fullName>Sample Sticker</fullName>
+                <default>false</default>
+                <label>Sample Sticker</label>
+            </value>
+            <value>
+                <fullName>Tasting Sticker</fullName>
+                <default>false</default>
+                <label>Tasting Sticker</label>
+            </value>
+        </valueSetDefinition>
+        <valueSettings>
+            <controllingFieldValue>Entertainment</controllingFieldValue>
+            <controllingFieldValue>EFG</controllingFieldValue>
+            <valueName>No Sticker</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Sample - Inspection</controllingFieldValue>
+            <controllingFieldValue>Sample - Ad</controllingFieldValue>
+            <controllingFieldValue>Sample - Research</controllingFieldValue>
+            <controllingFieldValue>Sample - Display at account</controllingFieldValue>
+            <valueName>Sample Sticker</valueName>
+        </valueSettings>
+        <valueSettings>
+            <controllingFieldValue>Tasting - On</controllingFieldValue>
+            <controllingFieldValue>Tasting - Off</controllingFieldValue>
+            <controllingFieldValue>Tasting - MKT</controllingFieldValue>
+            <valueName>Tasting Sticker</valueName>
+        </valueSettings>
+    </valueSet>
+</CustomField>

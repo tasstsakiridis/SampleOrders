@@ -106,24 +106,24 @@
                 <label>Product Promotion</label>
             </value>
             <value>
-                <fullName>Sample-Ad</fullName>
+                <fullName>Sample - Ad</fullName>
                 <default>false</default>
-                <label>Sample-Ad</label>
+                <label>Sample - Ad</label>
             </value>
             <value>
-                <fullName>Sample-Display at account</fullName>
+                <fullName>Sample - Display at account</fullName>
                 <default>false</default>
-                <label>Sample-Display at account</label>
+                <label>Sample - Display at account</label>
             </value>
             <value>
-                <fullName>Sample-Inspection</fullName>
+                <fullName>Sample - Inspection</fullName>
                 <default>false</default>
-                <label>Sample-Inspection</label>
+                <label>Sample - Inspection</label>
             </value>
             <value>
-                <fullName>Sample-Research</fullName>
+                <fullName>Sample - Research</fullName>
                 <default>false</default>
-                <label>Sample-Research</label>
+                <label>Sample - Research</label>
             </value>
             <value>
                 <fullName>Samples for Admin Activities</fullName>
@@ -177,19 +177,19 @@
                 <label>SD7 - Tasting and sampling events while at the customer&apos;s location</label>
             </value>
             <value>
-                <fullName>Tasting-MKT</fullName>
+                <fullName>Tasting - MKT</fullName>
                 <default>false</default>
-                <label>Tasting-MKT</label>
+                <label>Tasting - MKT</label>
             </value>
             <value>
-                <fullName>Tasting-Off</fullName>
+                <fullName>Tasting - Off</fullName>
                 <default>false</default>
-                <label>Tasting-Off</label>
+                <label>Tasting - Off</label>
             </value>
             <value>
-                <fullName>Tasting-On</fullName>
+                <fullName>Tasting - On</fullName>
                 <default>false</default>
-                <label>Tasting-On</label>
+                <label>Tasting - On</label>
             </value>
             <value>
                 <fullName>Trade Activity</fullName>

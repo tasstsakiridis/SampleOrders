@@ -34,13 +34,15 @@
         ],
         MX: [
             {label:'Mexico City', value:'Mexico City'},
-        ]  
+        ],
+        KO: []  
     },
     countryOptions: [
         {'label': 'Australia', 'value': 'AU'},
         {'label': 'United Kingdom', 'value': 'GB' },
         {'label': 'Taiwan', 'value': 'TW' },
         {'label': 'Mexico', 'value': 'MX' },
+        {'label': 'Korea', 'value': 'KO' },
     ],
 
     getProvinceOptions: function(component, country) {
@@ -111,16 +113,20 @@
                         let statuses = component.get("v.statuses");
                         let reasonCode = component.get("v.reasonCode");
                         let orderStatus = component.get("v.orderStatus");
+                        let orderChannel = component.get("v.orderChannel");
 
                         var approvalStatus = component.get("v.approvalStatus");
                         var classifications = [{"label":"", "value":""}];
                         var costCenters = [{"label":"", "value":""}];
                         var reasonCodes = [{"label":"", "value":""}];
                         var orderStatuses = [{"label":"", "value":""}];
+                        var orderChannels = [{"label":"", "value":""}];
                         var classificationPicklistValues = rv["Classification__c"].picklistValues;
                         var costCentersPicklistValues = rv["Cost_Center__c"].picklistValues;
                         var statusPicklistValues = rv["Approval_Status__c"].picklistValues;
                         var orderStatusPicklistValues = rv["Order_Status__c"].picklistValues;
+                        var orderChannelPicklistValues = rv["Channel__c"].picklistValues;
+
                         //const reasonCodePicklistValues = rv["Reason_Code__c"].picklistValues;
                         console.log('[SampleOrderForm.Helper.getPicklistValues] classificationPicklistValues', classificationPicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] costCentersPicklistValues', costCentersPicklistValues);
@@ -145,6 +151,11 @@
                         if (orderStatusPicklistValues && orderStatusPicklistValues.length > 0) {
                             for(var i = 0; i < orderStatusPicklistValues.length; i++) {
                                 orderStatuses.push({"label":orderStatusPicklistValues[i].label, "value":orderStatusPicklistValues[i].value, "selected":orderStatus == orderStatusPicklistValues[i].value});
+                            }
+                        }
+                        if (orderChannelPicklistValues && orderChannelPicklistValues.length > 0) {
+                            for(var i = 0; i < orderChannelPicklistValues.length; i++) {
+                                orderChannelPicklistValues.push({"label":orderChannelPicklistValues[i].label, "value":orderChannelPicklistValues[i].value, "selected":orderChannel == orderChannelPicklistValues[i].value});
                             }
                         }
 
@@ -192,6 +203,13 @@
                             if (x > y) { return 1; }
                             return 0; 
                         });
+                        orderChannels.sort(function(a, b) {
+                            let x = a.label.toLowerCase();
+                            let y = b.label.toLowerCase();
+                            if (x < y) { return -1; }
+                            if (x > y) { return 1; }
+                            return 0; 
+                        });
                     
                         for(var i = 0; i < statuses.length; i++) {
                             if (statuses[i].value == approvalStatus) {
@@ -208,6 +226,7 @@
                         component.set("v.statuses", statuses);
                         component.set("v.reasonCodes", reasonCodes);
                         component.set("v.orderStatuses", orderStatuses);
+                        component.set("v.orderChannels", orderChannels);
                     }catch(ex) {
                         console.log('[SampleOrderForm.helper.getPicklistValues] exception', ex);                        
                     }
@@ -578,6 +597,7 @@
         component.set("v.accountId", null);
         component.set("v.accountName", null);
         component.set("v.storeroom", null);
+        component.set("v.orderChannel", null);
         component.set("v.showStatusInput", false);
         component.set("v.lockStatusInput", false);
         component.set("v.canSave", true);
@@ -983,6 +1003,8 @@
                         component.set("v.accountId", rv.Account__c);
                         component.set("v.promotionActivity", rv.Activity__c);
                         component.set("v.orderStatus", rv.Order_Status__c);
+                        component.set("v.orderChannel", rv.Channel__c);
+                        
                         let orderStatuses = component.get("v.orderStatuses");
                         if (orderStatuses != null) {
                             for(var i = 0; i < orderStatuses.length; i++) {
@@ -1224,7 +1246,12 @@
         const marketName = component.get("v.marketName");
         const recordTypeName = component.get("v.recordTypeName");
         const orderStatus = component.get("v.orderStatus");
+        const orderChannel = component.get("v.orderChannel");
             
+        if (country == 'Mexico' && activityId != null) {
+            theSampleOrder.Approval_Status__c = 'Approved';
+        }
+        
         var approvalStatus = component.get("v.approvalStatus");
         if (approvalStatus == undefined || approvalStatus == null) {
             approvalStatus = 'New';
@@ -1238,6 +1265,7 @@
                 break;
             }
         }
+        
         component.set("v.approvalStatus", approvalStatus);
 
         if (marketName == 'Australia' && recordTypeName == 'Sample Order - Storeroom Request') {
@@ -1250,7 +1278,7 @@
                 theSampleOrder.Budget_Type__c = 'SG&A';
             }
         }
-        if (classification == 'S')
+        
         //theSampleOrder.Business_Country__c = country;
         theSampleOrder.Business_State__c = businessState;
         theSampleOrder.RecordTypeId = recordTypeId;
@@ -1266,6 +1294,7 @@
         theSampleOrder.Storage_Locker__c = storageLocker;
         theSampleOrder.Activity__c = activityId;
         theSampleOrder.Order_Status__c = orderStatus;
+        theSampleOrder.Channel__c = orderChannel;
         
         console.log('theSampleOrder', JSON.parse(JSON.stringify(theSampleOrder)));
 		console.log('theSampleOrder.classification', theSampleOrder.Classification__c);

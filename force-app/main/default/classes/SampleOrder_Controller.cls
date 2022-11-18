@@ -277,8 +277,9 @@ public with sharing class SampleOrder_Controller {
                                 pmia.Sample_Order__c = sapId;
                                 pmia.RecordTypeId = rtPSA;
                                 pmia.Activity__c = activityId;
-                                pmia.Promotion__c = pmi.Promotion__c;
+                                pmia.Promotion__c = pmi.Promotion__c;                                
                                 pmia.Promotion_Material_Item__c = pmi.Id;
+                                pmia.Payment_Date__c = Date.today();
                                 pmia.Rebate_Type__c = 'Free Goods';
                                 pmia.Approval_Status__c = 'Paid';
                                 pmia.Period__c = 0;
@@ -312,7 +313,7 @@ public with sharing class SampleOrder_Controller {
                 }
             }
 
-            String result = PromotionalSalesAgreement_Controller.updateActualTotals(activityId);
+            String result = PromotionalSalesAgreement_Controller.updateActualTotals(new List<String>{activityId});
 
         }
         
@@ -448,7 +449,8 @@ public with sharing class SampleOrder_Controller {
                   FROM Promotion_Activity__c 
                   WHERE OwnerId =:UserInfo.getUserId()
                     AND RecordType.Name =:activityType
-                    AND Status__c = 'Approved'];
+                    AND ((Market__r.Name = 'Mexico' AND Status__c = 'Signed') 
+                     OR (Market__r.Name != 'Mexico' AND Status__c = 'Approved'))];
     }
 
     @AuraEnabled

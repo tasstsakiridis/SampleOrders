@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Sample_Order_Korea</fullName>
+    <active>true</active>
+    <description>Samples Order for Korea</description>
+    <label>Sample Order - Korea</label>
+</RecordType>

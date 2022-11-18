@@ -24,6 +24,7 @@
     <aura:attribute name="recordTypeName" type="String" default="" />
     <aura:attribute name="approvalStatus" type="String" default="New" />
     <aura:attribute name="orderStatus" type="String" default="" />
+    <aura:attribute name="orderChannel" type="String" default="" />
     <aura:attribute name="storeroom" type="String" default="" />
     <aura:attribute name="promotionActivity" type="String" default="" />
     <aura:attribute name="reasonCode" type="String" default="" />
@@ -61,6 +62,8 @@
     <aura:attribute name="showStatusInput" type="Boolean" default="false" />
     <aura:attribute name="showRemainingQty" type="Boolean" default="false" />
     <aura:attribute name="disableButtons" type="Boolean" default="false" />
+    <aura:attribute name="captureOrderChannel" type="Boolean" default="false" />
+    <aura:attribute name="showSystemInfo" type="Boolean" default="false" />
 
     <!-- List & Object Attributes -->
     <aura:attribute name="theSampleOrder" type="SAP_Interfaced_Data__c" default="{ }" />
@@ -87,6 +90,7 @@
     <aura:attribute name="reasonCodes" type="List" />
     <aura:attribute name="storerooms" type="List" />
     <aura:attribute name="activities" type="List" />
+    <aura:attribute name="orderChannels" type="List" />
     <aura:attribute name="validApprovalStatuses" type="List" default="['Approved','Delivered','Out of Stock','Processing']" />
 
     <!-- Handle component events -->
@@ -339,6 +343,26 @@
                         <lightning:input aura:id="i_ContactPhone" type="tel" name="i_ContactPhone" label="{!v.objectDescribe.fields.Contact_Phone__c.label}" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Contact_Phone__c}" placeholder="{!v.objectDescribe.fields.Contact_Phone__c.label}" required="true" />
                     </div>            
                 </div>
+                <aura:if isTrue="{!v.captureChannel}">
+                    <div class="slds-col slds-has-flexi-truncate slds-m-top_small" role="listitem">
+                        <lightning:select name="channels" label="{!v.objectDescribe.fields.Channel__c.label}"
+                                        disable="{!v.orderLocked}" value="{!v.orderChannel}" onchange="{!c.handleOrderChannelSelectionChange}">
+                            <aura:iteration items="{!v.orderChannels}" var="oi">
+                                <option text="{!oi.label}" value="{!oi.value}" selected="{!oi.selected}" />
+                            </aura:iteration>
+                        </lightning:select>
+                    </div>
+                </aura:if>
+                <aura:if isTrue="{!v.showSystemDetails}">
+                    <div class="slds-grid slds-gutters_small slds-m-top_small">
+                        <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                            <lightning:formattedText value="{!v.theSampleOrder.Sales_Group__c}" />
+                        </div>
+                        <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                            <lightning:formattedText value="{!v.theSampleOrder.Sales_Office__c}" />
+                        </div>
+                    </div>
+                </aura:if>
                 <aura:if isTrue="{!v.isStoreroomRequest}">
                     <div class="slds-grid slds-gutters_small slds-m-top_small">
                         <div class="slds-col slds-has-flexi-truncate" role="listitem">

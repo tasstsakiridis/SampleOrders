@@ -337,6 +337,10 @@
             console.log('[handleApprovalStatusChange] exception', ex);
         }
     },
+    handleOrderChannelSelectionChange : function(component, event, helper) {
+        //let orderChannel = component.get("v.orderChannel");
+        //let sampleOrder = component.get("v.theSampleOrder")
+    },
     handleReasonCodeSelectionChange : function(component, event, helper) {
 
     },
