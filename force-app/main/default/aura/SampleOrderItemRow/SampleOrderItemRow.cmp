@@ -16,6 +16,7 @@
     <aura:attribute name="showInternalOrderNumbers" type="Boolean" default="false" />
     <aura:attribute name="showCaseConversion" type="Boolean" default="false" />
     <aura:attribute name="showRemainingQty" type="Boolean" default="false" />
+    <aura:attribute name="captureVolumeInBottles" type="Boolean" default="false" />
     
     <!-- List & Object Attributes -->
     <aura:attribute name="row" type="SampleOrderItem" required="true" />
