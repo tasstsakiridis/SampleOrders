@@ -1,0 +1,10 @@
+안녕하세요.
+귀하의 샘플주문이 보류 중입니다.
+주문처리를 위해 세무서장 승인서류를 업로드해주시기 바랍니다.
+
+적절한 문서가 첨부되기 전까지 샘플주문은 처리되지 않습니다.
+
+주문 번호: {!SAP_Interfaced_Data__c.SAP_Order_Number__c}
+요청자: {!SAP_Interfaced_Data__c.Requested_By__c}
+주문유형: {!SAP_Interfaced_Data__c.Classification__c}
+링크: https://bf.lightning.force.com/{!SAP_Interfaced_Data__c.Id}

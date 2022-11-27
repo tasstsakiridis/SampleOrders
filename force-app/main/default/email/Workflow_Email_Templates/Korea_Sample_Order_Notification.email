@@ -1,0 +1,7 @@
+안녕하세요.
+승인 대기 중인 샘플 주문이 있습니다.
+
+주문 번호: {!SAP_Interfaced_Data__c.SAP_Order_Number__c}
+요청자: {!SAP_Interfaced_Data__c.Requested_By__c}
+주문유형: {!SAP_Interfaced_Data__c.Classification__c}
+링크: https://bf.lightning.force.com/{!SAP_Interfaced_Data__c.Id}

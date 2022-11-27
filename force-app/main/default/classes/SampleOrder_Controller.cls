@@ -1,18 +1,25 @@
 public with sharing class SampleOrder_Controller {
 
     @AuraEnabled
-    public static SimpleListItem getCurrentUserInfo() {
+    public static Map<String, Object> getCurrentUserInfo() {
     	User u = [SELECT Id, Name, Market__c, MobilePhone, UserRoleId, UserRole.Name FROM User WHERE Id =:UserInfo.getUserId()];
-        Market__c m = [SELECT Id, Name, Country_ISO_Code_2__c, Sample_Order_Lead_Time__c FROM Market__c WHERE Name =:u.Market__c LIMIT 1];
-        SimpleListItem sli = new SimpleListItem(u.Id, u.Name);
-        sli.value = m.Id;
-        sli.itemId = m.Country_ISO_Code_2__c;
-        sli.label = String.valueOf(m.Sample_Order_Lead_Time__c);
-        sli.description = m.Name;
-        sli.record = u;
-        return sli;
-    }
-    
+        Market__c m = [SELECT Id, Name, Country_ISO_Code_2__c, Sample_Order_Lead_Time__c, Allow_International_Orders__c, Allow_Status_Change__c,
+                            Accounts__c, Activities__c, Cost_Centers__c, Internal_Order_Numbers__c, Storage_Lockers__c, Show_Product_Price__c,
+                            Standard_Address_Input__c, Shipping_Instructions__c, Capture_Order_Channel__c, Submit_Order_for_Approval__c,
+                            Capture_Volume_in_Bottles__c 
+                         FROM Market__c 
+                        WHERE Name =:u.Market__c LIMIT 1];
+
+        Map<String, Object> result = new Map<String, Object>();
+        result.put('marketId', m.Id);
+        result.put('marketName', m.Name);
+        result.put('market', m);
+        result.put('userId', u.Id);
+        result.put('userName', u.Name);
+        result.put('user', u);
+
+        return result;
+    }    
 	@AuraEnabled
 	public static String getUIThemeDescription() {
 		String theme = UserInfo.getUiThemeDisplayed();
@@ -130,13 +137,16 @@ public with sharing class SampleOrder_Controller {
                        Authorised_By__c, Authorised_By__r.Name, Authorised_Date__c, Finance_Authorised_By__c, Finance_Authorised_Date__c, 
                        Classification__c, Banner_Group__c, Business_Name__c, Business_Address__c, Business_City__c, Business_State__c, 
                        Business_Postcode__c, Business_Country__c, Contact_Name__c, Contact_Phone__c, Reason__c, Is_International_Order__c, 
-                       Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c, Activity__c, Is_Approved__c,
-                       Order_Status__c,
+                       Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c, Is_Gift__c, Is_Gift_Above_100__c,
+                	   Gift_Register_Acknowledgement__c, Budget_Type__c, Reason_Code__c, Activity__c, Is_Approved__c, Order_Status__c,
+                       Channel__c,
                        (SELECT Id, Name, SAP_Interfaced_Data__c, Product__c, Brand_Name__c, Product_Code__c, Internal_Order_Number__c, 
-                               Quantity__c, Units__c, Product__r.Used_For__c, Product__r.Pack_Quantity__c, Total_Ordered_Cases__c, PMI_Actual__c 
+                               Quantity__c, Units__c, Product__r.Used_For__c, Product__r.Pack_Quantity__c, Total_Ordered_Cases__c, PMI_Actual__c,
+                        	   Product__r.Price__c
                           FROM SAP_Interfaced_Data_Items__r)
                   FROM SAP_Interfaced_Data__c 
                  WHERE Id=:recordId];
+
     }
     
     @AuraEnabled
@@ -210,7 +220,7 @@ public with sharing class SampleOrder_Controller {
         if (String.isNotEmpty(activityId)) {
             thePSA = [SELECT Id, Name, RecordType.Name,
                             (SELECT Id, Name, Account__c FROM Promotions__r), 
-                            (SELECT Id, Name, Product_Custom__c, Promotion__c FROM Promotion_Material_Items__r),
+                            (SELECT Id, Name, Product_Custom__c, Product_Custom__r.Price__c, Promotion__c FROM Promotion_Material_Items__r),
                             (SELECT Id, Promotion_Material_Item__c FROM PMI_Actuals__r WHERE Rebate_Type__c = 'Free Goods') 
                         FROM Promotion_Activity__c 
                        WHERE Id =:activityId];
@@ -242,6 +252,7 @@ public with sharing class SampleOrder_Controller {
         SAP_Interfaced_Data_Item__c sapItem;
         List<PMI_Actual__c> actuals = new List<PMI_Actual__c>();
         Map<String, String> sapProductMap = new Map<String, String>();
+        Decimal orderTotal = 0;
         try {
             for(SampleOrderItem s : items) {
                 System.debug('items.key id: ' + s.id + ', product: ' + s.productId);
@@ -255,6 +266,7 @@ public with sharing class SampleOrder_Controller {
                 sapItem.Quantity__c = i.quantity;
                 sapItem.Internal_Order_Number__c = i.internalOrderNumber;
                 sapItem.Total_Ordered_Cases__c = i.convertedCases;
+                orderTotal += i.quantity * i.price;
                 if(i.id != i.productId && i.id != '') {
                     sapItem.Id = i.Id;
                 }
@@ -320,9 +332,13 @@ public with sharing class SampleOrder_Controller {
         upsert l_SAPItems;
 
         
-        SAP_Interfaced_Data__c sampleOrder = [SELECT Id, Approval_Status__c, Classification__c, Business_State__c, Has_HighValue_Items__c, Market__c, SAP_ShipTo_Code__c, SAP_SoldTo_Code__c, SAP_Plant_Code__c
+        SAP_Interfaced_Data__c sampleOrder = [SELECT Id, RecordType.Name, Approval_Status__c, Classification__c, Business_State__c, 
+                                              		Has_HighValue_Items__c, Market__c, SAP_ShipTo_Code__c, SAP_SoldTo_Code__c, SAP_Plant_Code__c,
+                                              		Order_Total__c
                                                 FROM SAP_Interfaced_Data__c 
                                                WHERE Id =:sapId];
+                                               
+        sampleOrder.Order_Total__c = orderTotal;
         sampleOrder.Has_HighValue_Items__c = hasHighValueItems;
         update sampleOrder;
 
@@ -349,38 +365,33 @@ public with sharing class SampleOrder_Controller {
         
         SAP_Interfaced_Data__c sap = [SELECT Id, Name, RecordTypeId, RecordType.Name, Requested_Delivery_Date__c, Classification__c, 
                                         Business_Name__c, Business_Address__c, Business_City__c, Business_State__c, Business_Country__c, 
-                                        Contact_Name__c, Contact_Phone__c, Reason__c, Is_Approved__c, Order_Status__c,
+                                        Contact_Name__c, Contact_Phone__c, Reason__c, Is_Approved__c, Order_Status__c, Is_Gift__c, Is_Gift_Above_100__c,
+                                        Gift_Register_Acknowledgement__c,
                                         (SELECT Id, Name, Product__c, SAP_Interfaced_Data__c, Brand_Name__c, Product_Code__c, 
                                                 Internal_Order_Number__c, Total_Ordered_Cases__c 
                                            FROM SAP_Interfaced_Data_Items__r) 
                                       FROM SAP_Interfaced_Data__c 
                                       WHERE Id =:sapId];
+
         return sap;
     }   
     
     @AuraEnabled
     public static List<SampleOrderItem> getProducts(String recordTypeName) {        
-        SimpleListItem u = getCurrentUserInfo();
-        /*
-        if (u != null) {
-            market = [SELECT Id, Name FROM Market__c WHERE Name =:u.value];
+        Map<String, Object> u = getCurrentUserInfo();
+        String marketId;
+        if (u.containsKey('marketId')) {
+            marketId = String.valueOf(u.get('marketId'));
         }
-        */
-        
-		String marketId = u.value;
-        if (marketId == null) {
+        if (String.isEmpty(marketId)) {
             marketId = [SELECT Id, Name FROM Market__c WHERE Name = 'Australia'].Id;
         }
-        //String usedFor = 'Sample Order';
-        //if (recordTypeName != null && recordTypeName.contains('E-Premise')) {
-        //    usedFor = recordTypeName;
-        //}
         Boolean found = false;
         List<Product__c> products = [SELECT Id, Name, ProductCode__c, Brand__c, Brand_Name__c, Pack_Quantity__c, Used_For__c, Price__c, COGS__c
                                        FROM Product__c 
                                       WHERE IsActive__c = true 
                                         AND Market__c=:marketId 
-                                        AND Used_For__c INCLUDES ('Sample Order','Sample Order - E-Premise', 'Sample Order - UK', 'Sample Order - TWN','Sample Order - MEX')
+                                        AND Used_For__c INCLUDES ('Sample Order','Sample Order - E-Premise', 'Sample Order - UK', 'Sample Order - TWN','Sample Order - MEX','Sample Order - KOR')
                                    ORDER BY Name];
         
         List<SampleOrderItem> items = new List<SampleOrderItem>();
@@ -392,14 +403,12 @@ public with sharing class SampleOrder_Controller {
     
     @AuraEnabled
     public static List<Banner_Groups__c> getBannerGroups() {
-        SimpleListItem u = getCurrentUserInfo();
-        /*
-        if (u != null) {
-            market = [SELECT Id, Name FROM Market__c WHERE Name =:u.value];
+        Map<String, Object> u = getCurrentUserInfo();
+        String marketId;
+        if (u.containsKey('marketId')) {
+            marketId = String.valueOf(u.get('marketId'));
         }
-        */
-        String marketId = u.value;
-        if (marketId == null) {
+        if (String.isEmpty(marketId)) {
             marketId = [SELECT Id, Name FROM Market__c WHERE Name = 'Australia'].Id;
         }
 
@@ -408,33 +417,92 @@ public with sharing class SampleOrder_Controller {
     }
 
     @AuraEnabled 
-    public static List<Account> getStorerooms() {
-        SimpleListItem u = getCurrentUserInfo();
-        String marketId = u.value;
-        if (marketId == null) {
+    public static List<Map<String, Object>> getStorerooms() {
+        Map<String, Object> u = getCurrentUserInfo();
+        String marketId;
+        if (u.containsKey('marketId')) {
+            marketId = String.valueOf(u.get('marketId'));
+        }
+        if (String.isEmpty(marketId)) {
             marketId = [SELECT Id, Name FROM Market__c WHERE Name = 'Australia'].Id;
         }
 
-        return [SELECT Id, Name, ShippingStreet, ShippingCity, ShippingPostalCode, ShippingState, ShippingCountry FROM Account WHERE Market__c =:marketId AND RecordType.Name = 'Storeroom' AND Status__c ='Active'];
+        List<Map<String, Object>> values = new List<Map<String, Object>>();
+        List<Account> storerooms = [SELECT Id, Name, ShippingStreet, ShippingCity, ShippingPostalCode, ShippingState, ShippingCountry
+                                      FROM Account 
+                                     WHERE Market__c =:marketId 
+                                       AND RecordType.Name = 'Storeroom' 
+                                       AND Status__c ='Active'];
+
+		List<AccountShare> owners = [SELECT Id, AccountId, UserOrGroupId, RowCause 
+                                       FROM AccountShare
+                                      WHERE Account.RecordType.Name = 'Storeroom'
+                                        AND Account.Status__c = 'Active'
+                                        AND (RowCause = 'Manual' OR RowCause = 'Owner')];
+        
+        List<String> users = new List<String>();
+        for(AccountShare sh : owners) {
+            Id userId = sh.UserOrGroupId;
+            if (userId.getSobjectType().getDescribe().getName() == 'User') {
+                users.add(userId);
+            }
+        }
+        if (users.size() > 0) {
+            Map<String, User> ownerDetails = new Map<String, User>([SELECT Id, Name, SmallPhotoUrl
+							                                          FROM User
+                                                                     WHERE Id =:users]);
+            
+            
+            for (Account a : storerooms) {
+		        Map<String, Object> room = new Map<String, Object>();
+        		room.put('account', a);
+                List<User> roomowners = new List<User>();
+                for(AccountShare sh : owners) {
+                    if (sh.AccountId == a.Id && ownerDetails.containsKey(sh.UserOrGroupId)) {
+                        roomowners.add(ownerDetails.get(sh.UserOrGroupId));
+                    }
+                }
+                
+                room.put('owners', roomowners);
+                
+                values.add(room);
+            }
+        }
+        
+        
+        return values;
     }
 
     @AuraEnabled 
-    public static List<Account> getStorageLockers() {
-        SimpleListItem u = getCurrentUserInfo();
-        String marketId = u.value;
-        if (marketId == null) {
-            marketId = [SELECT Id, Name FROM Market__c WHERE Name = 'Australia'].Id;
+    public static List<Account> getStorageLockers(String marketId) {
+        if (String.isEmpty(marketId)) {
+            Map<String, Object> u = getCurrentUserInfo();
+            if (u.containsKey('marketId')) {
+                marketId = String.valueOf(u.get('marketId'));
+            }
+            
+            if (String.isEmpty(marketId)) {
+                marketId = [SELECT Id, Name FROM Market__c WHERE Name = 'Australia'].Id;
+            }
         }
 
-        return [SELECT Id, Name, ShippingStreet, ShippingCity, ShippingPostalCode, ShippingState, ShippingCountry FROM Account WHERE Market__c =:marketId AND RecordType.Name = 'Storage Locker' AND Status__c ='Active'];
+        return [SELECT Id, Name, ShippingStreet, ShippingCity, ShippingPostalCode, ShippingState, ShippingCountry 
+                  FROM Account 
+                 WHERE Market__c =:marketId 
+                   AND Status__c ='Active'
+                   AND RecordType.Name = 'Storage Locker'];
     }
 
     @AuraEnabled
-    public static List<Internal_Order__c> getInternalOrderNumbers() {
-        SimpleListItem u = getCurrentUserInfo();
-        String marketId = u.value;
-        if (marketId == null) {
-            marketId = [SELECT Id, Name FROM Market__c WHERE Name = 'United Kingdom'].Id;
+    public static List<Internal_Order__c> getInternalOrderNumbers(String marketId) {
+        if (String.isEmpty(marketId)) {
+            Map<String, Object> u = getCurrentUserInfo();
+            if (u.containsKey('marketId')) {
+                marketId = String.valueOf(u.get('marketId'));
+            }
+            if (String.isEmpty(marketId)) {
+                marketId = [SELECT Id, Name FROM Market__c WHERE Name = 'United Kingdom'].Id;
+            }
         }
         
         return [SELECT Id, Internal_Order_Number__c, Brand__c, Description__c FROM Internal_Order__c WHERE Internal_Order_Type__c = 'ZBS' AND Market__c =:marketId ORDER BY Brand__c, Internal_Order_Number__c];
@@ -462,12 +530,18 @@ public with sharing class SampleOrder_Controller {
     }
 
     @AuraEnabled
-    public static void submitForApproval(String sapId) {
-        System.debug('sapId: ' + sapId);
+    public static void submitForApproval(String sapId, String market, String recordType) {
+        System.debug('sapId: ' + sapId);        
         if (sapId != null && sapId.length() > 0) {            
-            Approval.ProcessSubmitRequest req1 = new Approval.ProcessSubmitRequest();
-            req1.setObjectId(sapId);
-            Approval.ProcessResult result = Approval.process(req1);
+            if (market == 'Australia' && recordType == 'Sample Order - Storeroom Request') {
+                SAP_Interfaced_Data__c sampleOrder = [SELECT Id, Approval_Status__c FROM SAP_Interfaced_Data__c WHERE Id =:sapId];
+                sampleOrder.Approval_Status__c = 'Approved';
+                update sampleOrder;
+            } else {
+                Approval.ProcessSubmitRequest req1 = new Approval.ProcessSubmitRequest();
+                req1.setObjectId(sapId);
+                Approval.ProcessResult result = Approval.process(req1);                
+            }
         }
         
     }
