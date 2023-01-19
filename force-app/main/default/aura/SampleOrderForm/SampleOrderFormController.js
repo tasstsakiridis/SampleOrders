@@ -1,5 +1,9 @@
 ({
 	doInit : function(component, event, helper) {
+        const recordTypeId = component.get("v.pageReference").state.recordTypeId;
+        component.set("v.recordTypeId", recordTypeId);
+        console.log("[SampleOrderForm.doInit] recordId: ", component.get("v.recordId"));
+        console.log("[SampleOrderForm.doInit] recordTypeId: ", component.get("v.recordTypeId"));
         component.set("v.countryOptions", helper.getCountryOptions());
 		component.set("v.provinceOptions", helper.getProvinceOptions(component, component.get("v.country")));
         component.set("v.itemsButtonLabel", $A.get('$Label.c.Add_Item'));
@@ -16,6 +20,7 @@
             { label: 'Assigned To', fieldName: 'Actor', type: 'text' }
         ]);
 
+        /*
         helper.setupProductColumns(component);   
         helper.getBannerGroups(component);
         helper.getStorageLockers(component);
@@ -23,10 +28,14 @@
         helper.getStorerooms(component);
         helper.getPromotionActivities(component);
         helper.getPicklistValuesForRecordType(component);
+        */
+        helper.getDataTableColumns(component);  
+
 	},
     handleCountryChange : function(component, event, helper) {
         //component.set("v.countryName", event.target.value);
     },
+    /*
     handleUserMarketChange : function(component, event, helper) {
         console.log('[handleCountryChange] countryName', component.get("v.countryName"));
         console.log('[handleCountryChange] userMarket', component.get('v.userMarket'));
@@ -95,6 +104,7 @@
         helper.setupProductTableHeaders(component);
         //helper.updateProvinceOptions(component);
     },
+    */
     handleDescribeInfoChange : function(component, event, helper) {
         var describe = component.get("v.objectDescribe");
         var classifications = [];
@@ -275,9 +285,14 @@
         let recordName = event.getParam('sObjectName');
         console.log('[SampleOrderForm.controller.handleLookupIdChange] instanceId, recordId, recordName', instanceId, recordId, recordName);
         try {
-            component.set("v.accountId", recordId);
-            component.set("v.accountName", recordName);
-            helper.getAccountDetails(component, recordId);
+            if (instanceId == 'i_Account') {
+                component.set("v.accountId", recordId);
+                component.set("v.accountName", recordName);
+                helper.getAccountDetails(component, recordId);
+            } else if (instanceId == 'i_Wholesaler') {
+                component.set("v.wholesalerId", recordId);
+                component.set("v.wholesalerName", recordName);
+            }
         }catch(ex) {
             console.log('[SampleOorderrForm.controller.handleLookupIdChanged] exception', ex);
         }
@@ -314,6 +329,7 @@
     },
     handleStoreroomSelectionChange : function(component, event, helper) {
         try {
+            helper.showStoreroomOwners(component);
             helper.setBusinessDetailsFromStoreroom(component);
         } catch(ex) {
             console.log('[handleStoreroomSelectionChange] exception', ex);
@@ -337,13 +353,13 @@
             console.log('[handleApprovalStatusChange] exception', ex);
         }
     },
-    handleOrderChannelSelectionChange : function(component, event, helper) {
-        //let orderChannel = component.get("v.orderChannel");
-        //let sampleOrder = component.get("v.theSampleOrder")
-    },
     handleReasonCodeSelectionChange : function(component, event, helper) {
 
     },
+    handleOrderChannelSelectionChange : function(component, event, helper) {
+        //let orderChannel = component.get("v.orderChannel");
+        //let sampleOrder = component.get("v.theSampleOrder")
+    },    
     handleBrandChange : function(component, event, helper) {
         //var brand = event.getParam("value");
         var brand = component.find('brands').get('v.value');

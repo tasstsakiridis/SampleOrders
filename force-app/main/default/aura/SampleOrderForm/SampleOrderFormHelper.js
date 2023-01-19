@@ -35,14 +35,16 @@
         MX: [
             {label:'Mexico City', value:'Mexico City'},
         ],
-        KO: []  
+        KR: [
+            {label:'Seoul', value:'Seoul'},
+        ]
     },
     countryOptions: [
         {'label': 'Australia', 'value': 'AU'},
         {'label': 'United Kingdom', 'value': 'GB' },
         {'label': 'Taiwan', 'value': 'TW' },
         {'label': 'Mexico', 'value': 'MX' },
-        {'label': 'Korea', 'value': 'KO' },
+        {'label': 'Korea', 'value': 'KR' },
     ],
 
     getProvinceOptions: function(component, country) {
@@ -89,6 +91,180 @@
         component.set("v.provinceOptions", this.getProvinceOptions(component, country));
         console.log('[SampleOrderForm.helper.updateProvinceOptions] provinceOptions', component.get('v.provinceOptions'));
     },
+    getDataTableColumns : function(component) {
+        console.log('[SampleOrderForm.helper.getDataTableColumns]');
+        const helper = this;
+		var action = component.get("c.getObjectDetails");
+        action.setCallback(this, function(response) {
+            console.log('[SampleOrderForm.helper.getDataTableColums] component valid', component.isValid());
+            if (component.isValid()) {
+                var callState = response.getState();
+                console.log('[SampleOrderForm.helper.getDataTableColumns] callstate', callState);
+                if (callState === "SUCCESS") {
+                    var rv = response.getReturnValue();
+                    console.log('[SampleOrderForm.Helper.getDataTableColumns] object', rv);
+                    component.set('v.objectDescribe', rv);
+                    console.log('[SampleOrderForm.helper.getDataTableColumns] recordtypes: ', rv.recordTypes);
+                    var recordTypes = [];
+                    try {
+                        const recordTypeId = component.get("v.recordTypeId");
+                        
+                        for(const rt in rv.recordTypes) {
+                            if (rv.recordTypes[rt].label != "Master" && rv.recordTypes[rt].label.indexOf('Locked') < 0) {
+                                recordTypes.push(rv.recordTypes[rt]);
+                                if (recordTypeId == undefined && rv.recordTypes[rt].isDefault) {
+                                    component.set("v.recordTypeName", rv.recordTypes[rt].label);
+                                } else if (rv.recordTypes[rt].value == recordTypeId) {
+                                    component.set("v.recordTypeName", rv.recordTypes[rt].label);
+                                }
+                            }
+                        }
+
+                        component.set('v.recordTypes', recordTypes);
+                        console.log('[SampleOrderForm.helper.getDataTableColumns] # of recordtypes: ' + recordTypes.length);
+
+                        const recordId = component.get("v.recordId");
+                        if (recordId == undefined) {
+                            helper.getUserDetails(component);
+                        } else {
+                            helper.loadSampleOrder(component);
+                        }
+
+                    }catch(ex) {
+                        console.log('exception', ex);                        
+                        component.set("v.isLoading", false);
+                    }
+
+                } else if (callState === "INCOMPLETE") {
+                    console.log("[SampleOrder.Helper.getObjectDetails] callback returned incomplete.");                    
+                } else if (callState === "ERROR") {
+                    var errors = response.getError();
+                    console.log("[SampleOrder.Helper.getObjectDetails] callback returned in error.", errors);                    
+                }
+            }
+        });
+        $A.enqueueAction(action);
+        	  
+    },
+    getUserDetails : function(component) {
+        console.log('[SampleOrderForm.helper.getUserDetails]');
+        var action = component.get("c.getCurrentUserInfo");
+        const helper = this;
+        action.setCallback(this, function(response) {
+            if (component.isValid()) {
+                var callState = response.getState();
+                if (callState === "SUCCESS") {
+                    var rv = response.getReturnValue();
+                    console.log('[SampleOrderForm.Helper.getUserDetails] user', rv);
+                    try {
+                        component.set('v.userId', rv.user.Id);
+                        component.set('v.userName', rv.user.Name);
+                        component.set("v.userPhone", rv.user.MobilePhone);
+                        
+                        let userRole = rv.user.UserRole == undefined ? '' : rv.user.UserRole.Name;
+                        component.set('v.userRole', userRole);
+                        
+                        const recordTypeName = component.get("v.recordTypeName");
+
+                        let theSampleOrder = component.get("v.theSampleOrder");
+                        let isStoreroomRequest = false;
+                        let useStandardAddressComponent = rv.market.Standard_Address_Input__c == undefined ? false : rv.market.Standard_Address_Input__c;
+                        let showInternationalOrder = rv.market.Allow_International_Orders__c == undefined ? false : rv.market.Allow_International_Orders__c;
+                        let showInternalOrderNumbers = rv.market.Internal_Order_Numbers__c == undefined ? false : rv.market.Internal_Order_Numbers__c;
+                        let showActivities = rv.market.Activities__c == undefined ? false : rv.market.Activities__c;
+                        let showAccounts = rv.market.Accounts__c == undefined ? false : rv.market.Accounts__c;
+                        let showStorageLockers = rv.market.Storage_Lockers__c == undefined ? false : rv.market.Storage_Lockers__c;
+                        let showWholesalers = rv.market.Show_Wholesalers__c == undefined ? false : rv.market.Show_Wholesalers__c;
+
+                        if (recordTypeName == 'Sample Order - Storeroom Request') {
+                            isStoreroomRequest = true;
+                            useStandardAddressComponent = false;
+                            theSampleOrder.Contact_Name__c = rv.user.Name;
+                            theSampleOrder.Contact_Phone__c = rv.user.MobilePhone;
+                            showInternationalOrder = false;
+                        } 
+
+                        let country = rv.market.Country_ISO_Code_2__c;
+                        let countryName = rv.market.Name;
+                        if (theSampleOrder.Market__c != undefined) {
+                            country = theSampleOrder.Market__r.Country_ISO_Code_2__c;
+                            countryName = theSampleOrder.Market__r.Name;
+                        }
+                        component.set("v.marketId", rv.market.Id);
+                        component.set('v.userMarket', rv.market.Name);
+                        component.set('v.country', country);
+                        component.set("v.countryName", countryName);
+                        helper.updateProvinceOptions(component);
+
+                        component.set('v.leadTime', rv.market == undefined || rv.market.Sample_Order_Lead_Time__c == undefined ? 0 : parseInt(rv.market.Sample_Order_Lead_Time__c));
+                        component.set("v.showInternationalOrder", showInternationalOrder);
+                        component.set("v.showAccounts", showAccounts);
+                        component.set("v.showWholesalers", showWholesalers);
+                        component.set("v.showStorageLockers", showStorageLockers);
+                        component.set("v.showActivities", showActivities);
+                        component.set("v.showCostCenters", rv.market.Cost_Centers__c == undefined ? false : rv.market.Cost_Centers__c);
+                        component.set("v.showInternalOrderNumbers", showInternalOrderNumbers);
+                        component.set("v.showShippingInstructions", rv.market.Shipping_Instructions__c == undefined ? false : rv.market.Shipping_Instructions__c);
+                        component.set("v.useStandardAddressComponent", useStandardAddressComponent);
+                        component.set("v.captureVolumeInBottles", rv.market.Capture_Volume_in_Bottles__c == undefined ? false : rv.market.Capture_Volume_in_Bottles__c);
+                        component.set("v.showPrice", rv.market.Show_Product_Price__c == undefined ? false : rv.market.Show_Product_Price__c);
+                        component.set("v.showCaseConversion", rv.market.Capture_Volume_in_Bottles__c == undefined ? false : rv.market.Capture_Volume_in_Bottles__c);
+                        component.set("v.showRemainingQty", showActivities);
+                        component.set("v.showStatusInput", rv.market.Allow_Status_Change__c == undefined ? false : rv.market.Allow_Status_Change__c);
+                        component.set("v.showSubmitForApproval", rv.market.Submit_Order_for_Approval__c == undefined ? false : rv.market.Submit_Order_for_Approval__c);
+                        component.set("v.isStoreroomRequest", isStoreroomRequest);
+
+                        console.log("[SampleOrderForm.helper.getUserDetails] captureVolumeInBottles", component.get("v.captureVolumeInBottles"));
+                        let lockStatusInput = !((userRole == 'Global Administrator' || userRole == 'TWN_Supplier Chain Manager') && theSampleOrder.Approval_Status__c == 'Approved');
+                        component.set("v.lockStatusInput", lockStatusInput);
+
+                        console.log('[SampleOrderForm.helper.getUserDetails] user', rv.user);
+                        console.log('[SampleOrderForm.helper.getUserDetails] market', rv.market);
+
+                        helper.updateProvinceOptions(component);
+                        helper.setupProductColumns(component);
+
+                        if (rv.market.Name == 'Australia') {
+                            helper.getBannerGroups(component);
+                        }
+                        console.log('[SampleOrderForm.helper.getUserDetails] showAccounts', showAccounts);
+                        if (showAccounts) {
+                            let accountFilter = "WHERE Is_Active__c=true AND Market__c = '"+rv.market.Id+"'";
+                            accountFilter += " AND RecordType.Name = '"+rv.market.Sample_Order_Account_RecordType__c+"'";
+                            component.set("v.accountFilter", accountFilter);
+                        }
+                        if (showWholesalers) {
+                            let wholesalerFilter = "WHERE Is_Active__c = true AND Market__c ='"+rv.market.Id+"'";
+                            wholesalerFilter += " AND RecordType.Name = '"+rv.market.Sample_Order_Wholesaler_RecordType__c+"'";
+                            component.set("v.wholesalerFilter", wholesalerFilter);
+                        }
+                        if (showStorageLockers) {
+                            helper.getStorageLockers(component);
+                        }
+                        if (showInternalOrderNumbers) {
+                            helper.getInternalOrderNumbers(component);
+                        }
+                        if (isStoreroomRequest) {
+                            helper.getStorerooms(component);
+                        }
+                        if (showActivities) {
+                            helper.getPromotionActivities(component);
+                        }
+                        helper.getPicklistValuesForRecordType(component);
+                    }catch(ex) {
+                        console.log('[SampleOrderForm.helper.getUserDetails] exception', ex);
+                    }
+                } else if (callState === "INCOMPLETE") {
+                    console.log("[SampleOrderForm.Helper.getUserDetails] callback returned incomplete.");                    
+                } else if (callState === "ERROR") {
+                    var errors = response.getError();
+                    console.log("[SampleOrderForm.Helper.getUserDetails] callback returned in error.", errors);                    
+                }
+            }
+        });
+        $A.enqueueAction(action);
+    },
+
     doInit : function(component) {
     	this.setupProductColumns(component); 
     },
@@ -108,72 +284,70 @@
                         console.log('[SampleOrderForm.Helper.getPicklistValues] picklistValues', rv);
                         component.set("v.allPicklistValues", rv);
 
+                        let approvalStatus = component.get("v.approvalStatus");
                         let classification = component.get("v.classification");
                         let costCenter = component.get("v.costCenter");
                         let statuses = component.get("v.statuses");
                         let reasonCode = component.get("v.reasonCode");
                         let orderStatus = component.get("v.orderStatus");
-                        let orderChannel = component.get("v.orderChannel");
 
-                        var approvalStatus = component.get("v.approvalStatus");
                         var classifications = [{"label":"", "value":""}];
                         var costCenters = [{"label":"", "value":""}];
                         var reasonCodes = [{"label":"", "value":""}];
                         var orderStatuses = [{"label":"", "value":""}];
-                        var orderChannels = [{"label":"", "value":""}];
+                        var stickerTypes = [];                     
+
                         var classificationPicklistValues = rv["Classification__c"].picklistValues;
                         var costCentersPicklistValues = rv["Cost_Center__c"].picklistValues;
                         var statusPicklistValues = rv["Approval_Status__c"].picklistValues;
                         var orderStatusPicklistValues = rv["Order_Status__c"].picklistValues;
-                        var orderChannelPicklistValues = rv["Channel__c"].picklistValues;
-
+                        const reasonCodePicklistValues = rv["Reason_Code__c"] == undefined ? [] : rv["Reason_Code__c"].picklistValues;
+                        const stickerTypePicklistValues = rv["Sticker_Type__c"] == undefined ? [] : rv["Sticker_Type__c"].picklistValues;
                         //const reasonCodePicklistValues = rv["Reason_Code__c"].picklistValues;
                         console.log('[SampleOrderForm.Helper.getPicklistValues] classificationPicklistValues', classificationPicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] costCentersPicklistValues', costCentersPicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] statusPicklistValues', statusPicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] orderStatuses', orderStatusPicklistValues);
+                        console.log('[SampleOrderForm.helper.getPicklistValues] stickerTypePicklistValues', stickerTypePicklistValues);
+
                         for(var i = 0; i < statusPicklistValues.length; i++) {
-                            statuses.push({"label":statusPicklistValues[i].label, "value":statusPicklistValues[i].value});
+                            statuses.push({"label":statusPicklistValues[i].label, "value":statusPicklistValues[i].value, "selected":statusPicklistValues[i].value==approvalStatus});
                         }
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] statuses', statuses);
+                        
                         for(var i = 0; i < classificationPicklistValues.length; i++) {
-                            classifications.push({"label":classificationPicklistValues[i].label, "value":classificationPicklistValues[i].value, "selected":classification==classificationPicklistValues[i].value});
+                            classifications.push({"label":classificationPicklistValues[i].label, "value":classificationPicklistValues[i].value, "selected":classificationPicklistValues[i].value==classification});
                         }
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] classification', classifications);
+                        
                         for(var i = 0; i < costCentersPicklistValues.length; i++) {
-                            costCenters.push({"label":costCentersPicklistValues[i].label, "value":costCentersPicklistValues[i].value, "selected":costCenter == costCentersPicklistValues[i].value});
+                            costCenters.push({"label":costCentersPicklistValues[i].label, "value":costCentersPicklistValues[i].value, "selected":costCentersPicklistValues[i].value==costCenter});
                         }
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] costCenters', costCenters);
+                        
                         if (classification && classification.length > 0) {
-                            //const classificationPicklistValues = reasonCodePicklistValues.filter(r => r.description == classification);
-                            //for(var i = 0; i < classificationPicklistValues.length; i++) {
-                            //    reasonCodes.push({"label":classificationPicklistValues[i].label, "value":classificationPicklistValues[i].value, "selected":reasonCode == classificationPicklistValues[i].value});
-                            //}
+                            const classificationPicklistValues = reasonCodePicklistValues.filter(r => r.description == classification);
+                            for(var i = 0; i < classificationPicklistValues.length; i++) {
+                                reasonCodes.push({"label":classificationPicklistValues[i].label, "value":classificationPicklistValues[i].value, "selected":classificationPicklistValues[i].value==reasonCode});
+                            }
     
                         }
+                        
                         if (orderStatusPicklistValues && orderStatusPicklistValues.length > 0) {
                             for(var i = 0; i < orderStatusPicklistValues.length; i++) {
-                                orderStatuses.push({"label":orderStatusPicklistValues[i].label, "value":orderStatusPicklistValues[i].value, "selected":orderStatus == orderStatusPicklistValues[i].value});
-                            }
-                        }
-                        if (orderChannelPicklistValues && orderChannelPicklistValues.length > 0) {
-                            for(var i = 0; i < orderChannelPicklistValues.length; i++) {
-                                orderChannelPicklistValues.push({"label":orderChannelPicklistValues[i].label, "value":orderChannelPicklistValues[i].value, "selected":orderChannel == orderChannelPicklistValues[i].value});
-                            }
+                                orderStatuses.push({"label":orderStatusPicklistValues[i].label, "value":orderStatusPicklistValues[i].value, "selected":orderStatusPicklistValues[i].value==orderStatus});
+                            }                            
                         }
 
                         console.log('[SampleOrderForm.Helper.getPicklistValues] classification', classifications);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] costCenters', costCenters);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] statuses', statuses);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] orderStatuses', orderStatuses);
-                        
-                        
-                        /*
-                        for(var i = 0; i < rv.length; i++) {
-                            if (rv[i].Field_Name__c == 'Classification__c') {                                
-                                classifications.push({"label":rv[i].Value__c, "value":rv[i].Value__c, "selected":classification==rv[i].Value__c});
-                            } else if (rv[i].Field_Name__c == 'Cost_Center__c') {
-                                costCenters.push({"label":rv[i].Value__c, "value":rv[i].Value__c, "selected":costCenter == rv[i].Value__c});
-                            }
-                        } 
-                        */                   
+                    
+                        if (stickerTypePicklistValues && stickerTypePicklistValues.length > 0) {
+                            component.set("v.stickerTypes", stickerTypePicklistValues);
+                        }
+
                         classifications.sort(function(a, b) {
                             let x = a.label.toLowerCase();
                             let y = b.label.toLowerCase();
@@ -203,13 +377,6 @@
                             if (x > y) { return 1; }
                             return 0; 
                         });
-                        orderChannels.sort(function(a, b) {
-                            let x = a.label.toLowerCase();
-                            let y = b.label.toLowerCase();
-                            if (x < y) { return -1; }
-                            if (x > y) { return 1; }
-                            return 0; 
-                        });
                     
                         for(var i = 0; i < statuses.length; i++) {
                             if (statuses[i].value == approvalStatus) {
@@ -226,7 +393,6 @@
                         component.set("v.statuses", statuses);
                         component.set("v.reasonCodes", reasonCodes);
                         component.set("v.orderStatuses", orderStatuses);
-                        component.set("v.orderChannels", orderChannels);
                     }catch(ex) {
                         console.log('[SampleOrderForm.helper.getPicklistValues] exception', ex);                        
                     }
@@ -269,23 +435,9 @@
         ]);        
     },
     setupProductColumns : function(component) {
-        /*
-        var productColumns = [];
-        productColumns.push({ label: 'Product', fieldName: 'Name', type:'text' });
-        if (component.get("v.showSKU")) {
-            productColumns.push({ label: 'SKU', fieldName: 'ProductCode__c', type: 'text' });
-        }
-        productColumns.push({ label: 'Brand', fieldName: 'Brand_Name__c', type: 'text' });
-        productColumns.push({ label: 'Pack Qty', fieldName: 'Pack_Quantity__c', type: 'number', editable: false });
-        if (component.get("v.showPrice")) {
-            productColumns.push({ label: 'Price', fieldName: 'Price__c', type:'number', editable: false });
-        }
-        productColumns.push({ label: 'Quantity', fieldName: 'Quantity__c', type:'number', editable:'true' });
-        productColumns.push({ label: '# of Bottles', fieldName: 'Units__c', type: 'number', editable: false });
-        */
         this.setupProductTableHeaders(component);
 
-        var recordTypeName = component.get("v.recordTypeName");
+        const recordTypeName = component.get("v.recordTypeName");
     	var action = component.get("c.getProducts");
         action.setParams({
             recordTypeName: recordTypeName
@@ -329,17 +481,21 @@
         $A.enqueueAction(action);
     },
     getBannerGroups : function(component) {
-        console.log('getBannerGroups');
-    	var action = component.get("c.getBannerGroups");
+        console.log('[SampleOrderForm.helper.getBannerGroups]');
+
+        var action = component.get("c.getBannerGroups");
         action.setCallback(this, function(response) {
             if (component.isValid()) {
                 var callState = response.getState();
                 if (callState === "SUCCESS") {
+                    const theSampleOrder = component.get("v.theSampleOrder");
+                    const selectedBannerGroup = theSampleOrder.Banner_Group__c;
+
                     var rv = response.getReturnValue();
                     console.log('[SampleOrderForm.Helper.getBannerGroups] bannergroups', rv);
                     var banners = [{"label":"", value:""}];
                     for(var i = 0; i < rv.length; i++) {
-                        banners.push({"label":rv[i].Name,"value":rv[i].Id});
+                        banners.push({"label":rv[i].Name,"value":rv[i].Id, "selected":rv[i].Id==selectedBannerGroup});
                     }
                     banners.sort(function(a, b) { 
                         let x = a.label.toLowerCase();
@@ -363,17 +519,25 @@
         $A.enqueueAction(action);
     },
     getStorageLockers : function(component) {
-        console.log('getStorageLockers');
+        console.log('[SampleOrderForm.helper.getAccounts]');
+
+        const marketId = component.get("v.marketId");
     	var action = component.get("c.getStorageLockers");
+        action.setParams({
+            marketId : marketId
+        });
         action.setCallback(this, function(response) {
             if (component.isValid()) {
                 var callState = response.getState();
                 if (callState === "SUCCESS") {
+                    const theSampleOrder = component.get("v.theSampleOrder");
+                    const storageLocker = theSampleOrder.Storage_Locker__c;
+
                     var rv = response.getReturnValue();
-                    console.log('[SampleOrderForm.Helper.getStorageLockers] storageLoockers', rv);
+                    console.log('[SampleOrderForm.Helper.getStorageLockers] lockers', rv);
                     var lockers = [{"label":"", value:""}];
                     for(var i = 0; i < rv.length; i++) {
-                        lockers.push({"label":rv[i].Name + '-' + rv[i].ShippingCity,"value":rv[i].Id, account: rv[i]});
+                        lockers.push({"label":rv[i].Name + '-' + rv[i].ShippingCity,"value":rv[i].Id, "selected":rv[i].Id==storageLocker, account: rv[i]});
                     }
                     lockers.sort(function(a, b) { 
                         let x = a.label.toLowerCase();
@@ -398,29 +562,55 @@
         $A.enqueueAction(action);
     },
     getStorerooms : function(component) {
-        console.log('getStorerooms');
-    	var action = component.get("c.getStorerooms");
+        console.log('[SampleOrderForm.helper.getStorerooms]');
+
+        var action = component.get("c.getStorerooms");
         action.setCallback(this, function(response) {
             if (component.isValid()) {
                 var callState = response.getState();
                 if (callState === "SUCCESS") {
-                    var rv = response.getReturnValue();
-                    console.log('[SampleOrderForm.Helper.getStorerooms] storerooms', rv);
-                    var rooms = [{"label":"", value:""}];
-                    for(var i = 0; i < rv.length; i++) {
-                        rooms.push({"label":rv[i].Name + '-' + rv[i].ShippingCity,"value":rv[i].Id, account: rv[i]});
+                    try {
+                        const theSampleOrder = component.get("v.theSampleOrder");
+                        const storeroom = theSampleOrder.Account__c;
+                        var rv = response.getReturnValue();
+                        console.log('[SampleOrderForm.Helper.getStorerooms] storerooms', rv);
+                        var rooms = [{"label":"", value:""}];
+                        var owners = {};
+                        for(var i = 0; i < rv.length; i++) {
+                            rooms.push({"label":rv[i].account.Name + '-' + rv[i].account.ShippingCity,"value":rv[i].account.Id, "selected":rv[i].account.Id==storeroom, account: rv[i].account});
+                            if (rv[i].owners != undefined) {
+                                let ownerList = [];
+                                for(var j = 0; j < rv[i].owners.length; j++) {
+                                    ownerList.push({
+                                        'type': 'avatar',
+                                        'href': '',
+                                        'label': rv[i].owners[j].Name,
+                                        'src'  : rv[i].owners[j].SmallPhotoUrl,
+                                        'fallbackIconName': 'standard:user',
+                                        'variant': 'circle',
+                                        'alternativeText': rv[i].owners[j].Name
+                                    });
+                                }
+        
+                                owners[rv[i].account.Id] = ownerList;
+                            }
+                        }
+                        rooms.sort(function(a, b) { 
+                            let x = a.label.toLowerCase();
+                            let y = b.label.toLowerCase();
+                            if (x < y) { return -1; }
+                            if (x > y) { return 1; }
+                            return 0; 
+                        });
+                        console.log('[SampleOrderForm.helper.getStorerooms] storerooms', rooms);
+                        console.log('[SampleOrderForm.helper.getStorerooms] owners', owners);
+                        component.set("v.storerooms", rooms);
+                        component.set("v.storeroomOwnersMap", owners);
+                        //component.set("v.showStorerooms", rooms.length > 1);
+                    }catch(ex) {
+                        console.log('[SampleOrderForm.helper.getStorerooms] exception', ex);
                     }
-                    rooms.sort(function(a, b) { 
-                        let x = a.label.toLowerCase();
-                        let y = b.label.toLowerCase();
-                        if (x < y) { return -1; }
-                        if (x > y) { return 1; }
-                        return 0; 
-                    });
-                    console.log('[SampleOrderForm.helper.getStorerooms] storerooms', rooms);
-                    component.set("v.storerooms", rooms);
-                    //component.set("v.showStorerooms", rooms.length > 1);
-                    
+                                        
                 } else if (callState === "INCOMPLETE") {
                     console.log("[SampleOrderForm.Helper.getStorerooms] callback returned incomplete.");                    
                 } else if (callState === "ERROR") {
@@ -433,7 +623,9 @@
         $A.enqueueAction(action);
     },
     getInternalOrderNumbers : function(component) {
-    	var action = component.get("c.getInternalOrderNumbers");
+        console.log('[SampleOrderForm.helper.getInternalOrderNumbers]');
+
+        var action = component.get("c.getInternalOrderNumbers");
         action.setCallback(this, function(response) {
             if (component.isValid()) {
                 var callState = response.getState();
@@ -469,7 +661,9 @@
         $A.enqueueAction(action);
     },
     getAccountDetails : function(component, accountId) {
-    	var action = component.get("c.getAccountDetails");
+        console.log('[SampleOrderForm.helper.getAccountDetails]');
+
+        var action = component.get("c.getAccountDetails");
         action.setParams({
             accountId: accountId
         });
@@ -525,8 +719,9 @@
         $A.enqueueAction(action);
     },
     getPromotionActivities : function(component) {
-        console.log('getPromotionActivities');
-    	var action = component.get("c.getPromotionActivities");
+        console.log('[SampleOrderForm.helper.getPromotionActivities]');
+        
+        var action = component.get("c.getPromotionActivities");
         action.setParams({
             'activityType' : 'MX - PSA'
         });
@@ -534,12 +729,15 @@
             if (component.isValid()) {
                 var callState = response.getState();
                 if (callState === "SUCCESS") {
+                    const theSampleOrder = component.get("v.theSampleOrder");
+                    const activity = theSampleOrder.Activity__c;
+
                     var rv = response.getReturnValue();
                     console.log('[SampleOrderForm.Helper.getPromotionActivities] activities', rv);
 
                     var activities = [{"label":"", value:""}];
                     for(var i = 0; i < rv.length; i++) {
-                        activities.push({"label":rv[i].Name,"value":rv[i].Id, activity: rv[i]});
+                        activities.push({"label":rv[i].Name,"value":rv[i].Id, activity: rv[i], "selected":rv[i].Id==activity});
                     }
                     activities.sort(function(a, b) { 
                         let x = a.label.toLowerCase();
@@ -596,11 +794,15 @@
         component.set("v.showInternalOrderNumbers", false);
         component.set("v.accountId", null);
         component.set("v.accountName", null);
+        component.set("v.wholesalerId", null);
+        component.set("v.wholesalerName", null);
         component.set("v.storeroom", null);
-        component.set("v.orderChannel", null);
+        component.set("v.promotionActivity", null);
         component.set("v.showStatusInput", false);
         component.set("v.lockStatusInput", false);
+        component.set("v.approvalStatus", theSampleOrder.Approval_Status__c);
         component.set("v.canSave", true);
+        component.set("v.storeroomOwners", null);
         
         this.initToast(component);
         let deletedRows = [];
@@ -668,14 +870,28 @@
     closeSampleOrderDialog : function(component) {
         console.log("[SampleOrderForm.helper.closeSampleOrderDialog]");
         try {
-            this.initSampleOrder(component);
-            var orderForm = component.find("theOrderForm");
-            $A.util.addClass(orderForm, 'slds-hide');
-            var evCancel = component.getEvent("bfLightningEvent");
-            evCancel.setParams({
-                "eventName" : "closeandrefresh" 
-            });
-            evCancel.fire();
+            const theSampleOrder = component.get("v.theSampleOrder");
+            var navService = component.find("navService");
+            var pageReference;
+            if (theSampleOrder.Id == undefined) {
+                pageReference = {
+                    type: 'standard__objectPage',
+                    attributes: {
+                        objectApiName: 'SAP_Interfaced_Data__c',
+                        actionName: 'home'
+                    }
+                };
+            } else {
+                pageReference = {
+                    type: 'standard__recordPage',
+                    attributes: {
+                        objectApiName: 'SAP_Interfaced_Data__c',
+                        actionName: 'view',
+                        recordId: theSampleOrder.Id
+                    }
+                };
+            }
+            navService.navigate(pageReference);        
         }catch(ex) {
             console.log('[SampleOrderForm.helper.closeSampleOrderDialog] exception: ' + ex.toString());
         }
@@ -763,6 +979,15 @@
         component.set("v.toastTitle", "");
         component.set('v.toastMessage', '');
     },   
+    showStoreroomOwners : function(component) {
+        var storeroom = component.get("v.accountId");
+        var ownersMap = component.get("v.storeroomOwnersMap");
+        let owners = ownersMap[storeroom];
+        console.log('[SampleOrderForm.helper.showStoreroomOwners] storeroom', storeroom);
+        console.log('[SampleOrderForm.helper.showStoreroomOwners] ownersMap', ownersMap);
+        console.log('[SampleOrderForm.helper.showStoreroomOwners] owners', owners);
+        component.set("v.storeroomOwners", owners);
+    },
     setBusinessDetailsFromStorageLocker : function(component) {
         var storageLocker = component.get("v.storageLocker");
         var lockers = component.get("v.storageLockers");
@@ -817,6 +1042,7 @@
                     theSampleOrder.Business_Address__c = room.account.ShippingStreet;
                     theSampleOrder.Business_City__c = room.account.ShippingCity;
                     theSampleOrder.Business_Postcode__c = room.account.ShippingPostalCode;
+                    theSampleOrder.Business_Country__c = room.account.ShippingCountry;
 
                     component.set("v.theSampleOrder", theSampleOrder);
                     component.set("v.businessState", room.account.ShippingState);
@@ -870,17 +1096,20 @@
         console.log('[validateOrder] userMarket', userMarket);
         console.log('[validateOrder] countryCode', countryCode);
         let isValid = true;
+        let requiredFieldMissing = false;
         let msg = '';
         let today = new Date();
 
         if (classification == null || classification == '') { 
             console.log('classification is null'); 
-            msg += 'Classification is required';
+            //msg += 'Classification is required';
+            requiredFieldMissing = true;
             isValid = false; 
         }
         if (theSampleOrder.Business_Name__c == null || theSampleOrder.Business_Name__c == '') { 
             console.log('business name is null'); 
-            msg += '\nBusiness Name is required';
+            //msg += '\nBusiness Name is required';
+            requiredFieldMissing = true;
             isValid = false;; 
         } else {
             if (theSampleOrder.Business_Name__c.length > 25) {
@@ -890,7 +1119,8 @@
         }
         if (theSampleOrder.Requested_Delivery_Date__c == null) { 
             console.log('requested delivery date is null'); 
-            msg += 'Requested Delivery Date is requied';
+            //msg += 'Requested Delivery Date is requied';
+            requiredFieldMissing = true;
             isValid = false; 
         } else {
             if (leadTime != null && leadTime > 0) {
@@ -910,6 +1140,7 @@
         }
         if (theSampleOrder.Business_Address__c == null || theSampleOrder.Business_Address__c == '') { 
             console.log('shipping street is null');  
+            requiredFieldMissing = true;
             isValid = false;
         } else {
             if (theSampleOrder.Business_Address__c.length > 35) {
@@ -919,6 +1150,7 @@
         }
         if (theSampleOrder.Business_City__c == null || theSampleOrder.Business_City__c == '') { 
             console.log('shipping city is null');  
+            requiredFieldMissing = true;
             isValid = false;
         } else {
             if (theSampleOrder.Business_City__c.length > 35) {
@@ -928,6 +1160,7 @@
         }
         if (theSampleOrder.Business_Postcode__c == null || theSampleOrder.Business_Postcode__c == '') { 
             console.log('shipping postcode is null');  
+            requiredFieldMissing = true;
             isValid = false;
         } else {
             if (theSampleOrder.Business_Postcode__c.length > 9) {
@@ -935,10 +1168,16 @@
                 isValid = false;
             }
         }
-        if (countryCode != 'GB' && countryCode != 'TW' && countryCode != 'MX' && !theSampleOrder.Is_International_Order__c) {
+        if (theSampleOrder.Business_Country__c == null || theSampleOrder.Business_Country__c == '') {
+            requiredFieldMissing = true;
+            isValid = false;
+        }
+        const useStandardAddressComponent = component.get("v.useStandardAddressComponent");
+        if (useStandardAddressComponent && !theSampleOrder.Is_International_Order__c) {
             if (businessState == null || businessState == '') { 
                 console.log('business state is null'); 
-                msg += 'Business State is required';
+                //msg += 'Business State is required';
+                requiredFieldMissing = true;
                 isValid = false; 
             } else {
                 
@@ -947,7 +1186,8 @@
 
         if (theSampleOrder.Contact_Name__c == null || theSampleOrder.Contact_Name__c == '') { 
             console.log('contact name is null');  
-            msg += 'Contact Name is required<br />';
+            //msg += 'Contact Name is required<br />';
+            requiredFieldMissing = true;
             isValid = false;
         } else {
             if (theSampleOrder.Contact_Name__c.length > 70) {
@@ -957,19 +1197,22 @@
         }
         if (theSampleOrder.Contact_Phone__c == null || theSampleOrder.Contact_Phone__c == '') { 
             console.log('contact phone is null');  
-            msg += 'Contact Phone is required<br />';
+            //msg += 'Contact Phone is required<br />';
+            requiredFieldMissing = true;
             isValid = false;
         }
         if (theSampleOrder.Reason__c == null || theSampleOrder.Reason__c == '') { 
             console.log('Reason is null');  
-            msg += 'You must enter a Reason.';
+            //msg += 'You must enter a Reason.';
+            requiredFieldMissing = true;
             isValid = false;
         }
         
-        if (countryCode == 'GB' && classification != null && classification.indexOf('SD0') == -1) {
+        if ((countryCode == 'GB' && classification != null && classification.indexOf('SD0') == -1) || countryCode == 'KR') {
             if (costCenter == null || costCenter == '') { 
                 console.log('cost center is null'); 
-                msg += 'You must select a cost center.';
+                //msg += 'You must select a cost center.';
+                requiredFieldMissing = true;
                 isValid = false; 
             }
         }
@@ -978,11 +1221,17 @@
             msg += 'You must acknowledge that you have completed the gift register for this gift';
             isValid = false;
         }
+        if (requiredFieldMissing) {
+            msg += component.get("v.requiredFieldMissingMessage");
+        }
         return { msg: msg, isValid: isValid };
     },
-    loadSampleOrder : function(component, recordId) {
+    loadSampleOrder : function(component) {
         component.set("v.isLoading", true);
-    	var action = component.get("c.getSampleOrder");
+        const helper = this;
+        const recordId = component.get("v.recordId");
+
+        var action = component.get("c.getSampleOrder");
         action.setParams({
             "recordId" : recordId 
         });      
@@ -1001,10 +1250,20 @@
                         component.set("v.classification", rv.Classification__c);
                         component.set("v.reasonCode", rv.Reason_Code__c);
                         component.set("v.accountId", rv.Account__c);
+                        component.set("v.wholesalerId", rv.Wholesaler__c);
                         component.set("v.promotionActivity", rv.Activity__c);
                         component.set("v.orderStatus", rv.Order_Status__c);
-                        component.set("v.orderChannel", rv.Channel__c);
-                        
+
+                        helper.getUserDetails(component);
+
+                        const market = component.get("v.userMarket");
+                        if (market == 'Australia' && rv.Account__c != undefined && rv.Account__c != '') {
+	                        let storeroomOwnersMap = component.get("v.storeroomOwnersMap");
+    						const owners = storeroomOwnersMap[rv.Account__c];
+                            component.set('v.storeroomOwners', owners);
+                        } 
+
+                        /*
                         let orderStatuses = component.get("v.orderStatuses");
                         if (orderStatuses != null) {
                             for(var i = 0; i < orderStatuses.length; i++) {
@@ -1015,6 +1274,7 @@
                             }
                         }
                         component.set("v.orderStatuses", orderStatuses);
+                        */
 
                         var approvalStatus = rv.Approval_Status__c;
                         var statuses = component.get("v.statuses");
@@ -1030,7 +1290,8 @@
 
                         let disableButtons = rv.Approval_Status__c != 'New';
                         let userRole = component.get('v.userRole');
-                        let country = this.getCountryCode(component, component.get("v.userMarket"));
+                        let country = component.get("v.country");
+
                         let showCostCenter = false;
                         let showInternalOrderNumbers = false;
                         let showStatusInput = false;
@@ -1100,6 +1361,7 @@
                             component.set("v.accountId", rv.Account__c);
                             component.set("v.accountName", rv.Account_Name__c);
                         }
+                        /*
                         let activities = component.get("v.activities");
                         if (activities != null && rv.Activity__c != undefined) {
                             for(var i = 0; i < activities.length; i++) {
@@ -1133,7 +1395,7 @@
                                 }
                             }
                         }
-
+                        */
                         console.log('[SampleOrderForm.helper.loadSampleOrder] items', rv.SAP_Interfaced_Data_Items__r);
                         var bannerText = component.find("bannerText");
                         if (rv.Approval_Status__c == 'New') {
@@ -1149,7 +1411,7 @@
                             $A.util.addClass(banner, "bannerText_white");
                         }
                             
-                        this.setupProductTableHeaders(component);
+                        //this.setupProductTableHeaders(component);
                         if (rv.SAP_Interfaced_Data_Items__r && rv.SAP_Interfaced_Data_Items__r.length > 0) {
                             var products = component.get("v.productData");
                             for(var i = 0; i < rv.SAP_Interfaced_Data_Items__r.length; i++) {
@@ -1177,6 +1439,8 @@
                         component.set("v.deletedRows", deletedRows);
                         
                         console.log('[SampleOrderForm.helper.loadSampleOrder] finished loading order');
+
+                        helper.getUserDetails(component);
                     } catch(ex) {
                         console.log('[SampleOrderForm.helper.loadSampleOrder] exception', ex.toString());
                     }
@@ -1229,6 +1493,8 @@
         console.log('[SampleOrderForm.helper.saveSampleOrder]');
         component.set("v.isLoading", true);
         
+        const helper = this;
+
     	var theSampleOrder = component.get("v.theSampleOrder");
         var businessState = component.get("v.businessState");
         var country = component.get("v.countryName");
@@ -1238,6 +1504,7 @@
         var costCenter = component.get("v.costCenter");
         var storageLocker = component.get("v.storageLocker");
         var accountId = component.get("v.accountId");
+        var wholesalerId = component.get("v.wholesalerId");
         var marketId = component.get("v.marketId");
         var activityId = component.get("v.promotionActivity");
         let statuses = component.get("v.statuses");
@@ -1246,9 +1513,11 @@
         const marketName = component.get("v.marketName");
         const recordTypeName = component.get("v.recordTypeName");
         const orderStatus = component.get("v.orderStatus");
-        const orderChannel = component.get("v.orderChannel");
+        const recordType = component.get("v.recordTypeName");
+        const products = component.get("v.productData");
+        let selectedProducts = products.filter(p => p.quantity > 0);
             
-        if (country == 'Mexico' && activityId != null) {
+        if (country == 'Mexico' && activityId != null && selectedProducts.length > 0) {
             theSampleOrder.Approval_Status__c = 'Approved';
         }
         
@@ -1278,6 +1547,12 @@
                 theSampleOrder.Budget_Type__c = 'SG&A';
             }
         }
+
+        const stickerTypes = component.get("v.stickerTypes");
+        if (stickerTypes != null && stickerTypes.length > 0) {
+            let stickerType = stickerTypes.find(st => st.description == classification);
+            theSampleOrder.Sticker_Type__c = stickerType == undefined ? null : stickerType.value;
+        }
         
         //theSampleOrder.Business_Country__c = country;
         theSampleOrder.Business_State__c = businessState;
@@ -1287,6 +1562,9 @@
         if (accountId != null && accountId.length > 0) {
             theSampleOrder.Account__c = accountId;
         }
+        if (wholesalerId != null && wholesalerId.length > 0) {
+            theSampleOrder.Wholesaler__c = wholesalerId;
+        }
         if (bannerGroup != null && bannerGroup.length > 0) {
             theSampleOrder.Banner_Group__c = bannerGroup;
         }
@@ -1294,7 +1572,6 @@
         theSampleOrder.Storage_Locker__c = storageLocker;
         theSampleOrder.Activity__c = activityId;
         theSampleOrder.Order_Status__c = orderStatus;
-        theSampleOrder.Channel__c = orderChannel;
         
         console.log('theSampleOrder', JSON.parse(JSON.stringify(theSampleOrder)));
 		console.log('theSampleOrder.classification', theSampleOrder.Classification__c);
@@ -1316,7 +1593,8 @@
                         var closeAfterSave = component.get("v.closeAfterSave");
                         console.log('[SampleOrderForm.helper.saveSampleOrder] closeAfterSave', closeAfterSave);
                         if (closeAfterSave) {
-                            component.set("v.closeDialog", true);
+                            //component.set("v.closeDialog", true);
+                            helper.closeSampleOrderDialog(component, rv.Id);
                         } else {
                             showToast = true;
                             const isApproved = rv.Is_Approved__c;
@@ -1402,6 +1680,7 @@
                         productName: rows[i].productName,
                         quantity: rows[i].quantity,
                         units: rows[i].units,
+                        price: rows[i].price,
                         convertedCases: rows[i].convertedCases,
                         totalActualQty: rows[i].totalActualQty,
                         totalPlannedQty: rows[i].totalPlannedQty,
@@ -1538,10 +1817,16 @@
     submitOrderForApproval : function(component) {
         component.set("v.isLoading", true);
         var theSampleOrder = component.get("v.theSampleOrder");
+        const market = component.get("v.userMarket");
+        const recordType = component.get("v.recordTypeName");
+        console.log("[SampleOrderForm.helper.submitForApproval] market", market);
+        console.log("[SampleOrderForm.helper.submitForApproval] recordType", recordType);
         var action = component.get("c.submitForApproval");
-        var self = this;
+        var helper = this;
         action.setParams({
-            "sapId": theSampleOrder.Id
+            "sapId"      : theSampleOrder.Id,
+            "market" 	 : market,
+            "recordType" : recordType
         });
         action.setCallback(this, function(response) {
             var showToast = false;
@@ -1550,7 +1835,13 @@
                 var callState = response.getState();
                 if (callState === "SUCCESS") {
                     try {
-                        component.set("v.closeDialog", true);                        
+                        component.set("v.closeDialog", true); 
+                    
+                        var sampleOrderLbl = component.get("v.sampleOrderLabel");
+                        var successLbl = component.get("v.successLabel");
+                        var msg = component.get("v.submitForApprovalSuccessMessage").replace('%0', sampleOrderLbl);
+                        helper.showToast(component, "success", successLbl, msg);
+                        helper.closeSampleOrderDialog(component, theSampleOrder.Id);
                     } catch(ex) {
                         console.log('[SampleOrderForm.helper.submitForApproval] exception', ex.toString());
                     }
@@ -1602,5 +1893,21 @@
 
         console.log('[SampleOrderForm.helper.getErrorMessage] msg', msg);
         return msg;
+    },
+    showToast: function(component, type, title, msg) {
+        component.find("notifLib").showToast({
+            "variant": type,
+            "header": title,
+            "message": msg,
+            "mode": "sticky"
+        });
+        /*
+        var toastEvent = $A.get("e.force:showToast");
+        toastEvent.setParams({
+            "title": title,
+            "message": msg,
+            "mode": "dismissable"
+        });
+        */
     }
 })

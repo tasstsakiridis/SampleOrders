@@ -84,7 +84,7 @@ public class bfObjectDescribe {
 	            Map<String, Schema.RecordTypeInfo> l_recordTypes = d.getRecordTypeInfosByName();                
                 for(RecordTypeInfo rti : l_recordTypes.values()) {
                     if (rti.isAvailable()) {
-                    	this.recordTypes.put(rti.getName(), new bfColumn(rti.getDeveloperName(), rti.getName(), rti.getRecordTypeId()));                        
+                    	this.recordTypes.put(rti.getName(), new bfColumn(rti.getDeveloperName(), rti.getName(), rti.getRecordTypeId(), rti.isDefaultRecordTypeMapping()));                        
                     }
                 }
             }

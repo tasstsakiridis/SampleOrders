@@ -48,11 +48,13 @@
     handleQuantityChange : function(component, event, helper) {
         try {
             let recordType = component.get("v.recordTypeName");            
+            const captureVolumeInBottles = component.get("v.captureVolumeInBottles");
             let qty = event.target.value;
             var rowCount = component.get("v.selectedRowCount");
             var row = component.get("v.row");
             console.log('[SampleOrderItemRow.controller.handleQuantityChange] qty', qty);
             console.log('[SampleOrderItemRow.controller.handleQuantityChange] row', row);
+            console.log('[SampleOrderItemRow.controller.handleQuantityChange] captureVolumeInBottles', captureVolumeInBottles);
             if (qty == null || qty == '') {
                 row.quantity = 0;
                 row.units = 0;
@@ -122,6 +124,19 @@
                         row.quantity = qty;
                         row.units = qty;
                     }
+                } else if (captureVolumeInBottles) {
+                    row.quantity = qty;
+                    row.units = qty;
+                    let cases = Math.floor(qty / row.packQty);
+                    let units = qty - (cases * row.packQty);
+                    var lbl_Cases = component.get("v.label_Cases");
+                    var lbl_Units = component.get("v.label_Units");
+                    if (cases == 0) {
+                        row.convertedCases = qty + lbl_Units;
+                    } else {
+                        row.convertedCases = cases + ' ' + lbl_Cases + ' ' + units + ' ' + lbl_Units;
+                    }
+                    console.log('[SampleOrderItemRow.controller.handleQuantityChange] cases, units, convertedCases ', cases, units, row.convertedCases);
                 } else {
                     row.quantity = qty;
                     row.units = qty;

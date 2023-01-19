@@ -17,8 +17,11 @@
             let l = row.usedFor.split(';');
             var found = false;
             console.log('usedFor values', l);
+            
             for(var i =0; i < l.length; i++) {
                 if (l[i] == recordTypeName) {
+                    found = true; break;
+                } else if (recordTypeName == 'Sample Order - Storeroom Request' && (l[i] == 'Sample Order' || l[i] == 'Sample Order - E-Premise')) {
                     found = true; break;
                 }
             }
