@@ -2,6 +2,7 @@ public with sharing class SampleOrder_Controller {
 
     @AuraEnabled
     public static Map<String, Object> getCurrentUserInfo() {
+    public static Map<String, Object> getCurrentUserInfo() {
     	User u = [SELECT Id, Name, Market__c, MobilePhone, UserRoleId, UserRole.Name FROM User WHERE Id =:UserInfo.getUserId()];
         Market__c m = [SELECT Id, Name, Country_ISO_Code_2__c, Sample_Order_Lead_Time__c, Allow_International_Orders__c, Allow_Status_Change__c,
                             Accounts__c, Activities__c, Cost_Centers__c, Internal_Order_Numbers__c, Storage_Lockers__c, Show_Product_Price__c,
