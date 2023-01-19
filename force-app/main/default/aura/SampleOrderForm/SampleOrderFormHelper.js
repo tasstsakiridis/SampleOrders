@@ -38,9 +38,6 @@
         KR: [
             {label:'Seoul', value:'Seoul'},
         ]
-        KR: [
-            {label:'Seoul', value:'Seoul'},
-        ]
     },
     countryOptions: [
         {'label': 'Australia', 'value': 'AU'},
