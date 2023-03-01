@@ -26,6 +26,7 @@
     <aura:attribute name="recordTypeName" type="String" default="" />
     <aura:attribute name="approvalStatus" type="String" default="New" />
     <aura:attribute name="orderStatus" type="String" default="" />
+    <aura:attribute name="stickerType" type="String" default="" />
     <aura:attribute name="orderChannel" type="String" default="" />
     <aura:attribute name="storeroom" type="String" default="" />
     <aura:attribute name="promotionActivity" type="String" default="" />
@@ -60,8 +61,11 @@
     <aura:attribute name="showInternationalOrder" type="Boolean" default="false" />
     <aura:attribute name="showCostCenters" type="Boolean" default="false" />
     <aura:attribute name="showAccounts" type="Boolean" default="true" />
+    <aura:attribute name="showApprovalHistory" type="Boolean" default="true" />
     <aura:attribute name="showWholesalers" type="Boolean" default="true" />
     <aura:attribute name="showActivities" type="Boolean" default="false" />
+    <aura:attribute name="showStickerTypes" type="Boolean" default="false" />
+    <aura:attribute name="lockStickerInput" type="Boolean" default="true" />
     <aura:attribute name="useStandardAddressComponent" type="Boolean" default="true" />
     <aura:attribute name="showCaseConversion" type="Boolean" default="false" />
     <aura:attribute name="showShippingInstructions" type="Boolean" default="false" />
@@ -74,6 +78,7 @@
     <aura:attribute name="captureOrderChannel" type="Boolean" default="false" />
     <aura:attribute name="showSystemInfo" type="Boolean" default="false" />
     <aura:attribute name="captureVolumeInBottles" type="Boolean" default="false" />
+    <aura:attribute name="isSupplyChain" type="Boolean" default="false" />
 
     <!-- List & Object Attributes -->
     <aura:attribute name="theSampleOrder" type="SAP_Interfaced_Data__c" default="{ }" />
@@ -116,6 +121,7 @@
     <!--<aura:handler name="change" value="{!v.objectDescribe}" action="{!c.handleDescribeInfoChange}" />-->
     <!--<aura:handler name="change" value="{!v.closeDialog}" action="{!c.handleCloseDialogChange}" />-->
     <!--<aura:handler name="change" value="{!v.recordTypeId}" action="{!c.handleRecordTypeChange}" />-->
+    <aura:handler name="change" value="{!v.pageReference}" action="{!c.reloadPage}" />
     
     <!-- handle Component events -->
     <aura:handler name="bfLightningEvent" event="c:bfLightningEvent" action="{!c.handleLightningEvent}" />
@@ -248,7 +254,17 @@
                         <div class="slds-col slds-has-flexi-truncate" role="listitem">
                             <lightning:select name="costCenters" label="Cost Center" aura:id="costCenters" disabled="{!v.orderLocked}" value="{!v.costCenter}" required="true" onchange="{!c.handleCostCenterChange}">
                                 <aura:iteration items="{!v.costCenters}" var="cc">
-                                    <option text="{!cc.label}" value="{!cc.id}" selected="{!cc.selected}" />
+                                    <option text="{!cc.label}" value="{!cc.value}" selected="{!cc.selected}" />
+                                </aura:iteration>
+                            </lightning:select>
+                        </div>
+                    </aura:if>
+                    <aura:if isTrue="{!v.showStickerTypes}">
+                        <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                            <lightning:select name="stickerTypes" label="{!v.objectDescribe.fields.Sticker_Type__c.label}"
+                                value="{!v.stickerType}" onchange="{!c.handleStickerTypeChange}" disabled="{!v.lockStickerInput}">
+                                <aura:iteration items="{!v.stickerTypes}" var="s">
+                                    <option text="{!s.label}" value="{!s.value}" selected="{!s.selected}" />
                                 </aura:iteration>
                             </lightning:select>
                         </div>
@@ -466,8 +482,8 @@
                     <lightning:input label="{!$Label.c.Sample_Order_Reason}" required="true" disabled="{!v.orderLocked}" placeholder="{!$Label.c.Sample_Order_Reason}" value="{!v.theSampleOrder.Reason__c}" class="height_60" />
                 </div>
 				</aura:if>  
-                <aura:if isTrue="{!v.orderLocked}">
-                    <div class="slds-m-vertical_medium slds-border_top">
+                <aura:if isTrue="{!v.showApprovalHistory}">
+                    <div class="slds-m-vertical_medium slds-border_top">                        
                     <lightning:card title="{!$Label.c.Approval_History}">
                         <lightning:datatable keyField="id"
                                             data="{!v.approvalHistory.items}"
@@ -479,7 +495,7 @@
             </aura:set>
         </aura:if>                
         
-        <div class="slds-text-align_center slds-m-top_medium">
+        <div class="slds-text-align_center slds-m-top_medium slds-p-bottom_large">
             <lightning:button aura:id="btnSave" variant="brand" type="submit" disabled="{!v.orderLocked}"  name="save" label="{!$Label.c.Save}" onclick="{!c.handleButtonClick}" />
             <lightning:button aura:id="btnSaveClose" variant="brand" type="submit" disabled="{!v.orderLocked}"  name="saveclose" label="{!$Label.c.Save_and_Close}" onclick="{!c.handleButtonClick}"/>
             <lightning:button aura:id="btnCancel" variant="brand" type="button" name="cancel" label="{!$Label.c.Cancel}" onclick="{!c.handleButtonClick}" />

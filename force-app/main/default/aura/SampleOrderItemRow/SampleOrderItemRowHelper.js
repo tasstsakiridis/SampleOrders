@@ -1,12 +1,12 @@
 ({
 	checkRowVisibility : function(component) {
     	var row = component.get("v.row");
-        console.log('row', row);
+        console.log('[sampleOrderItemRow] row', JSON.parse(JSON.stringify(row)));
         var showSelectedRow = component.get("v.showSelectedRows");
         var recordTypeName = component.get("v.recordTypeName");
         var el = component.find("theRow");
-        console.log('recordTypeName', recordTypeName);
-        console.log('showSelectedRows', showSelectedRow);
+        console.log('[sampleorderItemRow] recordTypeName', recordTypeName);
+        console.log('[sampleOrderItemRow] showSelectedRows', showSelectedRow);
         if (showSelectedRow == true) {            
             if (row.quantity > 0) {
 	            $A.util.removeClass(el, "slds-hide");

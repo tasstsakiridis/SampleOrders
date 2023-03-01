@@ -32,6 +32,25 @@
         helper.getDataTableColumns(component);  
 
 	},
+    reloadPage : function(component, event, helper) {
+        const recordTypeId = component.get("v.pageReference").state.recordTypeId;
+        const oldRecordTypeId = component.get("v.recordTypeId");
+        console.log('[SampleOrderForm.reloadPage] recordId', component.get("v.recordId"));
+        console.log('[SampleOrderForm.reloadPage] recordTypeId', component.get("v.recordTypeId"));
+        console.log('[SampleOrderForm.reloadPage] oldRecordTypeId', component.get("v.recordTypeId"));
+
+        const recordId = component.get("v.recordId");
+        if (recordId == undefined) {
+            if (recordTypeId != oldRecordTypeId) {
+                component.set("v.recordTypeId", recordTypeId);
+                helper.getDataTableColumns(component);
+            } else {
+                helper.initSampleOrder(component);
+            }
+        } else {
+            helper.loadSampleOrder(component);
+        }
+    },
     handleCountryChange : function(component, event, helper) {
         //component.set("v.countryName", event.target.value);
     },
@@ -243,17 +262,28 @@
             const picklistValues = component.get("v.allPicklistValues");
             const reasonCode = component.get("v.reasonCode");
             var reasonCodePicklistValues = picklistValues["Reason_Code__c"].picklistValues;
+            var stickerTypePicklistValues = picklistValues["Sticker_Type__c"].picklistValues;
+
             var picklistValuesForClassification = reasonCodePicklistValues.filter(r => r.description == classification);
             console.log('[SampleOrderForm.controller.handleClassificationChange] picklistValuesForClassification', picklistValuesForClassification);
             var reasonCodes = [{"label":"", "value":""}];
 
-
             for(var i = 0; i < picklistValuesForClassification.length; i++) {
                 reasonCodes.push({"label":picklistValuesForClassification[i].label, "value":picklistValuesForClassification[i].value, "selected":reasonCode == picklistValuesForClassification[i].value});
             }
+
+            var stickerTypesForClassification = stickerTypePicklistValues.filter(r => r.description == classification);
+            console.log('[SampleOrderForm.controller.handleClassificationChange] stickerTypesForClassification', stickerTypesForClassification);
+            var stickerTypes = [{"label":"", "value":""}];
+
+            for(var i = 0; i < stickerTypesForClassification.length; i++) {
+                stickerTypes.push({"label":stickerTypesForClassification[i].label, "value":stickerTypesForClassification[i].value, "selected":reasonCode == stickerTypesForClassification[i].value});
+            }
+
             console.log('[SampleOrderForm.controller.handleClassificationChange] picklistValue', picklistValues);
             console.log('[SampleOrderForm.controller.handleClassificationChange] reasoncodePicklistValues', reasonCodePicklistValues);
             console.log('[SampleOrderForm.controller.handleClassificationChange] reasonCodes', reasonCodes);
+            console.log('[SampleOrderForm.controller.handleClassificationChange] stickerTypes', stickerTypes);
             reasonCodes.sort(function(a, b) {
                 let x = a.label.toLowerCase();
                 let y = b.label.toLowerCase();
@@ -262,6 +292,7 @@
                 return 0; 
             });
             component.set("v.reasonCodes", reasonCodes);
+            component.set("v.stickerTypes", stickerTypes);
         }catch(ex) {
             console.log('[handleClassificationChange] exception', ex);
         }
@@ -292,6 +323,10 @@
             } else if (instanceId == 'i_Wholesaler') {
                 component.set("v.wholesalerId", recordId);
                 component.set("v.wholesalerName", recordName);
+                const marketName = component.get("v.userMarket");
+                if (marketName == 'Korea') {
+                    helper.getAccountDetails(component, recordId);
+                }
             }
         }catch(ex) {
             console.log('[SampleOorderrForm.controller.handleLookupIdChanged] exception', ex);
@@ -320,9 +355,10 @@
     },
     handleCostCenterChange : function(component, event, helper) {
         try {
-            //var costCenter = component.find("costCenters").get("v.value");
-            //component.set("v.costCenter", costCenter);
-            console.log("costcenter", component.get("v.costCenter"));
+            var costCenter = component.find("costCenters").get("v.value");
+            console.log('[handleCostCenterChange] costcenter', costCenter);
+            component.set("v.costCenter", costCenter);
+            console.log("[handleCostCenterChange] v.costcenter", component.get("v.costCenter"));
         } catch(ex) {
             console.log('[handleCostCenterChange] exception', ex);
         }
@@ -341,6 +377,17 @@
             helper.filterProductsToActivityProducts(component);
         } catch(ex) {
             console.log('[handlePromotionActivityChange] exception', ex);
+        }
+    },
+    handleStickerTypeChange : function(component, event, helper) {
+        try {
+            let stickerType = component.get("v.stickerType");
+            let sampleOrder = component.get("v.theSampleOrder");
+            sampleOrder.Sticker_Type__c = stickerType;
+            component.set("v.theSampleOrder", sampleOrder);
+            console.log('[handleStickerTypeChange] stickerType', stickerType);
+        } catch(ex) {
+            console.log('[handleStickerTypeChange] exception', ex);
         }
     },
     handleOrderStatusChange : function(component, event, helper) {

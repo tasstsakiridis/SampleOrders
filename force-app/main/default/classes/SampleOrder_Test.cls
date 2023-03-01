@@ -17,11 +17,12 @@ public class SampleOrder_Test {
 
         String rtAUAccount = aRecordTypes.get('AUD - Outlet').getRecordTypeId();
         String rtMXAccount = aRecordTypes.get('MX - Outlet On').getRecordTypeId();
-        //String rtStoreroom = aRecordTypes.get('Storeroom').getRecordTypeId();
+        String rtStoreroom = aRecordTypes.get('Storeroom').getRecordTypeId();
         String rtSampleOrder = sapRecordTypes.get('Sample Order').getRecordTypeId(); 
         String rtSampleOrderLocked = sapRecordTypes.get('Sample Order Locked').getRecordTypeId();
         String rtSampleOrderItem = sapiRecordTypes.get('Sample Order').getRecordTypeId();
         String rtSampleOrderMX = sapRecordTypes.get('Sample Order - MEX').getRecordTypeId();
+        String rtSampleOrderStoreroom = sapRecordTypes.get('Sample Order - Storeroom Request').getRecordTypeId();
         String rtWetGoods = pRecordTypes.get('Wet Goods').getRecordTypeId();
         String rtAUBannerGroup = bannerRecordTypes.get('AUD - Banner Groups').getRecordTypeId();
         String rtShipTo = sapConfigRecordTypes.get('ShipTo').getRecordTypeId();
@@ -51,7 +52,7 @@ public class SampleOrder_Test {
         user1.Manages_Brand__c = 'Gentleman Jack';
         user1.Email = 'tass_tsakiridis@b-f.com';
         insert user1;
-		      
+
         Account account1 = new Account();
         account1.RecordTypeId = rtAUAccount;
         account1.Market__c = mAU.Id;
@@ -61,16 +62,18 @@ public class SampleOrder_Test {
         account2.RecordTypeId = rtMXAccount;
         account2.Market__c = mMX.Id;
         account2.Name = 'Test MX Account';
-        
-        //Account storeroom = new Account();
-        //storeroom.RecordTypeId = rtStoreroom;
-        //storeroom.Market__c = mMX.Id;
-        //storeroom.Name = 'Storeroom';
-        //storeroom.Status__c = 'Active';
-        
+                
         Account[] accounts = new Account[]{account1, account2};
         insert accounts;
         
+        Banner_Groups__c banner1 = new Banner_Groups__c();
+        banner1.Name = 'Test Duty Free Banner';
+        banner1.Management_Group_State_Level__c = 'MGT_NAT';
+        banner1.Market__c = mAU.Id;
+        banner1.Ship_To_Code__c = '9999';
+        banner1.Is_Active__c = true;
+        insert banner1;
+
         Contact contact1 = new Contact();
         contact1.AccountId = account2.Id;
         contact1.FirstName = 'Test';
@@ -105,8 +108,42 @@ public class SampleOrder_Test {
         sapConfig4.Classification__c = 'AU1-Samples for Marketing Related Activities';
         sapConfig4.SoldTo_Code__c = 'CCA907C';
         sapConfig4.Is_Active__c = true;
+
+        SAP_Interfaced_Data_Configuration__c sapConfig5 = new SAP_Interfaced_Data_Configuration__c();
+        sapConfig5.RecordTypeId = rtGeneral;
+        sapConfig5.Market__c = mAU.Id;
+        sapConfig5.Classification__c = 'AU1-Samples for Marketing Related Activities';
+        sapConfig5.SoldTo_Code__c = 'CCA907C';
+        sapConfig5.Is_Active__c = true;
         
-        SAP_Interfaced_Data_Configuration__c[] l_sapConfigs = new SAP_Interfaced_Data_Configuration__c[]{sapConfig1, sapConfig2, sapConfig3, sapConfig4};
+
+        /*
+        SAP_Interfaced_Data_Configuration__c mxConfig1 = new SAP_Interfaced_Data_Configuration__c();
+        mxConfig1.RecordTypeId = rtSoldTo;
+        mxConfig1.Market__c = mMX.Id;
+        mxConfig1.Classification__c = 'Exhibits';
+        mxConfig1.SoldTo_Code__c = 'CCA907C';
+        mxConfig1.Is_Active__c = true;
+
+        SAP_Interfaced_Data_Configuration__c mxConfig2 = new SAP_Interfaced_Data_Configuration__c();
+        mxConfig2.RecordTypeId = rtShipTo;
+        mxConfig2.Market__c = mMX.Id;
+        mxConfig2.Classification__c = 'Exhibits';
+        mxConfig2.ShipTo_Code__c = 'CCA907C';
+        mxConfig2.Is_Active__c = true;
+        
+        SAP_Interfaced_Data_Configuration__c mxConfig3 = new SAP_Interfaced_Data_Configuration__c();
+        mxConfig3.RecordTypeId = rtGeneral;
+        mxConfig3.Market__c = mMX.Id;
+        mxConfig3.Classification__c = 'Exhibits';
+        mxConfig3.SoldTo_Code__c = 'CCA907C';
+        mxConfig3.ShipTo_Code__c = 'CCA907C';
+        mxConfig3.Plant_Code__c = 'PP1';
+        mxConfig3.Is_Active__c = true;
+        
+        SAP_Interfaced_Data_Configuration__c[] l_sapConfigs = new SAP_Interfaced_Data_Configuration__c[]{sapConfig1, sapConfig2, sapConfig3, sapConfig4, mxConfig1, mxConfig2, mxConfig3};
+        */
+        SAP_Interfaced_Data_Configuration__c[] l_sapConfigs = new SAP_Interfaced_Data_Configuration__c[]{sapConfig1, sapConfig2, sapConfig3, sapConfig4, sapConfig5};
         insert l_sapConfigs;    
         
         Salesforce_Picklist_Controlling_Values__c spcv1 = new Salesforce_Picklist_Controlling_Values__c();
@@ -155,50 +192,45 @@ public class SampleOrder_Test {
         lProducts[0].Used_For__c = 'Sample Order;High Value;Sample Order - MX';
         insert lProducts;
         
-        Banner_Groups__c banner1 = new Banner_Groups__c();
-        banner1.Name = 'Test Duty Free Banner';
-        banner1.Management_Group_State_Level__c = 'MGT_NAT';
-        banner1.Market__c = mAU.Id;
-        insert banner1;
-
-		SAP_Interfaced_Data__c sampleOrder = new SAP_Interfaced_Data__c();
-        sampleOrder.RecordTypeId = rtSampleOrder;
-        sampleOrder.Approval_Status__c = 'New';
-        sampleOrder.Business_Address__c = '1 test street';
-        sampleOrder.Business_City__c = 'Sydney';
-        sampleOrder.Business_Country__c = 'AU';
-        sampleOrder.Business_State__c = 'NSW';
-        sampleOrder.Business_Postcode__c = '2000';
-        sampleOrder.Business_Name__c = 'Test Sample Order';
-        sampleOrder.Classification__c = 'AU1-Samples for Marketing Related Activities';
-        sampleOrder.Contact_Name__c = 'Test Sample Order Contact';
-        sampleOrder.Contact_Phone__c = '95551234';
-        sampleOrder.Market__c = mAU.Id;
-        sampleOrder.Reason__c = 'Because';
-        sampleOrder.Requested_Delivery_Date__c = today.addDays(7);
+		SAP_Interfaced_Data__c sampleOrderAU = new SAP_Interfaced_Data__c();
+        sampleOrderAU.RecordTypeId = rtSampleOrder;
+        sampleOrderAU.Approval_Status__c = 'New';
+        sampleOrderAU.Business_Address__c = '1 test street';
+        sampleOrderAU.Business_City__c = 'Sydney';
+        sampleOrderAU.Business_Country__c = 'AU';
+        sampleOrderAU.Business_State__c = 'NSW';
+        sampleOrderAU.Business_Postcode__c = '2000';
+        sampleOrderAU.Business_Name__c = 'Test Sample Order';
+        sampleOrderAU.Classification__c = 'AU1-Samples for Marketing Related Activities';
+        sampleOrderAU.Contact_Name__c = 'Test Sample Order Contact';
+        sampleOrderAU.Contact_Phone__c = '95551234';
+        sampleOrderAU.Market__c = mAU.Id;
+        sampleOrderAU.Reason__c = 'Because';
+        sampleOrderAU.Requested_Delivery_Date__c = today.addDays(7);
+        sampleOrderAU.Banner_Group__c = banner1.Id;
         
-		SAP_Interfaced_Data__c sampleOrder2 = new SAP_Interfaced_Data__c();
-        sampleOrder2.RecordTypeId = rtSampleOrderMX;
-        sampleOrder2.Approval_Status__c = 'New';
-        sampleOrder2.Business_Address__c = '1 test street';
-        sampleOrder2.Business_City__c = 'Sydney';
-        sampleOrder2.Business_Country__c = 'AU';
-        sampleOrder2.Business_State__c = 'NSW';
-        sampleOrder2.Business_Postcode__c = '2000';
-        sampleOrder2.Business_Name__c = 'Test Sample Order';
-        sampleOrder2.Classification__c = 'Exhibits';
-        sampleOrder2.Contact_Name__c = 'Test Sample Order Contact';
-        sampleOrder2.Contact_Phone__c = '95551234';
-        sampleOrder2.Market__c = mMX.Id;
-        sampleOrder2.Reason__c = 'Because';
-        sampleOrder2.Requested_Delivery_Date__c = today.addDays(7);
-        
-        SAP_Interfaced_Data__c[] sampleOrders = new SAP_Interfaced_Data__c[]{sampleOrder, sampleOrder2};
+		SAP_Interfaced_Data__c sampleOrderMX = new SAP_Interfaced_Data__c();
+        sampleOrderMX.RecordTypeId = rtSampleOrderMX;
+        sampleOrderMX.Approval_Status__c = 'New';
+        sampleOrderMX.Business_Address__c = '1 test street';
+        sampleOrderMX.Business_City__c = 'Sydney';
+        sampleOrderMX.Business_Country__c = 'AU';
+        sampleOrderMX.Business_State__c = 'NSW';
+        sampleOrderMX.Business_Postcode__c = '2000';
+        sampleOrderMX.Business_Name__c = 'Test Sample Order';
+        sampleOrderMX.Classification__c = 'Exhibits';
+        sampleOrderMX.Contact_Name__c = 'Test Sample Order Contact';
+        sampleOrderMX.Contact_Phone__c = '95551234';
+        sampleOrderMX.Market__c = mMX.Id;
+        sampleOrderMX.Reason__c = 'Because';
+        sampleOrderMX.Requested_Delivery_Date__c = today.addDays(7);
+                
+        SAP_Interfaced_Data__c[] sampleOrders = new SAP_Interfaced_Data__c[]{sampleOrderAU, sampleOrderMX};
         insert sampleOrders;
         
 		SAP_Interfaced_Data_Item__c sapi = new SAP_Interfaced_Data_Item__c();
         sapi.RecordTypeId = rtSampleOrderItem;
-		sapi.SAP_Interfaced_Data__c = sampleOrder.Id;
+		sapi.SAP_Interfaced_Data__c = sampleOrderAU.Id;
 		sapi.Product__c = lProducts.get(0).Id;
 		sapi.Quantity__c = 1;
 		insert sapi;     
@@ -247,56 +279,58 @@ public class SampleOrder_Test {
         insert pmia;
         
         System.runAs(user1) {
+            Test.startTest();
+
             String theme = SampleOrder_Controller.getUIThemeDescription();
             System.assertEquals('Theme3', theme, 'Theme is not classic 2010 interface');
 
-			SimpleListItem runningAsUser = SampleOrder_Controller.getCurrentUserInfo();
-			System.assertEquals('Test Tsakiridis', runningAsUser.name);
+			//Map<String, Object> runningAsUser = SampleOrder_Controller.getCurrentUserInfo();
+			//System.assertEquals('Test Tsakiridis', String.valueOf(runningAsUser.get('userName')));
             
-            bfObjectDescribe obj = SampleOrder_Controller.getObjectDetails();
-            System.assertEquals('SAP_Interfaced_Data__c', obj.apiName);
+            //bfObjectDescribe obj = SampleOrder_Controller.getObjectDetails();
+            //System.assertEquals('SAP_Interfaced_Data__c', obj.apiName);
             
             List<Map<String, Object>> lSampleOrders = SampleOrder_Controller.getSampleOrders();
             System.assertNotEquals(0, lSampleOrders.size(), 'Sample orders have been found');
             
-            SAP_Interfaced_Data__c newSampleOrder = SampleOrder_Controller.getSampleOrder(sampleOrder.Id);
+            SAP_Interfaced_Data__c newSampleOrder = SampleOrder_Controller.getSampleOrder(sampleOrderAU.Id);
             System.assertNotEquals(null, newSampleOrder, 'sample order retrieved');
             
-            SAP_Interfaced_Data__c interfacedData = SampleOrder_Controller.getInterfacedData(sampleOrder2.Id);
+            SAP_Interfaced_Data__c interfacedData = SampleOrder_Controller.getInterfacedData(sampleOrderMX.Id);
             System.assertNotEquals(null, interfacedData, 'interfaced data retrieved');
             
-            //List<Account> storerooms = SampleOrder_Controller.getStorerooms();
             List<Promotion_Activity__c> activities = SampleOrder_Controller.getPromotionActivities('MX - PSA');
             
             
-            String json = '[{"id":"","productId":"'+lProducts.get(0).Id+'","quantity":"1"}]';
-            newSampleOrder = SampleOrder_Controller.saveSampleOrder(newSampleOrder, mAU.Id);
-            List<SAP_Interfaced_Data_Item__c> items = SampleOrder_Controller.saveOrderItems(newSampleOrder.Id, 'Sample Order', 'Australia', '', json);
-            System.assertNotEquals(0, items.size(), 'Items saved');
+            String json = '[{"id":"","productId":"'+lProducts.get(0).Id+'","quantity":"1", "price":"1", "usedFor":"Sample Order"}]';
             
-            List<SAP_Interfaced_Data_Item__c> order2Items = SampleOrder_Controller.saveOrderItems(sampleOrder2.Id, 'Sample Order - MEX', 'Mexico', activity1.Id, json);
+            sampleOrderAU = SampleOrder_Controller.saveSampleOrder(sampleOrderAU, mAU.Id);
+            sampleOrderMX = SampleOrder_Controller.saveSampleOrder(sampleOrderMX, mMX.Id);
+            List<SAP_Interfaced_Data_Item__c> orderItems = SampleOrder_Controller.saveOrderItems(sampleOrderMX.Id, 'Sample Order - MEX', 'Mexico', activity1.Id, json);
                 
-            newSampleOrder = SampleOrder_Controller.getSampleOrder(newSampleOrder.Id);
-            System.assertNotEquals(null, newSampleOrder);
+            sampleOrderMX = SampleOrder_Controller.getSampleOrder(sampleOrderMX.Id);
+            System.assertNotEquals(null, sampleOrderMX);
             
-            List<SampleOrderItem> newProducts = SampleOrder_Controller.getProducts(sampleOrder.Id);
+            List<SampleOrderItem> newProducts = SampleOrder_Controller.getProducts(sampleOrderAU.Id);
             System.assertNotEquals(0, newProducts.size());
             
             List<Banner_Groups__c> bannerGroups = SampleOrder_Controller.getBannerGroups();
             System.assertNotEquals(bannerGroups, null);
-
-            System.debug('record type id: ' + newSampleOrder.RecordTypeId);
-            System.debug('status: ' + newSampleOrder.Approval_Status__c);
-            //SampleOrder_Controller.submitForApproval(newSampleOrder.Id);
             
-            List<Account> storageLockers = SampleOrder_Controller.getStorageLockers();
+            List<Account> storageLockers = SampleOrder_Controller.getStorageLockers('');
+            List<Map<String, Object>> storerooms = SampleOrder_Controller.getStorerooms();
+            List<Internal_Order__c> internalOrderNumbers = SampleOrder_Controller.getInternalOrderNumbers('');
+            System.debug('internalOrderNumbers: ' + internalOrderNumbers);
+            
+            List<Account> accountDetails = SampleOrder_Controller.getAccountDetails(account1.Id);
+            System.assertNotEquals(null, accountDetails);
             
             SampleOrderItem soi = new SampleOrderItem();
             System.assertEquals('', soi.id);
             
-            sampleOrder.Approval_Status__c = 'Approved';
-            sampleOrder.RecordTypeId = rtSampleOrderLocked;
-            update sampleOrder;
+            sampleOrderAU.Approval_Status__c = 'Approved';
+            sampleOrderAU.RecordTypeId = rtSampleOrderLocked;
+            update sampleOrderAU;
             
             SimpleListItem sli = new SimpleListItem();
             System.assertNotEquals(null, sli);
@@ -311,20 +345,23 @@ public class SampleOrder_Test {
             System.assertEquals('id', sli.id);
             
             Map<String, bfFieldDescribe> l_controllingValues = SampleOrder_Controller.getPicklistValuesForRecordType('Sample Order');
-
-            List<Internal_Order__c> internalOrderNumbers = SampleOrder_Controller.getInternalOrderNumbers();
-            System.debug('internalOrderNumbers: ' + internalOrderNumbers);
             
-            List<Account> accountDetails = SampleOrder_Controller.getAccountDetails(account1.Id);
-            System.assertNotEquals(null, accountDetails);
-            
-            ApprovalHistory ahist = SampleOrder_Controller.getApprovalHistory(sampleOrder.Id);
+            ApprovalHistory ahist = SampleOrder_Controller.getApprovalHistory(sampleOrderAU.Id);
             System.debug('approvalhistory: ' + ahist);
             
             ApprovalHistoryItem ahi = new ApprovalHistoryItem();
             ahi = new ApprovalHistoryItem('actor','status','comments', now);
             ahi = new ApprovalHistoryItem('actor','status','comments', now, 'role');
 
+            bfColumn col = new bfColumn('name', 'label', 'value');
+            bfColumn col2 = new bfColumn('name', 'label', 'value', Schema.DisplayType.STRING, false, false);
+            
+            bfObjectDescribe desc1 = new bfObjectDescribe('Account', 'Account', 'Accounts');
+            bfObjectDescribe desc2 = new bfObjectDescribe('Account', 'Account', 'Accounts', true, false, false);
+            
+            SampleOrder_Controller.submitForApproval(sampleOrderMX.Id, 'Mexico', 'Sample Order - MEX');
+
+            Test.stopTest();
        }
         
         

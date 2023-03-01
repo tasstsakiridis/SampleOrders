@@ -2,14 +2,30 @@ public with sharing class SampleOrder_Controller {
 
     @AuraEnabled
     public static Map<String, Object> getCurrentUserInfo() {
-    public static Map<String, Object> getCurrentUserInfo() {
-    	User u = [SELECT Id, Name, Market__c, MobilePhone, UserRoleId, UserRole.Name FROM User WHERE Id =:UserInfo.getUserId()];
+    	User u = [SELECT Id, Name, Market__c, MobilePhone, UserRoleId, UserRole.Name, ProfileId, Profile.Name FROM User WHERE Id =:UserInfo.getUserId()];
+        List<GroupMember> groups = [SELECT Id, UserOrGroupId FROM GroupMember WHERE Group.DeveloperName ='Korea_Supply_Chain_Manager'];
         Market__c m = [SELECT Id, Name, Country_ISO_Code_2__c, Sample_Order_Lead_Time__c, Allow_International_Orders__c, Allow_Status_Change__c,
                             Accounts__c, Activities__c, Cost_Centers__c, Internal_Order_Numbers__c, Storage_Lockers__c, Show_Product_Price__c,
                             Standard_Address_Input__c, Shipping_Instructions__c, Submit_Order_for_Approval__c, Capture_Volume_in_Bottles__c, 
-                            Show_Wholesalers__c, Sample_Order_Account_RecordType__c, Sample_Order_Wholesaler_RecordType__c 
+                            Show_Wholesalers__c, Sample_Order_Account_RecordType__c, Sample_Order_Wholesaler_RecordType__c, Show_Sticker_Types__c,
+                            Show_Approval_History__c 
                          FROM Market__c 
                         WHERE Name =:u.Market__c LIMIT 1];
+
+        Boolean isSupplyChain = groups == null ? false : groups.size() > 0;
+        if (groups != null && groups.size() > 0) {
+            String userId = UserInfo.getUserId();
+            String roleId = UserInfo.getUserRoleId();
+            for(GroupMember gm : groups) {
+                if (gm.UserOrGroupId == userId || gm.UserOrGroupId == roleId) {
+                    isSupplyChain = true; break;
+                }
+            }
+
+            if (!isSupplyChain) {
+                isSupplyChain = u.ProfileId != null && u.Profile.Name == 'System Administrator';
+            }
+        }
 
         Map<String, Object> result = new Map<String, Object>();
         result.put('marketId', m.Id);
@@ -18,6 +34,7 @@ public with sharing class SampleOrder_Controller {
         result.put('userId', u.Id);
         result.put('userName', u.Name);
         result.put('user', u);
+        result.put('isSupplyChain', isSupplyChain);
 
         return result;
     }    
@@ -533,9 +550,10 @@ public with sharing class SampleOrder_Controller {
     public static void submitForApproval(String sapId, String market, String recordType) {
         System.debug('sapId: ' + sapId);        
         if (sapId != null && sapId.length() > 0) {            
-            if (market == 'Australia' && recordType == 'Sample Order - Storeroom Request') {
-                SAP_Interfaced_Data__c sampleOrder = [SELECT Id, Approval_Status__c FROM SAP_Interfaced_Data__c WHERE Id =:sapId];
+            if (market == 'Mexico') {
+                SAP_Interfaced_Data__c sampleOrder = [SELECT Id, Approval_Status__c, Is_Approved__c FROM SAP_Interfaced_Data__c WHERE Id =:sapId];
                 sampleOrder.Approval_Status__c = 'Approved';
+                sampleOrder.Is_Approved__c = true;
                 update sampleOrder;
             } else {
                 Approval.ProcessSubmitRequest req1 = new Approval.ProcessSubmitRequest();

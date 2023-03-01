@@ -14,9 +14,13 @@
         var row = component.get("v.row");
         var el = component.find("theRow");
         var recordTypeName = component.get("v.recordTypeName");
+        if (recordTypeName.indexOf('Storeroom Request') >= 0) {
+            recordTypeName = 'Sample Order';
+        }
         try {
             
             console.log('[SampleOrderItemRow.controller.handleBrandChange] brand', brand);
+            console.log('[SampleOrderItemRow.controller.handleBrandChange] recordTypeName', recordTypeName);
             let l = row.usedFor.split(';');
             var productIsForRecordType = false;
             console.log('usedFor values', l);
@@ -25,7 +29,7 @@
                     productIsForRecordType = true; break;
                 }
             }
-            
+            console.log('[SampleOrderItemRow.controller.handleBrandChange] brand, row.brandName, productIsForRecordType', brand, row.brandName, productIsForRecordType);
             if ((brand == '' || brand == row.brandName) && productIsForRecordType) {
                 $A.util.removeClass(el, "slds-hide");
             } else {
