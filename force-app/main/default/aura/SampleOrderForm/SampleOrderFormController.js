@@ -33,23 +33,7 @@
 
 	},
     reloadPage : function(component, event, helper) {
-        const recordTypeId = component.get("v.pageReference").state.recordTypeId;
-        const oldRecordTypeId = component.get("v.recordTypeId");
-        console.log('[SampleOrderForm.reloadPage] recordId', component.get("v.recordId"));
-        console.log('[SampleOrderForm.reloadPage] recordTypeId', component.get("v.recordTypeId"));
-        console.log('[SampleOrderForm.reloadPage] oldRecordTypeId', component.get("v.recordTypeId"));
-
-        const recordId = component.get("v.recordId");
-        if (recordId == undefined) {
-            if (recordTypeId != oldRecordTypeId) {
-                component.set("v.recordTypeId", recordTypeId);
-                helper.getDataTableColumns(component);
-            } else {
-                helper.initSampleOrder(component);
-            }
-        } else {
-            helper.loadSampleOrder(component);
-        }
+        helper.getDataTableColumns(component);
     },
     handleCountryChange : function(component, event, helper) {
         //component.set("v.countryName", event.target.value);
@@ -248,6 +232,7 @@
                 component.set("v.showDutyFreeBanners", false);
             }
             let country = component.get("v.country");
+            console.log('country', country);
             if (country == 'GB') {
                 if (classification.indexOf('SD0') >= 0) {
                     component.set("v.showCostCenters", false);
@@ -259,17 +244,53 @@
 
                 helper.setupProductTableHeaders(component);
             }
+            if (country == 'MX') {
+                let accountRequired = false;
+                let costCenterRequired = false;
+                let storageLockerRequired = false;
+                let activityRequired = false;
+                let internalOrderNumberRequired = false;
+                if (classification.indexOf('SD5') > -1 || classification.indexOf('SDA') > -1) {
+                    costCenterRequired = true;
+                    storageLockerRequired = true;
+                } else if (classification.indexOf('SD0 - On Premise') > -1) {
+                    storageLockerRequired = true;
+                    activityRequired = true;
+                    internalOrderNumberRequired = true;
+                } else if (classification.indexOf('SD0 - GTR') > -1) {
+                    costCenterRequired  = true;      
+                    accountRequired = true;         
+                    internalOrderNumberRequired = true; 
+                } else if (classification.indexOf('SD0') > -1) {
+                    storageLockerRequired = true;
+                    internalOrderNumberRequired = true;
+                } else if (classification.indexOf('SDC') > -1 || classification.indexOf('SDB') > -1 || classification.indexOf('MZ2') > -1) {
+                    accountRequired = true;
+                    internalOrderNumberRequired = true;                    
+                }
+
+                console.log('accountRequired, costCenterRequired, storageLockerRequired, activityRequired', accountRequired, costCenterRequired, storageLockerRequired, activityRequired);
+
+                component.set("v.accountRequired", accountRequired);
+                component.set("v.costCenterRequired", costCenterRequired);
+                component.set("v.storageLockerRequired", storageLockerRequired);
+                component.set("v.activityRequired", activityRequired);
+                component.set("v.internalOrderNumberRequired", internalOrderNumberRequired);
+            }
+
             const picklistValues = component.get("v.allPicklistValues");
             const reasonCode = component.get("v.reasonCode");
             var reasonCodePicklistValues = picklistValues["Reason_Code__c"].picklistValues;
             var stickerTypePicklistValues = picklistValues["Sticker_Type__c"].picklistValues;
 
-            var picklistValuesForClassification = reasonCodePicklistValues.filter(r => r.description == classification);
-            console.log('[SampleOrderForm.controller.handleClassificationChange] picklistValuesForClassification', picklistValuesForClassification);
-            var reasonCodes = [{"label":"", "value":""}];
+            if (country != 'PL') {
+                var picklistValuesForClassification = reasonCodePicklistValues.filter(r => r.description == classification);
+                console.log('[SampleOrderForm.controller.handleClassificationChange] picklistValuesForClassification', picklistValuesForClassification);
+                var reasonCodes = [{"label":"", "value":""}];
 
-            for(var i = 0; i < picklistValuesForClassification.length; i++) {
-                reasonCodes.push({"label":picklistValuesForClassification[i].label, "value":picklistValuesForClassification[i].value, "selected":reasonCode == picklistValuesForClassification[i].value});
+                for(var i = 0; i < picklistValuesForClassification.length; i++) {
+                    reasonCodes.push({"label":picklistValuesForClassification[i].label, "value":picklistValuesForClassification[i].value, "selected":reasonCode == picklistValuesForClassification[i].value});
+                }
             }
 
             var stickerTypesForClassification = stickerTypePicklistValues.filter(r => r.description == classification);
@@ -361,6 +382,14 @@
             console.log("[handleCostCenterChange] v.costcenter", component.get("v.costCenter"));
         } catch(ex) {
             console.log('[handleCostCenterChange] exception', ex);
+        }
+    },
+    handleOrderTypeChange : function(component, event, helper) {
+        try {
+            var reason = component.find("orderType").get("v.value");
+            component.get("v.orderType", reason);
+        } catch(ex) {
+            console.log('[handleOrderTypeChange] exception', ex);
         }
     },
     handleStoreroomSelectionChange : function(component, event, helper) {

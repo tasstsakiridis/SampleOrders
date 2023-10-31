@@ -2,12 +2,17 @@ trigger SAPInterfacedData on SAP_Interfaced_Data__c (before update) {
     Map<String, RecordTypeInfo> sapRecordTypes = Schema.SObjectType.SAP_Interfaced_Data__c.getRecordTypeInfosByName();
     
     String rtSampleOrder = sapRecordTypes.get('Sample Order Locked').getRecordTypeId(); 
+    String rtSampleOrderKOR = sapRecordTypes.get('Sample Order - KOR').getRecordTypeId();
 	
     Set<Id> sampleOrderIds = new Set<Id>();
     for(SAP_Interfaced_Data__c sap : Trigger.new) {
         if (sap.Notify_Brand_Managers__c && sap.Approval_Status__c == 'Approved' && sap.RecordTypeId == rtSampleOrder && sap.Brand_Manager_Emailed__c == false) {
             sampleOrderIds.add(sap.Id);
             sap.Brand_Manager_Emailed__c = true;
+        }
+        if (sap.RecordTypeId == rtSampleOrderKOR && sap.Approval_Status__c == 'Approved' && (sap.Sticker_Type__c == null || sap.Sticker_Type__c == '')) {
+            sap.addError(Label.Sticker_Type_Required);
+            break;
         }
     }
     if (sampleOrderIds.size() > 0) {

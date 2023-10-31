@@ -4,6 +4,7 @@
     <aura:attribute name="recordTypeName" type="String" default="" />
     <aura:attribute name="label_Cases" type="String" default="{!$Label.c.Cases}" />
     <aura:attribute name="label_Units" type="String" default="{!$Label.c.Units}" />
+    <aura:attribute name="promotionActivity" type="String" default="" />
     
     <!-- Number Attributes -->
     <aura:attribute name="selectedRowCount" type="Integer" default="0" />

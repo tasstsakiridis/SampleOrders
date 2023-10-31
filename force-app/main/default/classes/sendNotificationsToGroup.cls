@@ -57,12 +57,12 @@ global class sendNotificationsToGroup {
                 userOrGroup = 'user';
             }
 
+            soql = 'SELECT Id, UserOrGroupId FROM ' + shareName + ' WHERE '+ lookupField + ' =:ids';
             List<String> usersToEmail = new List<String>();
             if (onlyNotifyOwner) {
-                soql = 'SELECT Id, OwnerId FROM ' + shareName + ' WHERE '+ lookupField + ' =:ids';
                 userOrGroupName = 'OwnerId';
+                soql += ' AND RowCause = \'Owner\'';
             } else {                
-                soql = 'SELECT Id, UserOrGroupId FROM ' + shareName + ' WHERE ' + lookupField + ' =:ids';                
                 if (String.isNotEmpty(userOrGroupName)) {
                     soql += ' AND UserOrGroup.Name =:userOrGroupName';
                 }
@@ -72,7 +72,7 @@ global class sendNotificationsToGroup {
             List<sObject> objectList = Database.query(soql);
             for(sObject s : objectList) {
                 if (onlyNotifyOwner) {
-                    usersToEmail.add(String.valueOf(s.get('OwnerId')));
+                    usersToEmail.add(String.valueOf(s.get('UserOrGroupId')));
                 } else {
                     String groupId = String.valueOf(s.get('UserOrGroupId'));
                     String memberType = getMemberType(groupId);

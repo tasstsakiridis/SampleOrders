@@ -56,4 +56,12 @@
         <shortDescription>Max Input Length</shortDescription>
         <value>max {0} characters</value>
     </labels>
+    <labels>
+        <fullName>Sticker_Type_Required</fullName>
+        <categories>errors</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Sticker Type Required</shortDescription>
+        <value>Sticker Type is required.</value>
+    </labels>
 </CustomLabels>
