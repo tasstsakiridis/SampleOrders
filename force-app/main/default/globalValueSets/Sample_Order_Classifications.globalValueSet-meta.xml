@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <GlobalValueSet xmlns="http://soap.sforce.com/2006/04/metadata">
     <customValue>
-        <fullName>AU6-Ecomm Sample Orders</fullName>
+        <fullName>AU1-Samples for Brand Related Activities</fullName>
         <default>false</default>
-        <label>AU6-Ecomm Sample Orders</label>
-    </customValue>
-    <customValue>
-        <fullName>AU1-Samples for Marketing Related Activities</fullName>
-        <default>false</default>
-        <label>AU1-Samples for Marketing Related Activities</label>
+        <label>AU1-Samples for Brand Related Activities</label>
     </customValue>
     <customValue>
         <fullName>AU2-Samples for Sales Related Activities</fullName>
@@ -31,9 +26,89 @@
         <label>AU5-Samples for Admin Activities</label>
     </customValue>
     <customValue>
-        <fullName>SD5 - Samples for office display, business meeting consumption</fullName>
+        <fullName>AU6-Ecomm Sample Orders</fullName>
         <default>false</default>
-        <label>SD5 - Samples for office display, business meeting consumption</label>
+        <label>AU6-Ecomm Sample Orders</label>
+    </customValue>
+    <customValue>
+        <fullName>Availability</fullName>
+        <default>false</default>
+        <label>Availability</label>
+    </customValue>
+    <customValue>
+        <fullName>EFG</fullName>
+        <default>false</default>
+        <label>EFG</label>
+    </customValue>
+    <customValue>
+        <fullName>Entertainment</fullName>
+        <default>false</default>
+        <label>Entertainment</label>
+    </customValue>
+    <customValue>
+        <fullName>External Relationship</fullName>
+        <default>false</default>
+        <label>External Relationship</label>
+    </customValue>
+    <customValue>
+        <fullName>Free Goods</fullName>
+        <default>false</default>
+        <label>Free Goods</label>
+    </customValue>
+    <customValue>
+        <fullName>Internal Activity</fullName>
+        <default>false</default>
+        <label>Internal Activity</label>
+    </customValue>
+    <customValue>
+        <fullName>Listing Fee</fullName>
+        <default>false</default>
+        <label>Listing Fee</label>
+    </customValue>
+    <customValue>
+        <fullName>Marketing</fullName>
+        <default>false</default>
+        <label>Marketing</label>
+    </customValue>
+    <customValue>
+        <fullName>Marketing Activity</fullName>
+        <default>false</default>
+        <label>Marketing Activity</label>
+    </customValue>
+    <customValue>
+        <fullName>MZ2 - Free Good Rollback</fullName>
+        <default>false</default>
+        <label>MZ2 - Free Good Rollback</label>
+    </customValue>
+    <customValue>
+        <fullName>Promotional Activity</fullName>
+        <default>false</default>
+        <label>Promotional Activity</label>
+    </customValue>
+    <customValue>
+        <fullName>Sample - Ad</fullName>
+        <default>false</default>
+        <label>Sample - Ad</label>
+    </customValue>
+    <customValue>
+        <fullName>Sample - Display at account</fullName>
+        <default>false</default>
+        <label>Sample - Display at account</label>
+    </customValue>
+    <customValue>
+        <fullName>Sample - Inspection</fullName>
+        <default>false</default>
+        <label>Sample - Inspection</label>
+    </customValue>
+    <customValue>
+        <fullName>Sample - Research</fullName>
+        <default>false</default>
+        <label>Sample - Research</label>
+    </customValue>
+    <customValue>
+        <fullName>SD0 - A&amp;P</fullName>
+        <default>false</default>
+        <label>SD0 - A&amp;P</label>
     </customValue>
     <customValue>
         <fullName>SD0 - Sample Orders for Customers (Branded promotional materials &amp; displays)</fullName>
@@ -46,59 +121,34 @@
         <label>SD0 - Tasting and sampling events whether at customer’s location or general location</label>
     </customValue>
     <customValue>
-        <fullName>Volume</fullName>
+        <fullName>SD5 - Samples for office display, business meeting consumption</fullName>
         <default>false</default>
-        <label>Volume</label>
+        <label>SD5 - Samples for office display, business meeting consumption</label>
     </customValue>
     <customValue>
-        <fullName>Listing Fee</fullName>
+        <fullName>SD5 - SG&amp;A</fullName>
         <default>false</default>
-        <label>Listing Fee</label>
+        <label>SD5 - SG&amp;A</label>
     </customValue>
     <customValue>
-        <fullName>Promotional Activity</fullName>
+        <fullName>SDA - Sample Discounts</fullName>
         <default>false</default>
-        <label>Promotional Activity</label>
+        <label>SDA - Sample Discounts</label>
     </customValue>
     <customValue>
-        <fullName>Training &amp; Advocacy</fullName>
+        <fullName>SDB - Free Good Sales Incentive</fullName>
         <default>false</default>
-        <label>Training &amp; Advocacy</label>
+        <label>SDB - Free Good Sales Incentive</label>
     </customValue>
     <customValue>
-        <fullName>External Relationship</fullName>
+        <fullName>SDC - Free Good Damaged Goods</fullName>
         <default>false</default>
-        <label>External Relationship</label>
+        <label>SDC - Free Good Damaged Goods</label>
     </customValue>
     <customValue>
-        <fullName>Internal Activity</fullName>
+        <fullName>Special Events / Anniversaries</fullName>
         <default>false</default>
-        <label>Internal Activity</label>
-    </customValue>
-    <customValue>
-        <fullName>Trade Activity</fullName>
-        <default>false</default>
-        <label>Trade Activity</label>
-    </customValue>
-    <customValue>
-        <fullName>Marketing Activity</fullName>
-        <default>false</default>
-        <label>Marketing Activity</label>
-    </customValue>
-    <customValue>
-        <fullName>Entertainment</fullName>
-        <default>false</default>
-        <label>Entertainment</label>
-    </customValue>
-    <customValue>
-        <fullName>Sample - Inspection</fullName>
-        <default>false</default>
-        <label>Sample - Inspection</label>
-    </customValue>
-    <customValue>
-        <fullName>Marketing</fullName>
-        <default>false</default>
-        <label>Marketing</label>
+        <label>Special Events / Anniversaries</label>
     </customValue>
     <customValue>
         <fullName>Tasting - MKT</fullName>
@@ -106,24 +156,9 @@
         <label>Tasting - MKT</label>
     </customValue>
     <customValue>
-        <fullName>EFG</fullName>
+        <fullName>Tasting - Off</fullName>
         <default>false</default>
-        <label>EFG</label>
-    </customValue>
-    <customValue>
-        <fullName>Sample - Ad</fullName>
-        <default>false</default>
-        <label>Sample - Ad</label>
-    </customValue>
-    <customValue>
-        <fullName>Sample - Research</fullName>
-        <default>false</default>
-        <label>Sample - Research</label>
-    </customValue>
-    <customValue>
-        <fullName>Sample - Display at account</fullName>
-        <default>false</default>
-        <label>Sample - Display at account</label>
+        <label>Tasting - Off</label>
     </customValue>
     <customValue>
         <fullName>Tasting - On</fullName>
@@ -131,9 +166,271 @@
         <label>Tasting - On</label>
     </customValue>
     <customValue>
-        <fullName>Tasting - Off</fullName>
+        <fullName>Trade Activity</fullName>
         <default>false</default>
-        <label>Tasting - Off</label>
+        <label>Trade Activity</label>
+    </customValue>
+    <customValue>
+        <fullName>Training</fullName>
+        <default>false</default>
+        <label>Training</label>
+    </customValue>
+    <customValue>
+        <fullName>Training &amp; Advocacy</fullName>
+        <default>false</default>
+        <label>Training &amp; Advocacy</label>
+    </customValue>
+    <customValue>
+        <fullName>Volume</fullName>
+        <default>false</default>
+        <label>Volume</label>
+    </customValue>
+    <customValue>
+        <fullName>Avarias</fullName>
+        <default>false</default>
+        <label>Avarias</label>
+    </customValue>
+    <customValue>
+        <fullName>On-Premise</fullName>
+        <default>false</default>
+        <label>On-Premise</label>
+    </customValue>
+    <customValue>
+        <fullName>Baixa de Estoque</fullName>
+        <default>false</default>
+        <label>Baixa de Estoque</label>
+    </customValue>
+    <customValue>
+        <fullName>Discount Direct</fullName>
+        <default>false</default>
+        <label>Discount Direct</label>
+    </customValue>
+    <customValue>
+        <fullName>Discount Indirect</fullName>
+        <default>false</default>
+        <label>Discount Indirect</label>
+    </customValue>
+    <customValue>
+        <fullName>Employee</fullName>
+        <default>false</default>
+        <label>Employee</label>
+    </customValue>
+    <customValue>
+        <fullName>MKT Jack Daniel´s</fullName>
+        <default>false</default>
+        <label>MKT Jack Daniel´s</label>
+    </customValue>
+    <customValue>
+        <fullName>MKT Jack Flavours.</fullName>
+        <default>false</default>
+        <label>MKT Jack Flavours.</label>
+    </customValue>
+    <customValue>
+        <fullName>MKT JD Super Premium</fullName>
+        <default>false</default>
+        <label>MKT JD Super Premium</label>
+    </customValue>
+    <customValue>
+        <fullName>MKT RTD</fullName>
+        <default>false</default>
+        <label>MKT RTD</label>
+    </customValue>
+    <customValue>
+        <fullName>MKT Woodford</fullName>
+        <default>false</default>
+        <label>MKT Woodford</label>
+    </customValue>
+    <customValue>
+        <fullName>PUB</fullName>
+        <default>false</default>
+        <label>PUB</label>
+    </customValue>
+    <customValue>
+        <fullName>Trade MKT</fullName>
+        <default>false</default>
+        <label>Trade MKT</label>
+    </customValue>
+    <customValue>
+        <fullName>P0N - BM AR costs diff</fullName>
+        <default>false</default>
+        <label>P0N - BM AR costs diff</label>
+    </customValue>
+    <customValue>
+        <fullName>P6A - TM OFF-TRADE ACTIVATION</fullName>
+        <default>false</default>
+        <label>P6A - TM OFF-TRADE ACTIVATION</label>
+    </customValue>
+    <customValue>
+        <fullName>P2F - SPM ON-TRADE ACTIVATION</fullName>
+        <default>false</default>
+        <label>P2F - SPM ON-TRADE ACTIVATION</label>
+    </customValue>
+    <customValue>
+        <fullName>P2G - SPM OFF-TRADE ACTIVATION</fullName>
+        <default>false</default>
+        <label>P2G - SPM OFF-TRADE ACTIVATION</label>
+    </customValue>
+    <customValue>
+        <fullName>P2O - SPM OTHER</fullName>
+        <default>false</default>
+        <label>P2O - SPM OTHER</label>
+    </customValue>
+    <customValue>
+        <fullName>P3D - OTM EDUCATIONAL PROGRAMS</fullName>
+        <default>false</default>
+        <label>P3D - OTM EDUCATIONAL PROGRAMS</label>
+    </customValue>
+    <customValue>
+        <fullName>P3F - OTM EVENTS/SAMPLING</fullName>
+        <default>false</default>
+        <label>P3F - OTM EVENTS/SAMPLING</label>
+    </customValue>
+    <customValue>
+        <fullName>P4A - SD AR</fullName>
+        <default>false</default>
+        <label>P4A - SD AR</label>
+    </customValue>
+    <customValue>
+        <fullName>P0O - BM OTHER</fullName>
+        <default>false</default>
+        <label>P0O - BM OTHER</label>
+    </customValue>
+    <customValue>
+        <fullName>P1J - SFM TMM BUDEXPO</fullName>
+        <default>false</default>
+        <label>P1J - SFM TMM BUDEXPO</label>
+    </customValue>
+    <customValue>
+        <fullName>P2E - SPM PR</fullName>
+        <default>false</default>
+        <label>P2E - SPM PR</label>
+    </customValue>
+    <customValue>
+        <fullName>P2P - SPM BRAND EVENTS</fullName>
+        <default>false</default>
+        <label>P2P - SPM BRAND EVENTS</label>
+    </customValue>
+    <customValue>
+        <fullName>P6C - TT</fullName>
+        <default>false</default>
+        <label>P6C - TT</label>
+    </customValue>
+    <customValue>
+        <fullName>P6D - C&amp;C/WHS</fullName>
+        <default>false</default>
+        <label>P6D - C&amp;C/WHS</label>
+    </customValue>
+    <customValue>
+        <fullName>P6F - Other</fullName>
+        <default>false</default>
+        <label>P6F - Other</label>
+    </customValue>
+    <customValue>
+        <fullName>P0A - BM AGENCY FEE</fullName>
+        <default>false</default>
+        <label>P0A - BM AGENCY FEE</label>
+    </customValue>
+    <customValue>
+        <fullName>P0B - BM DIGITAL</fullName>
+        <default>false</default>
+        <label>P0B - BM DIGITAL</label>
+    </customValue>
+    <customValue>
+        <fullName>P0D - BM TRADE PRESS</fullName>
+        <default>false</default>
+        <label>P0D - BM TRADE PRESS</label>
+    </customValue>
+    <customValue>
+        <fullName>P0E - BM PR</fullName>
+        <default>false</default>
+        <label>P0E - BM PR</label>
+    </customValue>
+    <customValue>
+        <fullName>P0F - BM ON-TRADE ACTIVATION</fullName>
+        <default>false</default>
+        <label>P0F - BM ON-TRADE ACTIVATION</label>
+    </customValue>
+    <customValue>
+        <fullName>P0G - BM OFF-TRADE ACTIVATION</fullName>
+        <default>false</default>
+        <label>P0G - BM OFF-TRADE ACTIVATION</label>
+    </customValue>
+    <customValue>
+        <fullName>AU7-Samples for Marketing Events</fullName>
+        <default>false</default>
+        <label>AU7-Samples for Marketing Events</label>
+    </customValue>
+    <customValue>
+        <fullName>AU8-Samples for Advocacy</fullName>
+        <default>false</default>
+        <label>AU8-Samples for Advocacy</label>
+    </customValue>
+    <customValue>
+        <fullName>Marketing Brand Expense</fullName>
+        <default>false</default>
+        <label>Marketing Brand Expense</label>
+    </customValue>
+    <customValue>
+        <fullName>EC Brand Expense</fullName>
+        <default>false</default>
+        <label>EC Brand Expense</label>
+    </customValue>
+    <customValue>
+        <fullName>Sales Discount</fullName>
+        <default>false</default>
+        <label>Sales Discount</label>
+    </customValue>
+    <customValue>
+        <fullName>EC Discount</fullName>
+        <default>false</default>
+        <label>EC Discount</label>
+    </customValue>
+    <customValue>
+        <fullName>Testing SG&amp;A</fullName>
+        <default>false</default>
+        <label>Testing SG&amp;A</label>
+    </customValue>
+    <customValue>
+        <fullName>Office SG&amp;A</fullName>
+        <default>false</default>
+        <label>Office SG&amp;A</label>
+    </customValue>
+    <customValue>
+        <fullName>CZM - Product Sample</fullName>
+        <default>false</default>
+        <label>CZM - Product Sample</label>
+    </customValue>
+    <customValue>
+        <fullName>SD0 - Samples for Customer</fullName>
+        <default>false</default>
+        <label>SD0 - Samples for Customer</label>
+    </customValue>
+    <customValue>
+        <fullName>SD5 - Sample(SG&amp;A)</fullName>
+        <default>false</default>
+        <label>SD5 - Sample(SG&amp;A)</label>
+    </customValue>
+    <customValue>
+        <fullName>Route to Market - Free Goods (Discount)</fullName>
+        <default>false</default>
+        <label>Route to Market - Free Goods (Discount)</label>
+    </customValue>
+    <customValue>
+        <fullName>JP1 - Product Transfer</fullName>
+        <default>false</default>
+        <label>JP1 - Product Transfer</label>
+    </customValue>
+    <customValue>
+        <fullName>Product Promotion</fullName>
+        <default>false</default>
+        <isActive>false</isActive>
+        <label>Product Promotion</label>
+    </customValue>
+    <customValue>
+        <fullName>SD0-Samples for Customers</fullName>
+        <default>false</default>
+        <isActive>false</isActive>
+        <label>SD0-Samples for Customers</label>
     </customValue>
     <customValue>
         <fullName>SD5-Samples</fullName>
@@ -142,10 +439,22 @@
         <label>SD5-Samples</label>
     </customValue>
     <customValue>
+        <fullName>MKT El Jimador</fullName>
+        <default>false</default>
+        <isActive>false</isActive>
+        <label>MKT El Jimador</label>
+    </customValue>
+    <customValue>
         <fullName>SD7-Product Promotion</fullName>
         <default>false</default>
         <isActive>false</isActive>
         <label>SD7-Product Promotion</label>
+    </customValue>
+    <customValue>
+        <fullName>SD7 - Tasting and sampling events while at the customer&apos;s location</fullName>
+        <default>false</default>
+        <isActive>false</isActive>
+        <label>SD7 - Tasting and sampling events while at the customer&apos;s location</label>
     </customValue>
     <customValue>
         <fullName>SD7 - Product Promotion (Samples for office or meetings)</fullName>
@@ -160,12 +469,6 @@
         <label>SD5 - Samples (Tasting and Sampling events)</label>
     </customValue>
     <customValue>
-        <fullName>Product Promotion</fullName>
-        <default>false</default>
-        <isActive>false</isActive>
-        <label>Product Promotion</label>
-    </customValue>
-    <customValue>
         <fullName>Discount Related Activities</fullName>
         <default>false</default>
         <isActive>false</isActive>
@@ -178,28 +481,16 @@
         <label>Admin Related Activities</label>
     </customValue>
     <customValue>
-        <fullName>Marketing Related Activities</fullName>
-        <default>false</default>
-        <isActive>false</isActive>
-        <label>Marketing Related Activities</label>
-    </customValue>
-    <customValue>
         <fullName>Sales Related Activities</fullName>
         <default>false</default>
         <isActive>false</isActive>
         <label>Sales Related Activities</label>
     </customValue>
     <customValue>
-        <fullName>SD0-Samples for Customers</fullName>
+        <fullName>Marketing Related Activities</fullName>
         <default>false</default>
         <isActive>false</isActive>
-        <label>SD0-Samples for Customers</label>
-    </customValue>
-    <customValue>
-        <fullName>SD7 - Tasting and sampling events while at the customer&apos;s location</fullName>
-        <default>false</default>
-        <isActive>false</isActive>
-        <label>SD7 - Tasting and sampling events while at the customer&apos;s location</label>
+        <label>Marketing Related Activities</label>
     </customValue>
     <masterLabel>Sample Order Classifications</masterLabel>
     <sorted>true</sorted>

@@ -8,9 +8,16 @@ public with sharing class SampleOrder_Controller {
                             Accounts__c, Activities__c, Cost_Centers__c, Internal_Order_Numbers__c, Storage_Lockers__c, Show_Product_Price__c,
                             Standard_Address_Input__c, Shipping_Instructions__c, Submit_Order_for_Approval__c, Capture_Volume_in_Bottles__c, 
                             Show_Wholesalers__c, Sample_Order_Account_RecordType__c, Sample_Order_Wholesaler_RecordType__c, Show_Sticker_Types__c,
-                            Show_Approval_History__c, Delivery_Options__c, Show_Sample_Order_Guidance__c 
+                            Show_Approval_History__c, Delivery_Options__c, Show_Sample_Order_Guidance__c, Capture_State_in_Address__c,
+                            Capture_Item_Comments__c, Can_Edit_Declined_Sample_Order__c, Capture_Sample_Order_Classification__c, 
+                            Address_State_Type__c 
                          FROM Market__c 
                         WHERE Name =:u.Market__c LIMIT 1];
+
+        List<SAP_Interfaced_Data_Configuration__c> configs = [SELECT Id, Name, Classification__c, Additional_Requirements__c, Item_Category__c, RecordType.Name 
+                                                                FROM SAP_Interfaced_Data_Configuration__c 
+                                                                WHERE Market__c =:m.Id
+                                                                  AND Is_Active__c = true];
 
         Boolean isSupplyChain = false;
         if (groups != null && groups.size() > 0) {
@@ -35,6 +42,7 @@ public with sharing class SampleOrder_Controller {
         result.put('userName', u.Name);
         result.put('user', u);
         result.put('isSupplyChain', isSupplyChain);
+        result.put('configs', configs);
 
         return result;
     }    
@@ -47,11 +55,17 @@ public with sharing class SampleOrder_Controller {
     @AuraEnabled 
     public static Map<String, bfFieldDescribe> getPicklistValuesForRecordType(String recordType) {
         System.debug('recordType: ' + recordType);
+        Map<Id, RecordTypeInfo> rtList = SAP_Interfaced_Data__c.SObjectType.getDescribe().getRecordTypeInfosById();
+        String recordTypeName = rtList.values().get(0).getDeveloperName();
+        if (rtList.containsKey(recordType)) {
+            recordTypeName = rtList.get(recordType).getDeveloperName();
+        }
+
         List<Salesforce_Picklist_Controlling_Values__c> spcvList = [SELECT Id, Controller__c, Controller_Value__c, Field_Name__c, Is_Active__c, IsDefault__c, RecordType__c, Value__c 
                                                                             FROM Salesforce_Picklist_Controlling_Values__c
                                                                            WHERE Object_Name__c = 'SAP_Interfaced_Data__c'
                                                                              AND Is_Active__c = true
-                                                                             AND RecordType__c =:recordType
+                                                                             AND RecordType__c =:recordTypeName
                                                                         ORDER BY Field_Name__c];
 
         Map<String, List<Salesforce_Picklist_Controlling_Values__c>> spcvMap = new Map<String, List<Salesforce_Picklist_Controlling_Values__c>>();
@@ -151,7 +165,7 @@ public with sharing class SampleOrder_Controller {
     @AuraEnabled
     public static SAP_Interfaced_Data__c getSampleOrder(String recordId) {
         if (recordId == null || recordId == '') { return null; }
-        return [SELECT Id, Name, RecordTypeId, RecordType.Name, Order_Number__c, Approval_Status__c, Requested_Delivery_Date__c, 
+        return [SELECT Id, Name, RecordTypeId, RecordType.Name, RecordType.DeveloperName, Order_Number__c, Approval_Status__c, Requested_Delivery_Date__c, 
                        Authorised_By__c, Authorised_By__r.Name, Authorised_Date__c, Finance_Authorised_By__c, Finance_Authorised_Date__c, 
                        Classification__c, Banner_Group__c, Business_Name__c, Business_Address__c, Business_City__c, Business_State__c, 
                        Business_Postcode__c, Business_Country__c, Contact_Name__c, Contact_Phone__c, Reason__c, Is_International_Order__c, 
@@ -161,7 +175,7 @@ public with sharing class SampleOrder_Controller {
                        POD_Attached__c, Market__c, Market__r.Name, Order_Type__c,
                        (SELECT Id, Name, SAP_Interfaced_Data__c, Product__c, Brand_Name__c, Product_Code__c, Internal_Order_Number__c, 
                                Quantity__c, Units__c, Product__r.Used_For__c, Product__r.Pack_Quantity__c, Total_Ordered_Cases__c, PMI_Actual__c,
-                        	   Product__r.Price__c
+                        	   Product__r.Price__c, Comments__c
                           FROM SAP_Interfaced_Data_Items__r)
                   FROM SAP_Interfaced_Data__c 
                  WHERE Id=:recordId];
@@ -181,7 +195,7 @@ public with sharing class SampleOrder_Controller {
             }
 
             List<SAP_Interfaced_Data_Configuration__c> configs = [SELECT Id, Classification__c, State__c, RecordTypeId, RecordType.Name, ShipTo_Code__c, 
-                                                                         SoldTo_Code__c, Plant_Code__c, Market__c, Internal_Order_Number__c, Approver__c
+                                                                         SoldTo_Code__c, Plant_Code__c, Market__c, Internal_Order_Number__c, Item_Category__c
                                                                     FROM SAP_Interfaced_Data_Configuration__c
                                                                    WHERE Market__c =:theSampleOrder.Market__c
                                                                      AND Is_Active__c = true];
@@ -201,14 +215,15 @@ public with sharing class SampleOrder_Controller {
                         }                        
                     }
 
-                    if (config.RecordType.Name == 'General' && config.Classification__c == theSampleOrder.Classification__c && (String.isEmpty(config.State__c) || config.State__c == theSampleOrder.Business_State__c)) {
+                    if (config.RecordType.Name == 'General' && (config.Classification__c == null || config.Classification__c == theSampleOrder.Classification__c) && (String.isEmpty(config.State__c) || config.State__c == theSampleOrder.Business_State__c)) {
                         theSampleOrder.SAP_ShipTo_Code__c = config.ShipTo_Code__c;
                         theSampleOrder.SAP_SoldTo_Code__c = config.SoldTo_Code__c;
                         theSampleOrder.SAP_Plant_Code__c = config.Plant_Code__c;
-                        theSampleOrder.Authorised_By__c = config.Approver__c;
+                        theSampleOrder.SAP_Item_Category__c = config.Item_Category__c;
                         //theSampleOrder.Internal_Order_Number__c = config.Internal_Order_Number__c;
                     } else if (config.RecordType.Name == 'General' && config.Market__c == theSampleOrder.Market__c && config.Classification__c == null && config.State__c == null) {
                         theSampleOrder.SAP_ShipTo_Code__c = config.ShipTo_Code__c;  
+                        theSampleOrder.SAP_Item_Category__c = config.Item_Category__c;
                     }
                 }
             }
@@ -227,16 +242,6 @@ public with sharing class SampleOrder_Controller {
                 }
             }
 
-            if (marketName == 'Brazil' && theSampleOrder.Account__c != null) {
-                Account theAccount = [SELECT Id, Name, SAP_Customer_Number__c, Sold_to_SAP__c FROM Account WHERE Id =:theSampleOrder.Account__c];
-                if (theAccount != null && theAccount.SAP_Customer_Number__c != null) {
-                    theSampleOrder.SAP_ShipTo_Code__c = theAccount.SAP_Customer_Number__c;
-                }
-                if (theAccount != null && theAccount.Sold_to_SAP__c != null) {
-                    theSampleOrder.SAP_SoldTo_Code__c = theAccount.Sold_to_SAP__c;
-                }                
-            }
-
             if (theSampleOrder.Banner_Group__c != null) {
                 Banner_Groups__c banner = [SELECT Id, Name, Ship_To_Code__c FROM Banner_Groups__c WHERE Id =:theSampleOrder.Banner_Group__c LIMIT 1];
                 if (banner != null && banner.Ship_To_Code__c != null) {
@@ -244,14 +249,13 @@ public with sharing class SampleOrder_Controller {
                 }                
             }
 
-            if (marketName == 'Mexico') {
+            if (marketName == 'Mexico' && theSampleOrder.Storage_Locker__c != null) {
                 String accountId = '';
                 Boolean useAccount = false;
-                if (theSampleOrder.Storage_Locker__c != null && (theSampleOrder.Classification__c.startsWith('SD0') || theSampleOrder.Classification__c.startsWith('SD5') || theSampleOrder.Classification__c.startsWith('SDA'))) {
+                if (theSampleOrder.Classification__c.startsWith('SD0') || theSampleOrder.Classification__c.startsWith('SD5') || theSampleOrder.Classification__c.startsWith('SDA')) {
                     accountId = theSampleOrder.Storage_Locker__c;
                 }
-                
-                if (theSampleOrder.Account__c != null && (theSampleOrder.Classification__c.startsWith('SD0') || theSampleOrder.Classification__c.startsWith('SDC') || theSampleOrder.Classification__c.startsWith('SDB') || theSampleOrder.Classification__c.startsWith('MZ2'))) {
+                if (theSampleOrder.Classification__c.startsWith('SDC') || theSampleOrder.Classification__c.startsWith('SDB') || theSampleOrder.Classification__c.startsWith('MZ2')) {
                     useAccount = true;
                     accountId = theSampleOrder.Account__c;
                 }
@@ -274,16 +278,19 @@ public with sharing class SampleOrder_Controller {
     }
     
     @AuraEnabled
-    public static List<SAP_Interfaced_Data_Item__c> saveOrderItems(String sapId, String recordTypeName, String market, String activityId, String sapItems) {
+    public static List<SAP_Interfaced_Data_Item__c> saveOrderItems(String sapId, String recordTypeId, String market, String activityId, String sapItems) {
         if (sapId == null || sapId == '') { return null; }
         if (sapItems == null || sapItems.length() == 0) { return null; }
         
-        Map<String, RecordTypeInfo> rtList = SAP_Interfaced_Data_Item__c.SObjectType.getDescribe().getRecordTypeInfosByName();
-        String rtSampleOrder = rtList.get('Sample Order').getRecordTypeId();
-        if (rtList.containsKey(recordTypeName)) {
-            rtSampleOrder = rtList.get(recordTypeName).getRecordTypeId();
-        }
+        Map<Id, RecordTypeInfo> rtSampleOrderList = SAP_Interfaced_Data__c.SObjectType.getDescribe().getRecordTypeInfosById();
+        String recordTypeName = rtSampleOrderList.get(recordTypeId).getDeveloperName();
 
+        Map<String, RecordTypeInfo> rtList = SAP_Interfaced_Data_Item__c.SObjectType.getDescribe().getRecordTypeInfosByDeveloperName();
+        String rtSampleOrderItem = rtList.get('Sample_Order').getRecordTypeId();
+        if (rtList.containsKey(recordTypeName)) {
+            rtSampleOrderItem = rtList.get(recordTypeName).getRecordTypeId();
+        }
+        
         Map<String, RecordTypeInfo> rtPMIActual = PMI_Actual__c.SObjectType.getDescribe().getRecordTypeInfosByName();
         String rtPSA = '';
 
@@ -326,19 +333,16 @@ public with sharing class SampleOrder_Controller {
         List<String> toDelete = new List<String>();
         Map<String, String> sapProductMap = new Map<String, String>();
         Decimal orderTotal = 0;
-        try {
-            for(SampleOrderItem s : items) {
-                System.debug('items.key id: ' + s.id + ', product: ' + s.productId);
-            }
-            
+        try {            
             for(SampleOrderItem i : items) {
                 sapItem = new SAP_Interfaced_Data_Item__c();
-                sapItem.RecordTypeId = rtSampleOrder;
+                sapItem.RecordTypeId = rtSampleOrderItem;
                 sapItem.SAP_Interfaced_Data__c = sapId;
                 sapItem.Product__c = i.productId;
                 sapItem.Quantity__c = i.quantity;
                 sapItem.Internal_Order_Number__c = i.internalOrderNumber;
                 sapItem.Total_Ordered_Cases__c = i.convertedCases;
+                sapItem.Comments__c = i.comments;
                 orderTotal += i.quantity * i.price;
                 if(i.id != i.productId && i.id != '') {
                     sapItem.Id = i.id;
@@ -451,7 +455,7 @@ public with sharing class SampleOrder_Controller {
                                         Contact_Name__c, Contact_Phone__c, Reason__c, Is_Approved__c, Order_Status__c, Is_Gift__c, Is_Gift_Above_100__c,
                                         Gift_Register_Acknowledgement__c,
                                         (SELECT Id, Name, Product__c, SAP_Interfaced_Data__c, Brand_Name__c, Product_Code__c, 
-                                                Internal_Order_Number__c, Total_Ordered_Cases__c 
+                                                Internal_Order_Number__c, Total_Ordered_Cases__c, Comments__c 
                                            FROM SAP_Interfaced_Data_Items__r) 
                                       FROM SAP_Interfaced_Data__c 
                                       WHERE Id =:sapId];
@@ -463,23 +467,48 @@ public with sharing class SampleOrder_Controller {
     public static List<SampleOrderItem> getProducts(String recordTypeName) {        
         Map<String, Object> u = getCurrentUserInfo();
         String marketId;
+        String marketName = 'Australia';
         if (u.containsKey('marketId')) {
             marketId = String.valueOf(u.get('marketId'));
+        }
+        if (u.containsKey('marketName')) {
+            marketName = String.valueOf(u.get('marketName'));
         }
         if (String.isEmpty(marketId)) {
             marketId = [SELECT Id, Name FROM Market__c WHERE Name = 'Australia'].Id;
         }
         Boolean found = false;
+
+        List<String> recordTypes = new List<String>();
+        Map<String, RecordTypeInfo> rtList = SAP_Interfaced_Data__c.SObjectType.getDescribe().getRecordTypeInfosByDeveloperName();
+        for(String rtName : rtList.keySet()) {
+            if (rtName.startsWith('Sample_Order')) {
+                recordTypes.add(rtName);
+            }
+        }
+/*
         List<Product__c> products = [SELECT Id, Name, ProductCode__c, Brand__c, Brand_Name__c, Pack_Quantity__c, Used_For__c, Price__c, COGS__c
                                        FROM Product__c 
                                       WHERE IsActive__c = true 
                                         AND Market__c=:marketId 
-                                        AND Used_For__c INCLUDES ('Sample Order','Sample Order - E-Premise', 'Sample Order - UK', 'Sample Order - TWN','Sample Order - MEX','Sample Order - KOR','Sample Order - BRL')
+                                        AND Used_For__c INCLUDES ('Sample Order','Sample Order - E-Premise', 'Sample Order - UK', 'Sample Order - TWN','Sample Order - MEX','Sample Order - KOR',)
                                    ORDER BY Name];
-        
+*/
+        String soql = 'SELECT Id, Name, ProductCode__c, Brand__c, Brand_Name__c, Pack_Quantity__c, Used_For__c, Price__c, COGS__c, POSM_Cost__c ';
+        soql += ' FROM Product__c WHERE IsActive__c = true AND Market__c =:marketId';
+        soql += ' AND Used_For__c INCLUDES (\''+String.join(recordTypes, '\',\'') +'\')';
+        soql += ' ORDER BY Name';
+
+        List<Product__c> products = Database.query(soql);
         List<SampleOrderItem> items = new List<SampleOrderItem>();
+        Decimal price = 0;
         for(Product__c p : products) {
-            items.add(new SampleOrderItem('', p.Id, p.Name, p.ProductCode__c, p.Brand__c, p.Brand_Name__c, p.Used_For__c, (Integer)p.Pack_Quantity__c, 0, (Decimal)p.Price__c, (Decimal)p.COGS__c, '', '', 0, 0, ''));
+            if (marketName == 'China') {
+                price = (Decimal)p.POSM_Cost__c;
+            } else {
+                price = (Decimal)p.Price__c;
+            }
+            items.add(new SampleOrderItem('', p.Id, p.Name, p.ProductCode__c, p.Brand__c, p.Brand_Name__c, p.Used_For__c, (Integer)p.Pack_Quantity__c, 0, price, (Decimal)p.COGS__c, '', '', 0, 0, ''));
         }
         return items;
     }
@@ -613,9 +642,14 @@ public with sharing class SampleOrder_Controller {
     }
 
     @AuraEnabled
-    public static void submitForApproval(String sapId, String market, String recordType) {
+    public static void submitForApproval(String sapId, String market, String recordType, String status) {
         System.debug('sapId: ' + sapId);        
-        if (sapId != null && sapId.length() > 0) {            
+        if (sapId != null && sapId.length() > 0) {    
+            if (status != 'New') {
+                SAP_Interfaced_Data__c theOrder = [SELECT Id, Approval_Status__c FROM SAP_Interfaced_Data__c WHERE Id=:sapId];
+                theOrder.Approval_Status__c = 'New';
+                update theOrder;
+            }
             Approval.ProcessSubmitRequest req1 = new Approval.ProcessSubmitRequest();
             req1.setObjectId(sapId);
             Approval.ProcessResult result = Approval.process(req1);                

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Additional_Requirements__c</fullName>
+    <description>Use this field to indicate what other values are required for the selected classification</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Use this field to indicate what other values are required for the selected classification</inlineHelpText>
+    <label>Additional Requirements</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>MultiselectPicklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Cost Center</fullName>
+                <default>false</default>
+                <label>Cost Center</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+    <visibleLines>4</visibleLines>
+</CustomField>

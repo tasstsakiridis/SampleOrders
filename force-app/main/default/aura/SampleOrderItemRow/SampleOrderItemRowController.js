@@ -13,9 +13,9 @@
     	var brand = event.getParam("value");
         var row = component.get("v.row");
         var el = component.find("theRow");
-        var recordTypeName = component.get("v.recordTypeName");
-        if (recordTypeName.indexOf('Storeroom Request') >= 0) {
-            recordTypeName = 'Sample Order';
+        var recordTypeName = component.get("v.recordTypeDeveloperName");
+        if (recordTypeName.indexOf('Storeroom_Request') >= 0) {
+            recordTypeName = 'Sample_Order';
         }
         try {
             
@@ -49,9 +49,14 @@
         component.set("v.row", row);
         console.log('[handleInternalOrderNumberChange] row', row);
     },
+    handleCommentsChange : function(component, event, helper) {
+        var row = component.get("v.row");
+        row.comments = event.target.value;
+        component.set("v.row", row);
+    },
     handleQuantityChange : function(component, event, helper) {
         try {
-            let recordType = component.get("v.recordTypeName");            
+            let recordType = component.get("v.recordTypeDeveloperName");            
             const captureVolumeInBottles = component.get("v.captureVolumeInBottles");
             let qty = event.target.value;
             var rowCount = component.get("v.selectedRowCount");
@@ -92,8 +97,8 @@
                 component.set("v.row", row);
                 alert('Quantity out of range.  Please enter a number greater than or equal to zero');
             } else {
-                console.log('recordType', recordType);
-                if (recordType == 'Sample Order' || recordType == 'Sample Order - UK') {
+                console.log('recordType', '['+recordType+']');
+                if (recordType == 'Sample_Order' || recordType == 'Sample_Order_UK' || recordType == 'Sample_Order_JAP') {
                     let remainder = qty % 1;
                     console.log('remainder', remainder);
                     if (remainder > 0) {
@@ -104,7 +109,7 @@
                         rowCount++;
                     }    
                     row.units = row.quantity * row.packQty;
-                } else if (recordType == 'Sample Order - TWN') {
+                } else if (recordType == 'Sample_Order_TWN') {
                     row.quantity = qty;
                     row.units = qty;
                     let cases = Math.floor(qty / row.packQty);
@@ -117,7 +122,7 @@
                         row.convertedCases = cases + ' ' + lbl_Cases + ' ' + units + ' ' + lbl_Units;
                     }
                     console.log('cases, units, convertedCases ', cases, units, row.convertedCases);
-                } else if (recordType == 'Sample Order - MEX') {
+                } else if (recordType == 'Sample_Order_MEX') {
                     let activity = component.get("v.promotionActivity");
                     let totalActualQty = parseInt(row.totalActualQty) + parseInt(qty);
                     console.log('[SampleOrderItemRow.controller.handleQuantityChange] totalActualQty', totalActualQty);

@@ -105,14 +105,14 @@ public class SampleOrder_Test {
         SAP_Interfaced_Data_Configuration__c sapConfig4 = new SAP_Interfaced_Data_Configuration__c();
         sapConfig4.RecordTypeId = rtSoldTo;
         sapConfig4.Market__c = mAU.Id;
-        sapConfig4.Classification__c = 'AU1-Samples for Marketing Related Activities';
+        sapConfig4.Classification__c = 'AU1-Samples for Brand Related Activities';
         sapConfig4.SoldTo_Code__c = 'CCA907C';
         sapConfig4.Is_Active__c = true;
 
         SAP_Interfaced_Data_Configuration__c sapConfig5 = new SAP_Interfaced_Data_Configuration__c();
         sapConfig5.RecordTypeId = rtGeneral;
         sapConfig5.Market__c = mAU.Id;
-        sapConfig5.Classification__c = 'AU1-Samples for Marketing Related Activities';
+        sapConfig5.Classification__c = 'AU1-Samples for Brand Related Activities';
         sapConfig5.SoldTo_Code__c = 'CCA907C';
         sapConfig5.Is_Active__c = true;
         
@@ -152,7 +152,7 @@ public class SampleOrder_Test {
         spcv1.Field_Name__c = 'Classification__c';
         spcv1.Controller__c = 'RecordType';
         spcv1.Controller_Value__c = 'Sample Order';
-        spcv1.Value__c = 'AU1-Samples for Marketing Related Activities';
+        spcv1.Value__c = 'AU1-Samples for Brand Related Activities';
         spcv1.Is_Active__c = true;
         spcv1.Market__c = mAU.Id;
         
@@ -201,7 +201,7 @@ public class SampleOrder_Test {
         sampleOrderAU.Business_State__c = 'NSW';
         sampleOrderAU.Business_Postcode__c = '2000';
         sampleOrderAU.Business_Name__c = 'Test Sample Order';
-        sampleOrderAU.Classification__c = 'AU1-Samples for Marketing Related Activities';
+        sampleOrderAU.Classification__c = 'AU1-Samples for Brand Related Activities';
         sampleOrderAU.Contact_Name__c = 'Test Sample Order Contact';
         sampleOrderAU.Contact_Phone__c = '95551234';
         sampleOrderAU.Market__c = mAU.Id;
@@ -218,7 +218,7 @@ public class SampleOrder_Test {
         sampleOrderMX.Business_State__c = 'NSW';
         sampleOrderMX.Business_Postcode__c = '2000';
         sampleOrderMX.Business_Name__c = 'Test Sample Order';
-        sampleOrderMX.Classification__c = 'Exhibits';
+        sampleOrderMX.Classification__c = 'SD5 - SG&A';
         sampleOrderMX.Contact_Name__c = 'Test Sample Order Contact';
         sampleOrderMX.Contact_Phone__c = '95551234';
         sampleOrderMX.Market__c = mMX.Id;
@@ -304,8 +304,8 @@ public class SampleOrder_Test {
             
             String json = '[{"id":"","productId":"'+lProducts.get(0).Id+'","quantity":"1", "price":"1", "usedFor":"Sample Order"}]';
             
-            sampleOrderAU = SampleOrder_Controller.saveSampleOrder(sampleOrderAU, mAU.Id);
-            sampleOrderMX = SampleOrder_Controller.saveSampleOrder(sampleOrderMX, mMX.Id);
+            sampleOrderAU = SampleOrder_Controller.saveSampleOrder(sampleOrderAU, mAU.Id, mAU.Name);
+            sampleOrderMX = SampleOrder_Controller.saveSampleOrder(sampleOrderMX, mMX.Id, mMX.Name);
             List<SAP_Interfaced_Data_Item__c> orderItems = SampleOrder_Controller.saveOrderItems(sampleOrderMX.Id, 'Sample Order - MEX', 'Mexico', activity1.Id, json);
                 
             sampleOrderMX = SampleOrder_Controller.getSampleOrder(sampleOrderMX.Id);
@@ -359,7 +359,7 @@ public class SampleOrder_Test {
             bfObjectDescribe desc1 = new bfObjectDescribe('Account', 'Account', 'Accounts');
             bfObjectDescribe desc2 = new bfObjectDescribe('Account', 'Account', 'Accounts', true, false, false);
             
-            SampleOrder_Controller.submitForApproval(sampleOrderMX.Id, 'Mexico', 'Sample Order - MEX');
+            SampleOrder_Controller.submitForApproval(sampleOrderMX.Id, 'Mexico', 'Sample Order - MEX', 'Approved');
 
             Test.stopTest();
        }

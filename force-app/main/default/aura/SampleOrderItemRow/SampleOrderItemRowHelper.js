@@ -3,7 +3,7 @@
     	var row = component.get("v.row");
         console.log('[sampleOrderItemRow] row', JSON.parse(JSON.stringify(row)));
         var showSelectedRow = component.get("v.showSelectedRows");
-        var recordTypeName = component.get("v.recordTypeName");
+        var recordTypeName = component.get("v.recordTypeDeveloperName");
         var el = component.find("theRow");
         console.log('[sampleorderItemRow] recordTypeName', recordTypeName);
         console.log('[sampleOrderItemRow] showSelectedRows', showSelectedRow);
@@ -21,7 +21,7 @@
             for(var i =0; i < l.length; i++) {
                 if (l[i] == recordTypeName) {
                     found = true; break;
-                } else if (recordTypeName == 'Sample Order - Storeroom Request' && (l[i] == 'Sample Order' || l[i] == 'Sample Order - E-Premise')) {
+                } else if (recordTypeName == 'Sample_Order_Storeroom_Request' && (l[i] == 'Sample_Order' || l[i] == 'Sample_Order_E-Premise')) {
                     found = true; break;
                 }
             }

@@ -64,4 +64,12 @@
         <shortDescription>Sticker Type Required</shortDescription>
         <value>Sticker Type is required.</value>
     </labels>
+    <labels>
+        <fullName>Show_Selected_Products</fullName>
+        <categories>labels</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Show Selected Products</shortDescription>
+        <value>Show selected products</value>
+    </labels>
 </CustomLabels>

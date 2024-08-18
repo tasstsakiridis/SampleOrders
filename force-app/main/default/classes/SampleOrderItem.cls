@@ -56,6 +56,9 @@ global class SampleOrderItem {
     @AuraEnabled
     public String pmiActualId { get; set; }
 
+    @AuraEnabled
+    public String comments { get; set; }
+
     public SampleOrderItem() {
         this.id = '';
         this.productId = '';
@@ -76,6 +79,7 @@ global class SampleOrderItem {
         this.totalFreeBottleQty = 0;
         this.totalActualFreeBottleQty = 0;
         this.pmiActualId = '';
+        this.comments = '';
     }
     
     public SampleOrderItem(String id, String productId, String productName, String productCode, String brandId, String brandName, String usedFor, Integer packQty, Integer quantity, Decimal price, Decimal cogs, String internalOrderNumber, String convertedCases, Decimal totalActualQty, Decimal totalPlannedQty, String pmiActualId) {
@@ -98,6 +102,7 @@ global class SampleOrderItem {
         this.totalActualFreeBottleQty = totalFreeBottleQty;
         this.totalFreeBottleQty = totalFreeBottleQty;
         this.pmiActualId = pmiActualId;
+        this.comments = '';
     }
 
     public SampleOrderItem(String id, String productId, String productName, String productCode, String brandId, String brandName, String usedFor, Integer packQty, Integer quantity, Decimal price, Decimal cogs, String internalOrderNumber, String convertedCases, Decimal totalActualQty, Decimal totalPlannedQty, Decimal totalFreeBottleQty, Decimal totalActualFreeBottleQty, String pmiActualId) {
@@ -120,6 +125,7 @@ global class SampleOrderItem {
         this.totalActualFreeBottleQty = totalFreeBottleQty;
         this.totalFreeBottleQty = totalFreeBottleQty;
         this.pmiActualId = pmiActualId;
+        this.comments = '';
     }
 
 }

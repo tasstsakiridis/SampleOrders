@@ -1,16 +1,17 @@
 ({
 	doInit : function(component, event, helper) {
+        console.log("[SampleOrderForm.doInit] pageReference: ", component.get("v.pageReference").state);
         const recordTypeId = component.get("v.pageReference").state.recordTypeId;
         component.set("v.recordTypeId", recordTypeId);
         console.log("[SampleOrderForm.doInit] recordId: ", component.get("v.recordId"));
         console.log("[SampleOrderForm.doInit] recordTypeId: ", component.get("v.recordTypeId"));
         component.set("v.countryOptions", helper.getCountryOptions());
 		component.set("v.provinceOptions", helper.getProvinceOptions(component, component.get("v.country")));
-        component.set("v.itemsButtonLabel", $A.get('$Label.c.Add_Item'));
+        component.set("v.itemsButtonLabel", $A.get('$Label.c.Add_Items'));
 
         var maxInputLengthStr = component.get("v.maxInputLength");
         maxInputLengthStr = maxInputLengthStr.replace("{0}", "35");
-        console.log('maxInputLenght', maxInputLengthStr);
+        console.log('maxInputLength', maxInputLengthStr);
         component.set("v.maxInputLength", maxInputLengthStr);
 
         component.set("v.approvalHistoryColumns", [
@@ -122,14 +123,14 @@
             var theSampleOrder = component.get("v.theSampleOrder");
             var isStoreroomRequest = false;
             var useStandardAddressComponent = component.get("v.useStandardAddressComponent");
-            let recordTypeName = component.get("v.recordTypeName");
+            let recordTypeName = component.get("v.recordTypeDeveloperName");
             var userName = component.get("v.userName");
             var userPhone = component.get("v.userPhone");
             var showInternationalOrder = component.get("v.showInternationalOrder");
             console.log('userName', userName);
             console.log('userPhone', userPhone);
             console.log('userRole', component.get("v.userRole"));
-            if (recordTypeName == 'Sample Order - Storeroom Request') {
+            if (recordTypeName == 'Sample_Order_Storeroom_Request') {
                 isStoreroomRequest = true;
                 useStandardAddressComponent = false;
                 theSampleOrder.Contact_Name__c = userName;
@@ -157,6 +158,7 @@
         const userMarket = component.get("v.userMarket");
         const lockStatusInput = component.get("v.lockStatusInput");
         const theSampleOrder = component.get("v.theSampleOrder");
+        console.log('user market', userMarket);
         try {
         if (btn.substr(0,4) == "save") {
             console.log('[SampleOrderForm.controller.handleButtonClick] save button clicked');
@@ -192,7 +194,9 @@
             }
         } else if (btn == "additems") {  
             if (helper.canAddItems(component)) {
-                component.set("v.disableButtons", orderLocked);
+                if (userMarket != 'China') {
+                    component.set("v.disableButtons", orderLocked);
+                }
 	            component.set("v.isAddingItems", true);                
             } else {
                 helper.alertUser(component, 'Warning', 'warning', 'Save Order details first before you add items');
@@ -243,6 +247,12 @@
                 }    
 
                 helper.setupProductTableHeaders(component);
+            }
+            if (country == 'JP') {
+                component.set("v.showCostCenters", false);
+                if (classification.indexOf('SD5') >= 0) {
+                    component.set("v.showCostCenters", true);
+                } 
             }
             if (country == 'MX') {
                 let accountRequired = false;
@@ -314,6 +324,20 @@
             });
             component.set("v.reasonCodes", reasonCodes);
             component.set("v.stickerTypes", stickerTypes);
+
+            const configs = component.get("v.classificationConfigs");
+            console.log('[SampleOrderForm.controller.handleClassificationChange] configs', configs);
+            if (configs != undefined && configs.length > 0) {
+                const classificationConfig = configs.find(c => c.Classification__c == classification && c.RecordType != undefined && c.RecordType.Name == 'General');
+                console.log('[SampleOrderForm.controller.handleClassificationChange] config', classificationConfig);
+                if (classificationConfig) {
+                    if (classificationConfig.Additional_Requirements__c != undefined && classificationConfig.Additional_Requirements__c.indexOf('Cost Center') >= 0) {
+                        component.set("v.costCenterRequired", true);
+                    } else {
+                        component.set("v.costCenterRequired", false);
+                    }
+                }
+            }
         }catch(ex) {
             console.log('[handleClassificationChange] exception', ex);
         }
@@ -429,13 +453,26 @@
             console.log('[handleApprovalStatusChange] exception', ex);
         }
     },
+    handleDeliveryOptionsChange : function(component, event, helper) {
+        try {
+            //let deliveryOption = component.find('deliveryOptions').get('v.value');
+            let deliveryOption = component.get("v.deliveryOption");
+            let sampleOrder = component.get("v.theSampleOrder");
+            sampleOrder.Delivery_Option__c = deliveryOption;
+            console.log('deliveryOption', deliveryOption);
+            component.set("v.theSampleOrder", sampleOrder);
+        } catch(ex) {
+            console.log('[handleDeliveryOptionChange] exception', ex);
+        }
+    },
     handleReasonCodeSelectionChange : function(component, event, helper) {
 
     },
     handleOrderChannelSelectionChange : function(component, event, helper) {
         //let orderChannel = component.get("v.orderChannel");
         //let sampleOrder = component.get("v.theSampleOrder")
-    },    
+    },   
+     
     handleBrandChange : function(component, event, helper) {
         //var brand = event.getParam("value");
         var brand = component.find('brands').get('v.value');

@@ -40,6 +40,55 @@
         ],
         BR: [
             {label:'Brazil', value:'Brazil'},
+        ],
+        JP: [
+            {label:'Aichi', value:'Aichi'},
+            {label:'Akita', value:'Akita'},
+            {label:'Aomori', value:'Aomori'},
+            {label:'Chiba', value:'Chiba'},
+            {label:'Ehime', value:'Ehime'},            
+            {label:'Fukui', value:'Fukui'},
+            {label:'Fukuoka', value:'Fukuoka'},
+            {label:'Fukushima', value:'Fukushima'},
+            {label:'Gifu', value:'Gifu'},
+            {label:'Gunma', value:'Gunma'},
+            {label:'Hiroshima', value:'Hiroshima'},
+            {label:'Hokkaido', value:'Hokkaido'},
+            {label:'Hyogo', value:'Hyogo'},
+            {label:'Ibaraki', value:'Ibaraki'},
+            {label:'Ishikawa', value:'Ishikawa'},
+            {label:'Iwate', value:'Iwate'},
+            {label:'Kagawa', value:'Kagawa'},
+            {label:'Kagoshima', value:'Kagoshima'},
+            {label:'Kanagawa', value:'Kanagawa'},
+            {label:'Kouchi', value:'Kouchi'},
+            {label:'Kumamoto', value:'Kumamoto'},
+            {label:'Kyoto', value:'Kyoto'},
+            {label:'Mie', value:'Mie'},
+            {label:'Miyagi', value:'Miyagi'},
+            {label:'Miyazaki', value:'Miyazaki'},
+            {label:'Nagano', value:'Nagano'},
+            {label:'Nagasaki', value:'Nagasaki'},
+            {label:'Nara', value:'Nara'},
+            {label:'Nigata', value:'Nigata'},
+            {label:'Oita', value:'Oita'},
+            {label:'Okayama', value:'Okayama'},
+            {label:'Okinawa', value:'Okinawa'},
+            {label:'Osaka', value:'Osaka'},
+            {label:'Saga', value:'Saga'},
+            {label:'Saitama', value:'Saitama'},
+            {label:'Shiga', value:'Shiga'},
+            {label:'Shimane', value:'Shimane'},
+            {label:'Shizuoka', value:'Shizuoka'},
+            {label:'Tochigi', value:'Tochigi'},
+            {label:'Tokushima', value:'Tokushima'},
+            {label:'Tokyo', value:'Tokyo'},
+            {label:'Tottori', value:'Tottori'},
+            {label:'Toyama', value:'Toyama'},
+            {label:'Wakayama', value:'Wakayama'},
+            {label:'Yamagata', value:'Yamagata'},
+            {label:'Yamaguchi', value:'Yamaguchi'},
+            {label:'Yamanashi', value:'Yamanashi'},
         ]
     },
     countryOptions: [
@@ -50,6 +99,8 @@
         {'label': 'Korea', 'value': 'KR' },
         {'label': 'Poland', 'value': 'PL' },
         {'label': 'Brazil', 'value': 'BR' },
+        {'label': 'China', 'value': 'CN' },
+        {'label': 'Japan', 'value': 'JP' },
     ],
 
     getProvinceOptions: function(component, country) {
@@ -136,9 +187,12 @@
                             if (rv.recordTypes[rt].label != "Master" && rv.recordTypes[rt].label.indexOf('Locked') < 0) {
                                 recordTypes.push(rv.recordTypes[rt]);
                                 if (recordTypeId == undefined && rv.recordTypes[rt].isDefault) {
+                                    component.set("v.recordTypeId", rv.recordTypes[rt].value);
                                     component.set("v.recordTypeName", rv.recordTypes[rt].label);
+                                    component.set("v.recordTypeDeveloperName", rv.recordTypes[rt].name);
                                 } else if (rv.recordTypes[rt].value.startsWith(recordTypeId)) {
                                     component.set("v.recordTypeName", rv.recordTypes[rt].label);
+                                    component.set("v.recordTypeDeveloperName", rv.recordTypes[rt].name);
                                 }
                             }
                         }
@@ -185,12 +239,13 @@
                         component.set("v.userPhone", rv.user.MobilePhone);
                         component.set("v.isSupplyChain", rv.isSupplyChain);
                         component.set("v.lockStickerInput", rv.isSupplyChain ? false : true);
-
+                        component.set("v.classificationConfigs", rv.configs);
+                        
                         let userRole = rv.user.UserRole == undefined ? '' : rv.user.UserRole.Name;
                         component.set('v.userRole', userRole);
                         console.log('[SampleOrderForm.helper.getUserDetails] userRole', userRole);
 
-                        const recordTypeName = component.get("v.recordTypeName");
+                        const recordTypeName = component.get("v.recordTypeDeveloperName");
                         console.log('[SampleOrderForm.helper.getUserDetails] recordTypeName', recordTypeName);
                         let theSampleOrder = component.get("v.theSampleOrder");
                         let isStoreroomRequest = false;
@@ -203,16 +258,21 @@
                         let showWholesalers = rv.market.Show_Wholesalers__c == undefined ? false : rv.market.Show_Wholesalers__c;
                         let showApprovalHistory = rv.market.Show_Approval_History__c == undefined ? false : rv.market.Show_Approval_History__c;
                         let showStickerTypes = rv.market.Show_Sticker_Types__c == undefined ? false : rv.market.Show_Sticker_Types__c;
+                        let captureBusinessState = rv.market.Capture_State_in_Address__c == undefined ? false : rv.market.Capture_State_in_Address__c;
+                        let addressStateType = rv.market.Address_State_Type__c == undefined ? 'Free Text' : rv.market.Address_State_Type__c;
                         let disableButtons = component.get("v.disableButtons");
-
-                        if (recordTypeName == 'Sample Order - Storeroom Request') {
+                        
+                        if (recordTypeName.indexOf('Storeroom_Request') >= 0) {
                             isStoreroomRequest = true;
                             useStandardAddressComponent = false;
-                            theSampleOrder.Contact_Name__c = rv.user.Name;
-                            theSampleOrder.Contact_Phone__c = rv.user.MobilePhone;
                             showInternationalOrder = false;
                             showInternalOrderNumbers = false;
-                        } 
+                        }
+                        if (recordTypeName == 'Sample_Order_Storeroom_Request') {
+                            //isStoreroomRequest = true;
+                            theSampleOrder.Contact_Name__c = rv.user.Name;
+                            theSampleOrder.Contact_Phone__c = rv.user.MobilePhone;
+                        }                        
 
                         if (useStandardAddressComponent) {
                             theSampleOrder.Business_Country__c = rv.marketName;
@@ -229,7 +289,8 @@
                         component.set('v.userMarket', rv.market.Name);
                         component.set('v.country', country);
                         component.set("v.countryName", countryName);
-                        helper.updateProvinceOptions(component);
+                        component.set("v.isJapan", country == 'JP');
+//                        helper.updateProvinceOptions(component);
 
                         component.set('v.leadTime', rv.market == undefined || rv.market.Sample_Order_Lead_Time__c == undefined ? 0 : parseInt(rv.market.Sample_Order_Lead_Time__c));
                         component.set("v.showInternationalOrder", showInternationalOrder);
@@ -252,13 +313,22 @@
                         component.set("v.showStickerTypes", showStickerTypes);
                         component.set("v.showDeliveryOptions", rv.market.Delivery_Options__c == undefined ? false : rv.market.Delivery_Options__c);
                         component.set("v.showGuidance", rv.market.Show_Sample_Order_Guidance__c == undefined ? false : rv.market.Show_Sample_Order_Guidance__c);
+                        component.set("v.captureBusinessState", captureBusinessState);
+                        component.set('v.addressStateInputType', addressStateType);
+                        component.set("v.isStateDropDown", addressStateType == 'Drop Down');
+                        component.set("v.captureItemComments", rv.market.Capture_Item_Comments__c == undefined ? false : rv.market.Capture_Item_Comments__c);
+                        component.set("v.canEditDeclinedOrder", rv.market.Can_Edit_Declined_Sample_Order__c == undefined ? false : rv.market.Can_Edit_Declined_Sample_Order__c);
+                        component.set("v.captureClassification", rv.market.Capture_Sample_Order_Classification__c == undefined ? false : rv.market.Capture_Sample_Order_Classification__c);
                         component.set("v.showPODStatus", rv.market.Name == 'Korea');
                         component.set("v.isPoland", rv.market.Name == 'Poland');
-
-                        console.log("[SampleOrderForm.helper.getUserDetails] captureVolumeInBottles", component.get("v.captureVolumeInBottles"));
+                        component.set("v.showReasonCode", rv.market.Name == 'Poland' || rv.market.Name == 'Japan');
+                        
                         let lockStatusInput = true;
                         if (country == 'TW' && (theSampleOrder.Approval_Status__c == 'Submitted' || theSampleOrder.Is_Approved__c) && (userRole == 'Global Administrator' || userRole == 'TWN-Supply Chain Manager')) {
                             lockStatusInput = false;
+                            disableButtons = false;
+                        }
+                        if (country == 'CN' && (theSampleOrder.Approval_Status__c == 'Submitted' || theSampleOrder.Is_Approved__c) && (userRole == 'Global Administrator' || userRole == 'CHN-Supply Chain')) {
                             disableButtons = false;
                         }
                         component.set("v.lockStatusInput", lockStatusInput);
@@ -273,7 +343,7 @@
                             component.set("v.disableButtons", disableButtons);
                         }
 
-                        if (country == 'AU' && theSampleOrder.Account__c != undefined && theSampleOrder.Account__c != '') {
+                        if ((country == 'AU' || country == 'JP') && theSampleOrder.Account__c != undefined && theSampleOrder.Account__c != '') {
 	                        let storeroomOwnersMap = component.get("v.storeroomOwnersMap");
                             if (storeroomOwnersMap != undefined && storeroomOwnersMap[theSampleOrder.Account__c] != undefined) {
         						const owners = storeroomOwnersMap[theSampleOrder.Account__c];
@@ -287,6 +357,7 @@
                         console.log('[SampleOrderForm.helper.getUserDetails] lockStatusInput', lockStatusInput);
                         console.log('[SampleOrderForm.helper.getUserDetails] disableButtons', disableButtons);
 
+                        console.log('[getUserDetails] updateProvinceOptions]');
                         helper.updateProvinceOptions(component);
                         helper.setupProductColumns(component);
 
@@ -339,6 +410,7 @@
                         if (showActivities) {
                             helper.getPromotionActivities(component);
                         }
+                        console.log('[getUserDetails] getPicklistValues');
                         helper.getPicklistValuesForRecordType(component);
                     }catch(ex) {
                         console.log('[SampleOrderForm.helper.getUserDetails] exception', ex);
@@ -360,10 +432,11 @@
     getPicklistValuesForRecordType : function(component) {
         const helper = this;
         var recordTypeName = component.get("v.recordTypeName");
-        console.log('[SampleOrderForm.helper.getPicklistValues] recordTypeId', recordTypeName);
+        var recordTypeId = component.get("v.recordTypeId");
+        console.log('[SampleOrderForm.helper.getPicklistValues] recordTypeId, recordTypeName', recordTypeId, recordTypeName);
     	var action = component.get("c.getPicklistValuesForRecordType");
         action.setParams({
-            recordType: recordTypeName
+            recordType: recordTypeId
         });
         action.setCallback(this, function(response) {
             if (component.isValid()) {
@@ -382,6 +455,10 @@
                         let orderStatus = component.get("v.orderStatus");
                         let stickerType = component.get("v.stickerType");
                         let orderType = component.get("v.orderType");
+                        let deliveryOption = component.get("v.deliveryOption");
+                        let businessState = component.get("v.businessState");
+                        const countryCode = component.get("v.country");
+                        let stateOptions = helper.getProvinceOptions(component, countryCode);
 
                         console.log("[SampleOrderForm.Helper.getPicklistValues] classification", classification);
                         console.log("[SampleOrderForm.Helper.getPicklistValues] cost center", costCenter);
@@ -389,13 +466,16 @@
                         console.log("[SampleOrderForm.Helper.getPicklistValues] orderStatus", orderStatus);
                         console.log("[SampleOrderForm.Helper.getPicklistValues] stickerType", stickerType);
                         console.log("[SampleOrderForm.Helper.getPicklistValues] orderTypes", orderType);
+                        console.log("[SampleOrderForm.Helper.getPicklistValues] stateOptions", stateOptions);
 
                         var classifications = [{"label":"", "value":""}];
                         var costCenters = [{"label":"", "value":""}];
                         var reasonCodes = [{"label":"", "value":""}];
                         var orderStatuses = [{"label":"", "value":""}];
                         var stickerTypes = [{"label":"", "value":""}];           
-                        var orderTypes = [{"label":"", "value":""}];          
+                        var orderTypes = [{"label":"", "value":""}];
+                        let deliveryOptions = [{"label":"", "value":""}];
+                        let businessStates = [{"label":"", "value":""}];
 
                         var classificationPicklistValues = rv["Classification__c"].picklistValues;
                         var costCentersPicklistValues = rv["Cost_Center__c"].picklistValues;
@@ -404,6 +484,8 @@
                         const reasonCodePicklistValues = rv["Reason_Code__c"] == undefined ? [] : rv["Reason_Code__c"].picklistValues;
                         const stickerTypePicklistValues = rv["Sticker_Type__c"] == undefined ? [] : rv["Sticker_Type__c"].picklistValues;
                         const orderTypePicklistValues = rv["Order_Type__c"] == undefined ? [] : rv["Order_Type__c"].picklistValues;
+                        const deliveryOptionPicklistValues = rv["Delivery_Options__c"] == undefined ? [] : rv["Delivery_Options__c"].picklistValues;
+                        const businessStatePicklistValues = rv["Business_State__c"] == undefined ? [] : rv["Business_State__c"].picklistValues;
                         //const reasonCodePicklistValues = rv["Reason_Code__c"].picklistValues;
                         console.log('[SampleOrderForm.Helper.getPicklistValues] classificationPicklistValues', classificationPicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] costCentersPicklistValues', costCentersPicklistValues);
@@ -411,6 +493,7 @@
                         console.log('[SampleOrderForm.Helper.getPicklistValues] orderStatuses', orderStatusPicklistValues);
                         console.log('[SampleOrderForm.helper.getPicklistValues] stickerTypePicklistValues', stickerTypePicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] orderTypes', orderTypePicklistValues);
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] businessStates', businessStatePicklistValues);
 
                         for(var i = 0; i < statusPicklistValues.length; i++) {
                             statuses.push({"label":statusPicklistValues[i].label, "value":statusPicklistValues[i].value, "selected":statusPicklistValues[i].value==approvalStatus});
@@ -429,6 +512,10 @@
                         
                         for(var i = 0; i < orderTypePicklistValues.length; i++) {
                             orderTypes.push({"label":orderTypePicklistValues[i].label, "value":orderTypePicklistValues[i].value, "selected": orderTypePicklistValues[i].value == orderType});
+                        }
+
+                        for(var i = 0; i < businessStatePicklistValues.length; i++) {
+                            businessStates.push({"label":businessStatePicklistValues[i].label, "value":businessStatePicklistValues[i].value, "selected":businessStatePicklistValues[i].value==businessState});
                         }
                         
                         if (classification && classification.length > 0) {
@@ -460,12 +547,20 @@
                             });
                         }
 
+                        if(deliveryOptionPicklistValues && deliveryOptionPicklistValues.length > 0) {
+                            for (var i = 0; i < deliveryOptionPicklistValues.length; i++) {
+                                deliveryOptions.push({"label":deliveryOptionPicklistValues[i].label, "value":deliveryOptionPicklistValues[i].value, "selected":deliveryOptionPicklistValues[i].value ==deliveryOption});
+                            }
+                        }
+
                         console.log('[SampleOrderForm.Helper.getPicklistValues] classifications', classifications);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] costCenters', costCenters);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] statuses', statuses);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] orderStatuses', orderStatuses);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] stickerTypes', stickerTypes);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] orderTypes', orderTypes);
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] deliveryOptions', deliveryOptions);
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] stateOptions', stateOptions);
                     
 
                         classifications.sort(function(a, b) {
@@ -504,6 +599,22 @@
                             if (x > y) { return 1; }
                             return 0; 
                         });
+
+                        deliveryOptions.sort(function(a, b) {
+                            let x = a.label.toLowerCase();
+                            let y = b.label.toLowerCase();
+                            if (x < y) { return -1; }
+                            if (x > y) { return 1; }
+                            return 0; 
+                        });
+
+                        businessStates.sort(function(a, b) {
+                            let x = a.value.toLowerCase();
+                            let y = b.value.toLowerCase();
+                            if (x < y) { return -1; }
+                            if (x > y) { return 1; }
+                            return 0; 
+                        });
                     
                         for(var i = 0; i < statuses.length; i++) {
                             if (statuses[i].value == approvalStatus) {
@@ -515,6 +626,7 @@
 
                         console.log('[SampleOrderForm.helper.getPicklistValues] classifications', classifications);
                         console.log('[SampleOrderForm.helper.getPicklistValues] cost centers', costCenters);
+                        console.log('[SampleOrderForm.helper.getPicklistValues] stateOptions', stateOptions);
                         component.set("v.classifications", classifications);
                         component.set("v.costCenters", costCenters);
                         component.set("v.statuses", statuses);
@@ -522,6 +634,12 @@
                         component.set("v.orderStatuses", orderStatuses);
                         component.set("v.stickerTypes", stickerTypes);
                         component.set("v.orderTypes", orderTypes);
+                        component.set("v.deliveryOptions", deliveryOptions);
+                        component.set("v.provinceOptions",  businessStates);
+                        if (deliveryOptions.length > 1) {
+                            component.set("v.deliveredLabel", deliveryOptions[0]);
+                            component.set('v.pickupLabel', deliveryOptions[1]);
+                        }
  
                         const recordId = component.get("v.recordId");
                         if (recordId != undefined) {
@@ -551,28 +669,35 @@
         let lblInternalOrderNumber = $A.get('$Label.c.InternalOrderNumber');
         let lblPackQty = $A.get('$Label.c.PackQty');
         let lblPrice = $A.get('$Label.c.Price');
+        let lblPOSMCost = $A.get('$Label.c.POSM_Cost');
         let lblQuantity = $A.get('$Label.c.Quantity');
         let lblRemaining = $A.get('$Label.c.Remaining');
         let lblNumberOfBottles = $A.get('$Label.c.NumberOfBottles');
         let lblConvertedCases = $A.get('$Label.c.ConvertedCases');
+        let lblComments = $A.get('$Label.c.Comments');
+        let country = component.get('v.country');
         console.log('[setupProductTableHeaders] showCaseConversion', component.get("v.showCaseConversion"));
+        console.log('[setupProductTableHeaders] country', country);
+        console.log('[setupProductTableHeaders] posm cost', lblPOSMCost);
         component.set("v.productColumns", [
             { label: lblProduct, fieldName: 'Name', type:'text', isVisible: true },
             { label: lblSKU, fieldName: 'ProductCode__c', type: 'text', isVisible: component.get("v.showSKU")},
             { label: lblBrand, fieldName: 'Brand_Name__c', type: 'text', isVisible: true },
             { label: lblInternalOrderNumber, fieldName: 'Internal_Order_Number__c', type: 'text', isVisible: component.get("v.showInternalOrderNumbers")},
             { label: lblPackQty, fieldName: 'Pack_Quantity__c', type: 'number', editable: false, isVisible: true },
-            { label: lblPrice, fieldName: 'Price__c', type:'number', editable: false, isVisible: component.get("v.showPrice") },
+            { label: lblPrice, fieldName: 'Price__c', type:'number', editable: false, isVisible: component.get("v.showPrice") && country !== 'CN' },
+            { label: lblPOSMCost, fieldName: 'POSM_Cost__c', type:'number', editable: false, isVisible: component.get("v.showPrice") && country === 'CN' },
             { label: lblRemaining, fieldName: 'Total_Actual_Free_Bottle_Qty__c', type:'number', editable: false, isVisible: component.get("v.showRemainingQty") },
             { label: lblQuantity, fieldName: 'Quantity__c', type:'number', editable:'true', isVisible: true },
             { label: lblNumberOfBottles, fieldName: 'Units__c', type: 'number', editable: false , isVisible: component.get("v.showCaseConversion")==false},
-            { label: lblConvertedCases, fieldName: 'Total_Ordered_Cases__c', type: 'text', editable: false, isVisible: component.get("v.showCaseConversion") }
+            { label: lblConvertedCases, fieldName: 'Total_Ordered_Cases__c', type: 'text', editable: false, isVisible: component.get("v.showCaseConversion") },
+            { label: lblComments, fieldName: 'Comments__c', type: 'text', isVisible: component.get('v.captureItemComments')}
         ]);        
     },
     setupProductColumns : function(component) {
         this.setupProductTableHeaders(component);
 
-        const recordTypeName = component.get("v.recordTypeName");
+        const recordTypeName = component.get("v.recordTypeDeveloperName");
     	var action = component.get("c.getProducts");
         action.setParams({
             recordTypeName: recordTypeName
@@ -818,6 +943,7 @@
                             theSampleOrder.Business_City__c = rv[0].ShippingCity;
                             theSampleOrder.Business_Country__c = rv[0].ShippingCountry;
                             theSampleOrder.Business_Postcode__c = rv[0].ShippingPostalCode;
+                            theSampleOrder.Business_State__c = rv[0].ShippingState;
                             
                             var countryCode = '';
                             for(var i = 0; i < this.countryOptions.length; i++) {
@@ -897,14 +1023,14 @@
     },
 
     initSampleOrder : function(component) {
-        let recordTypeName = component.get("v.recordTypeName");
+        let recordTypeName = component.get("v.recordTypeDeveloperName");
         var userName = component.get("v.userName");
         var userPhone = component.get("v.userPhone");
         console.log('userName', userName);
         console.log('userPhone', userPhone);
         var contactName = '';
         var contactPhone = '';
-        if (recordTypeName == 'Sample Order - Storeroom Request') {
+        if (recordTypeName == 'Sample_Order_Storeroom_Request') {
             contactName = userName;
             contactPhone = userPhone;
         } 
@@ -943,6 +1069,7 @@
         component.set("v.storageLockerRequired", false);
         component.set("v.podAttached", false);
         component.set("v.orderType", null);
+        component.set("v.showReasonCode", false);
         
         this.initToast(component);
         let deletedRows = [];
@@ -1086,6 +1213,7 @@
                     quantity : p.quantity,
                     units : p.units,
                     usedFor : p.usedFor,
+                    comments: '',
                     totalActualQty : ap.Total_Actual_Free_Bottle_Qty__c,
                     totalPlannedQty : ap.Free_Bottle_Quantity__c,
                     remainingFreeBottleQty: ap.Free_Bottle_Quantity__c - ap.Total_Actual_Free_Bottle_Qty__c
@@ -1141,6 +1269,7 @@
             theSampleOrder.Business_Address__c = '';
             theSampleOrder.Business_City__c = '';
             theSampleOrder.Business_Postcode__c = '';
+            theSampleOrder.Business_State__c = '';
             
             component.set("v.theSampleOrder", theSampleOrder);
             component.set("v.businessState", '');
@@ -1228,6 +1357,7 @@
         var country = component.get("v.countryName");
         let classification = component.get("v.classification");
         let costCenter = component.get("v.costCenter");
+        let costCenterRequired = component.get("v.costCenterRequired");
         let storageLocker = component.get("v.storageLocker");
         let accountId = component.get("v.accountId");
         let leadTime = component.get("v.leadTime");
@@ -1236,6 +1366,7 @@
         let countryCode = this.getCountryCode(component, userMarket);
         let storeroom = component.get("v.storeroom");
         let orderType = component.get("v.orderType");
+        let captureBusinessState = component.get("v.captureBusinessState");
         
         console.log('[validateOrder] userMarket', userMarket);
         console.log('[validateOrder] countryCode', countryCode);
@@ -1320,6 +1451,11 @@
             requiredFieldMissing = true;
             isValid = false;
         }
+        if (captureBusinessState && theSampleOrder.Business_State__c == null || theSampleOrder.Business_State__c == '') {
+            console.log('[validateOrder] business state is null');
+            requiredFieldMissing = true;
+            isValid = false; 
+        }
         const useStandardAddressComponent = component.get("v.useStandardAddressComponent");
         if (useStandardAddressComponent && !theSampleOrder.Is_International_Order__c) {
             if (businessState == null || businessState == '') { 
@@ -1356,7 +1492,7 @@
             isValid = false;
         }
         
-        if ((countryCode == 'GB' && classification != null && classification.indexOf('SD0') == -1) || countryCode == 'KR') {
+        if ((countryCode == 'GB' && classification != null && classification.indexOf('SD0') == -1)) {
             if (costCenter == null || costCenter == '') { 
                 console.log('[validateOrder] cost center is null'); 
                 //msg += 'You must select a cost center.';
@@ -1370,6 +1506,10 @@
             isValid = false;
         }
 
+        if (costCenterRequired && (countryCode == 'KR' || countryCode == 'TW' || countryCode == 'CN') && (costCenter == null || costCenter == '')) {
+            requiredFieldMissing = true;
+            isValid = false;
+        }
         if (countryCode == 'KR' && isSupplyChain && theSampleOrder.Sticker_Type__c == null) {
             requiredFieldMissing = true;
             isValid = false;
@@ -1454,7 +1594,8 @@
                     console.log("[SampleOrderForm.helper.getSampleOrder] returnvalue", rv);
                     try {
                         component.set("v.theSampleOrder", rv);
-                        component.set("v.recordTypeName", rv.RecordType.Name);               
+                        component.set("v.recordTypeName", rv.RecordType.Name);       
+                        component.set("v.recordTypeDeveloperName", rv.RecordType.DeveloperName);        
                         component.set("v.recordTypeId", rv.RecordTypeId);
                         component.set("v.classification", rv.Classification__c);
                         component.set("v.reasonCode", rv.Reason_Code__c);
@@ -1509,7 +1650,25 @@
             }
         }
         component.set("v.approvalStatus", approvalStatus);
+        const deliveryOptions = component.get("v.deliveryOptions");
+        if (deliveryOptions && deliveryOptions.length > 0) {
+            for(var i = 0; i < deliveryOptions.length; i++) {
+                if (deliveryOptions[i].value == theSampleOrder.Delivery_Options__c) {
+                    deliveryOptions[i].selected = true; break;
+                }
+            }
+        }
+        //component.set("v.deliveryOption", theSampleOrder.Delivery_Options__c == undefined || theSampleOrder.Delivery_Options__c == 'Pickup' ? false : true);
+        component.set("v.deliveryOption", theSampleOrder.Delivery_Options__c);
 
+        const businessStates = component.get("v.provinceOptions");
+        if (businessStates && businessStates.length > 0) {
+            let option = businessStates.find(s => s.value == theSampleOrder.Business_State__c);
+            if (option != null) {
+                option.selected = true;
+            }
+        }
+        component.set("v.businessState", theSampleOrder.Business_State__c);
         /*
         let disableButtons = theSampleOrder.Approval_Status__c != 'New';
         let userRole = component.get('v.userRole');
@@ -1560,6 +1719,7 @@
         }
         console.log('[loadSampleOrder] countryCode', countryCode);
         component.set("v.country", countryCode);
+        component.set("v.isJapan", countryCode == 'JP');
         var countryFound = false;
         for(var i = 0; i < this.countryOptions.length; i++) {
             if (this.countryOptions[i].value == countryCode) {
@@ -1571,7 +1731,6 @@
             component.set("v.countryName", countryCode);
         }
 
-        component.set("v.businessState", theSampleOrder.Business_State__c);                        
         if (theSampleOrder.Approval_Status__c == null || theSampleOrder.Approval_Status__c == '') { theSampleOrder.Approval_Status__c = 'New'; }
         var banner = component.find("approvalStatus");
         $A.util.removeClass(banner, "status_New");
@@ -1622,15 +1781,15 @@
             component.set("v.activityRequired", activityRequired);
         }
 
-        component.set("v.deliveryOption", theSampleOrder.Delivery_Options__c == undefined || theSampleOrder.Delivery_Options__c == 'Pickup' ? false : true);
         console.log('[SampleOrderForm.helper.loadSampleOrder] items', theSampleOrder.SAP_Interfaced_Data_Items__r);
         var bannerText = component.find("bannerText");
-        if (theSampleOrder.Approval_Status__c == 'New') {
+        var canEditDeclinedOrder = component.get("v.canEditDeclinedOrder");
+        if (theSampleOrder.Approval_Status__c == 'New' || (theSampleOrder.Approval_Status__c == 'Declined' && canEditDeclinedOrder)) {
             component.set("v.orderLocked", false);
             component.set("v.canSubmit", true);
-            component.set("v.itemsButtonLabel", $A.get('$Label.c.Add_Item'));
+            component.set("v.itemsButtonLabel", $A.get('$Label.c.Add_Items'));
             $A.util.removeClass(banner, "bannerText_white");
-        } else {
+        } else {            
             component.set("v.orderLocked", true);
             component.set("v.canSubmit", false);
             component.set("v.showSelectedProducts", true);
@@ -1657,6 +1816,7 @@
                         products[j].usedFor = theSampleOrder.SAP_Interfaced_Data_Items__r[i].Product__r.Used_For__c;
                         products[j].internalOrderNumber = theSampleOrder.SAP_Interfaced_Data_Items__r[i].Internal_Order_Number__c;
                         products[j].convertedCases = theSampleOrder.SAP_Interfaced_Data_Items__r[i].Total_Ordered_Cases__c;
+                        products[j].comments = theSampleOrder.SAP_Interfaced_Data_Items__r[i].Comments__c;
                         break;
                     }
                 }
@@ -1735,11 +1895,12 @@
 
         const reasonCode = component.get("v.reasonCode");
         const marketName = component.get("v.userMarket");
-        const recordTypeName = component.get("v.recordTypeName");
+        const recordTypeName = component.get("v.recordTypeDeveloperName");
         const orderStatus = component.get("v.orderStatus");
-        const recordType = component.get("v.recordTypeName");
         const products = component.get("v.productData");
         const orderType = component.get("v.orderType");
+        const useStandardAddressComponent = component.get("v.useStandardAddressComponent");
+        const deliveryOptions = component.get("v.deliveryOptions");
         let selectedProducts = products.filter(p => p.quantity > 0);
                     
         var approvalStatus = component.get("v.approvalStatus");
@@ -1758,7 +1919,7 @@
         
         component.set("v.approvalStatus", approvalStatus);
 
-        if (marketName == 'Australia' && recordTypeName == 'Sample Order - Storeroom Request') {
+        if (marketName == 'Australia' && recordTypeName == 'Sample_Order_Storeroom_Request') {
             theSampleOrder.Account__c = accountId;
             if (classification.indexOf('Sales') > -1) {
                 theSampleOrder.Budget_Type__c = 'Brand Expense - Sales';
@@ -1776,7 +1937,9 @@
         }
         
         //theSampleOrder.Business_Country__c = country;
-        theSampleOrder.Business_State__c = businessState;
+        if (useStandardAddressComponent) {
+            theSampleOrder.Business_State__c = businessState;
+        } 
         theSampleOrder.RecordTypeId = recordTypeId;
         theSampleOrder.Classification__c = classification;
         theSampleOrder.Reason_Code__c = reasonCode;
@@ -1794,7 +1957,9 @@
         theSampleOrder.Activity__c = activityId;
         theSampleOrder.Order_Status__c = orderStatus;
         theSampleOrder.Sticker_Type__c = stickerType;
-        theSampleOrder.Delivery_Options__c = deliveryOption == true ? 'Delivered' : 'Pickup';
+
+        //theSampleOrder.Delivery_Options__c = deliveryOption == true ? 'Delivered' : 'Pickup';
+        theSampleOrder.Delivery_Options__c = deliveryOption;
         theSampleOrder.POD_Attached__c = podAttached;
         theSampleOrder.Order_Type__c = orderType;
         
@@ -1878,7 +2043,8 @@
     saveSampleOrderItems : function(component) {        
         console.log('[SampleOrderForm.helper.saveSampleOrderItems]');
         component.set("v.isLoading", true);
-        const recordTypeName = component.get("v.recordTypeName");
+        const recordTypeName = component.get("v.recordTypeDeveloperName");
+        const recordTypeId = component.get("v.recordTypeId");
         const marketName = component.get("v.userMarket");
         const classification = component.get("v.classification");
         let showInternalOrderNumbers = component.get("v.showInternalOrderNumbers");
@@ -1916,6 +2082,7 @@
                         quantity: rows[i].quantity,
                         units: rows[i].units,
                         price: rows[i].price,
+                        comments: rows[i].comments,
                         convertedCases: rows[i].convertedCases,
                         totalActualQty: rows[i].totalActualQty,
                         totalPlannedQty: rows[i].totalPlannedQty,
@@ -1937,7 +2104,7 @@
             var action = component.get("c.saveOrderItems");
             action.setParams({
                 "sapId": theSampleOrder.Id,
-                "recordTypeName": recordTypeName,
+                "recordTypeId": recordTypeId,
                 "market": marketName,
                 "activityId": theSampleOrder.Activity__c,
                 "sapItems": JSON.stringify(items)
@@ -1951,7 +2118,7 @@
                         try {
                             component.set("v.deletedRows", []);
 
-                            var recordType = component.get("v.recordTypeName");
+                            var recordType = component.get("v.recordTypeDeveloperName");
                             var classification = component.get("v.classification");
                             var rv = response.getReturnValue();
                             console.log("[SampleOrderForm.helper.saveItems] returnvalue", rv);
@@ -1962,7 +2129,7 @@
                                         productData[j].id = rv[i].Id;
                                         productData[j].quantity = rv[i].Quantity__c;            
                                         console.log('[SampleOrderForm.helper.saveItems] recordType, classification', recordType, classification);                            
-                                        if (recordType == 'Sample Order - MEX' || recordType == 'Sample Order - TWN' || classification == 'AU6-Ecomm Sample Orders') {
+                                        if (recordType == 'Sample_Order_MEX' || recordType == 'Sample_Order_TWN' || classification == 'AU6-Ecomm Sample Orders') {
                                             productData[j].units = productData[j].quantity;
                                         } else {
                                             productData[j].units = productData[j].quantity * productData[j].packQty;
@@ -2053,7 +2220,7 @@
         component.set("v.isLoading", true);
         var theSampleOrder = component.get("v.theSampleOrder");
         const market = component.get("v.userMarket");
-        const recordType = component.get("v.recordTypeName");
+        const recordType = component.get("v.recordTypeDeveloperName");
         console.log("[SampleOrderForm.helper.submitForApproval] market", market);
         console.log("[SampleOrderForm.helper.submitForApproval] recordType", recordType);
         var action = component.get("c.submitForApproval");
@@ -2061,7 +2228,8 @@
         action.setParams({
             "sapId"      : theSampleOrder.Id,
             "market" 	 : market,
-            "recordType" : recordType
+            "recordType" : recordType,
+            "status"     : theSampleOrder.Approval_Status__c
         });
         action.setCallback(this, function(response) {
             var showToast = false;
