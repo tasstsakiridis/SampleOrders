@@ -17,9 +17,11 @@
         });
         component.set("v.recordTypeId", selectedRecordTypeId);
         console.log('selectedRecordType: ' + selectedRecordTypeId);
-
+        
         var listView = component.find("listView");
         $A.util.addClass(listView, 'slds-hide');
+        component.set("v.isEditingOrder", true);
+
         var orderForm = component.find("orderForm");
         orderForm.newSampleOrder();
         
@@ -28,6 +30,7 @@
     handleNewButtonClick : function(component, event, helper) {                
         var listView = component.find("listView");
         $A.util.addClass(listView, 'slds-hide');
+        component.set("v.isEditingOrder", true);
         var orderForm = component.find("orderForm");
         orderForm.newSampleOrder();
         
@@ -61,6 +64,7 @@
             console.log('[SampleOrder.controller.handleRowSelected] orderId', orderId);
             var listView = component.find("listView");
             $A.util.addClass(listView, 'slds-hide');
+            component.set("v.isEditingOrder", true);
             var orderForm = component.find("orderForm");
             console.log('[SampleOrder.controller.handleRowSelected] orderForm', orderForm);           
             orderForm.loadSampleOrder(orderId);
@@ -91,28 +95,5 @@
             $A.util.removeClass(listView, 'slds-hide');
             
         }
-    }
-    
-/*
-             
-            <aura:if isTrue="{!or(v.isSF1==false,$Browser.formFactor=='TABLET',$Browser.formFactor=='PHONE')}">
-                <aura:if isTrue="{!v.objectDescribe.canInsert==true}">
-                    <div class="slds-clearfix">
-                        <div class="slds-float_right slds-m-right_medium slds-m-top_medium">
-                            <lightning:button label="New" iconName="utility:new" onclick="{!c.handleNewButtonClick}"/>
-                        </div>
-                    </div>
-                    
-                </aura:if>
-            </aura:if>
-                            <!--<lightning:button label="New" iconName="utility:new" onclick="{!c.handleNewButtonClick}"/>-->
-        
-            <lightning:listView aura:id="sampleOrdersListView"
-                                objectApiName="SAP_Interfaced_Data__c"
-                                listName="MySampleOrders"
-                                rows="10"
-                                showActionBar="false"
-                                enableInlineEdit="false"
-                                showRowLevelActions="true" />
-*/     
+    }     
 })

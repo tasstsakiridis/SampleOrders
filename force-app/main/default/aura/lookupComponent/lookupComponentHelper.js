@@ -212,17 +212,21 @@
     /**
      * Clear the Selection
      */
-    clearSelection : function(cmp) {
+    clearSelection : function(cmp, event) {
         console.log("lookupComponent.helper.clearSelection]");
         // Create the ClearLookupId event
         var clearEvent = cmp.getEvent("clearLookupIdEvent");
 
         // Get the Instance Id of the Component
         var instanceId = cmp.get('v.instanceId');
+        let objectName = cmp.get('v.sObjectAPIName');
+        var objectLabel = event.currentTarget.innerText;
 
         // Populate the event with the Instance Id
         clearEvent.setParams({
-            "instanceId" : instanceId
+            "instanceId" : instanceId,
+            "sObjectName" : objectLabel, 
+            "sObjectAPIName" : objectName
         });
         
         // Fire the event

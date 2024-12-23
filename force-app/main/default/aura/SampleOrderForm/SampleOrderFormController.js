@@ -1,8 +1,10 @@
 ({
 	doInit : function(component, event, helper) {
-        console.log("[SampleOrderForm.doInit] pageReference: ", component.get("v.pageReference").state);
-        const recordTypeId = component.get("v.pageReference").state.recordTypeId;
-        component.set("v.recordTypeId", recordTypeId);
+        console.log("[SampleOrderForm.doInit] pageReference: ", component.get("v.pageReference"));
+        if (component.get("v.pageReference") != undefined && component.get("v.pageReference").state != undefined) {
+            const recordTypeId = component.get("v.pageReference").state.recordTypeId;
+            component.set("v.recordTypeId", recordTypeId);
+        }
         console.log("[SampleOrderForm.doInit] recordId: ", component.get("v.recordId"));
         console.log("[SampleOrderForm.doInit] recordTypeId: ", component.get("v.recordTypeId"));
         component.set("v.countryOptions", helper.getCountryOptions());
@@ -156,9 +158,11 @@
         helper.initToast(component);
         const orderLocked = component.get("v.orderLocked");
         const userMarket = component.get("v.userMarket");
+        const userRole = component.get("v.userRole");
+        const isSupplyChain = component.get("v.isSupplyChain");
         const lockStatusInput = component.get("v.lockStatusInput");
         const theSampleOrder = component.get("v.theSampleOrder");
-        console.log('user market', userMarket);
+        console.log('[SampleOrderForm.controller.handleButtonClick] user market', userMarket);
         try {
         if (btn.substr(0,4) == "save") {
             console.log('[SampleOrderForm.controller.handleButtonClick] save button clicked');
@@ -186,8 +190,22 @@
                 //helper.initProductData(component);
                 helper.revertProductChanges(component);
 	            component.set("v.isAddingItems", false);                
-                if (userMarket == 'Taiwan' && orderLocked == true) {
-                    component.set("v.disableButtons", lockStatusInput);
+                //if (userMarket == 'Taiwan' && orderLocked == true) {
+                //    component.set("v.disableButtons", lockStatusInput);
+                //}
+
+                let disableButtons = component.get('v.disableButtons');
+                if (userMarket == 'Taiwan' && (theSampleOrder.Approval_Status__c == 'Submitted' || theSampleOrder.Is_Approved__c) && (userRole == 'Global Administrator' || userRole == 'TWN-Supply Chain Manager')) {
+                    disableButtons = false;
+                }
+                if (userMarket == 'China' && (theSampleOrder.Approval_Status__c == 'Submitted' || theSampleOrder.Is_Approved__c) && (userRole == 'Global Administrator' || userRole == 'CHN-Supply Chain')) {
+                    disableButtons = false;
+                }
+
+                if (userMarket == 'Korea') {
+                    component.set("v.disableButtons", isSupplyChain ? false : disableButtons);
+                } else {
+                    component.set("v.disableButtons", disableButtons);
                 }
             } else {
 	            helper.closeSampleOrderDialog(component);                
@@ -303,6 +321,10 @@
                 }
             }
 
+            if (country == 'TH') {
+                component.set("v.accountRequired", true);
+            }
+
             var stickerTypesForClassification = stickerTypePicklistValues.filter(r => r.description == classification);
             console.log('[SampleOrderForm.controller.handleClassificationChange] stickerTypesForClassification', stickerTypesForClassification);
             var stickerTypes = [{"label":"", "value":""}];
@@ -326,6 +348,7 @@
             component.set("v.stickerTypes", stickerTypes);
 
             const configs = component.get("v.classificationConfigs");
+            const marketConfig = component.get("v.marketConfig");
             console.log('[SampleOrderForm.controller.handleClassificationChange] configs', configs);
             if (configs != undefined && configs.length > 0) {
                 const classificationConfig = configs.find(c => c.Classification__c == classification && c.RecordType != undefined && c.RecordType.Name == 'General');
@@ -333,8 +356,14 @@
                 if (classificationConfig) {
                     if (classificationConfig.Additional_Requirements__c != undefined && classificationConfig.Additional_Requirements__c.indexOf('Cost Center') >= 0) {
                         component.set("v.costCenterRequired", true);
+                        component.set("v.showCostCenters", marketConfig.Cost_Centers__c == true);
                     } else {
                         component.set("v.costCenterRequired", false);
+                        component.set("v.showCostCenters", false);
+                    }
+                    if (classificationConfig.Default_Account__c != undefined) {
+                        component.set("v.accountId", classificationConfig.Default_Account__c);
+                        component.set("v.accountName", classificationConfig.Default_Account_Name__c);
                     }
                 }
             }
@@ -355,16 +384,44 @@
         const theSampleOrder = component.get('v.theSampleOrder');
         console.log('[handleGiftChange] is gift', theSampleOrder.Is_Gift__c);
     },
+    handleClearLookupId: function(component, event, helper) {
+        let instanceId = event.getParam('instanceId');
+        let recordName = event.getParam('sObjectName');
+        let updateAddressUsing = component.get("v.updateAddressUsing");
+        console.log('[SampleOrderForm.controller.clearLookupId] instanceId, recordName, updateAddress', instanceId, recordName, updateAddressUsing);
+        try {
+            if (instanceId == 'i_Account') {
+                component.set("v.accountId", null);
+                component.set("v.accountName", null);
+                if (updateAddressUsing == undefined || updateAddressUsing == '' || updateAddressUsing.indexOf('Account') > -1) {
+                    helper.clearAccountDetails(component);
+                }
+            } else if (instanceId == 'i_Wholesaler') {
+                component.set("v.wholesalerId", null);
+                component.set("v.wholesalerName", null);
+                const marketName = component.get("v.userMarket");
+                if (marketName == 'Korea') {
+                    helper.clearAccountDetails(component);
+                }
+            }
+        }catch(ex) {
+            console.log('[SampleOorderrForm.controller.clearLookupId] exception', ex);
+        }
+    },
     handleLookupIdChanged : function(component, event, helper) {
         let instanceId = event.getParam('instanceId');
         let recordId = event.getParam('sObjectId');
         let recordName = event.getParam('sObjectName');
-        console.log('[SampleOrderForm.controller.handleLookupIdChange] instanceId, recordId, recordName', instanceId, recordId, recordName);
+        let updateAddressUsing = component.get("v.updateAddressUsing");
+
+        console.log('[SampleOrderForm.controller.handleLookupIdChange] instanceId, recordId, recordName, addressUsing', instanceId, recordId, recordName, updateAddressUsing);
         try {
             if (instanceId == 'i_Account') {
                 component.set("v.accountId", recordId);
                 component.set("v.accountName", recordName);
-                helper.getAccountDetails(component, recordId);
+                if (updateAddressUsing == undefined || updateAddressUsing == '' || updateAddressUsing.indexOf('Account') > -1) {
+                    helper.getAccountDetails(component, recordId);
+                }
             } else if (instanceId == 'i_Wholesaler') {
                 component.set("v.wholesalerId", recordId);
                 component.set("v.wholesalerName", recordName);
@@ -375,6 +432,16 @@
             }
         }catch(ex) {
             console.log('[SampleOorderrForm.controller.handleLookupIdChanged] exception', ex);
+        }
+    },
+
+    handleDeliveryTimeChange : function(component, event, helper) {
+        try {
+            //var deliveryTime = component.find("deliveryTime").get("v.value");
+            //component.set("v.selectedDeliveryTime", deliveryTime);
+            console.log('selected delivery time', component.get("v.selectedDeliveryTime"));
+        } catch(ex) {
+            console.log('[handleDeliveryTimeChange] exception', ex);
         }
     },
 
@@ -390,9 +457,12 @@
     handleStorageLockerSelectionChange : function(component, event, helper) {
         try {
             var storageLocker = component.get("v.storageLocker");
+            let updateAddressUsing = component.get("v.updateAddressUsing");
             //component.set("v.storageLocker", storageLocker);
             console.log("storageLocker", storageLocker);
-            helper.setBusinessDetailsFromStorageLocker(component);  
+            if (updateAddressUsing == undefined || updateAddressUsing == '' || updateAddressUsing.indexOf('Storage Locker') > -1) {
+                helper.setBusinessDetailsFromStorageLocker(component);  
+            }
             
         } catch(ex) {
             console.log('[handleStorageLockerChange] exception', ex);

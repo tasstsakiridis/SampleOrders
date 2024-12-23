@@ -1,7 +1,7 @@
 public with sharing class SampleOrder_Controller {
 
     @AuraEnabled
-    public static Map<String, Object> getCurrentUserInfo() {
+    public static Map<String, Object> getCurrentUserInfo() {        
     	User u = [SELECT Id, Name, Market__c, MobilePhone, UserRoleId, UserRole.Name, ProfileId, Profile.Name FROM User WHERE Id =:UserInfo.getUserId()];
         List<GroupMember> groups = [SELECT Id, UserOrGroupId FROM GroupMember WHERE Group.DeveloperName ='Korea_Supply_Chain_Manager'];
         Market__c m = [SELECT Id, Name, Country_ISO_Code_2__c, Sample_Order_Lead_Time__c, Allow_International_Orders__c, Allow_Status_Change__c,
@@ -10,11 +10,12 @@ public with sharing class SampleOrder_Controller {
                             Show_Wholesalers__c, Sample_Order_Account_RecordType__c, Sample_Order_Wholesaler_RecordType__c, Show_Sticker_Types__c,
                             Show_Approval_History__c, Delivery_Options__c, Show_Sample_Order_Guidance__c, Capture_State_in_Address__c,
                             Capture_Item_Comments__c, Can_Edit_Declined_Sample_Order__c, Capture_Sample_Order_Classification__c, 
-                            Address_State_Type__c 
+                            Address_State_Type__c, Update_Address_using__c, Capture_Delivery_Time__c, SAP_Sales_Org__c 
                          FROM Market__c 
                         WHERE Name =:u.Market__c LIMIT 1];
 
-        List<SAP_Interfaced_Data_Configuration__c> configs = [SELECT Id, Name, Classification__c, Additional_Requirements__c, Item_Category__c, RecordType.Name 
+        List<SAP_Interfaced_Data_Configuration__c> configs = [SELECT Id, Name, Classification__c, Additional_Requirements__c, Item_Category__c, RecordType.Name,
+                                                                    Default_Account__c, Default_Account_Name__c 
                                                                 FROM SAP_Interfaced_Data_Configuration__c 
                                                                 WHERE Market__c =:m.Id
                                                                   AND Is_Active__c = true];
@@ -43,6 +44,9 @@ public with sharing class SampleOrder_Controller {
         result.put('user', u);
         result.put('isSupplyChain', isSupplyChain);
         result.put('configs', configs);
+
+        Id siteId = Site.getSiteId();
+        result.put('isCommunitySite', siteId != null);
 
         return result;
     }    
@@ -172,7 +176,7 @@ public with sharing class SampleOrder_Controller {
                        Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c, Is_Gift__c, Is_Gift_Above_100__c,
                 	   Gift_Register_Acknowledgement__c, Budget_Type__c, Reason_Code__c, Activity__c, Is_Approved__c, Order_Status__c, 
                        Shipping_Instructions__c, Sticker_Type__c, Wholesaler__c, Wholesaler__r.Name, Delivery_Options__c, Internal_Order_Number__c,
-                       POD_Attached__c, Market__c, Market__r.Name, Order_Type__c,
+                       POD_Attached__c, Market__c, Market__r.Name, Order_Type__c, Requested_Delivery_Time__c, Market__r.SAP_Sales_Org__c,
                        (SELECT Id, Name, SAP_Interfaced_Data__c, Product__c, Brand_Name__c, Product_Code__c, Internal_Order_Number__c, 
                                Quantity__c, Units__c, Product__r.Used_For__c, Product__r.Pack_Quantity__c, Total_Ordered_Cases__c, PMI_Actual__c,
                         	   Product__r.Price__c, Comments__c
@@ -195,7 +199,9 @@ public with sharing class SampleOrder_Controller {
             }
 
             List<SAP_Interfaced_Data_Configuration__c> configs = [SELECT Id, Classification__c, State__c, RecordTypeId, RecordType.Name, ShipTo_Code__c, 
-                                                                         SoldTo_Code__c, Plant_Code__c, Market__c, Internal_Order_Number__c, Item_Category__c
+                                                                         SoldTo_Code__c, Plant_Code__c, Market__c, Internal_Order_Number__c, Item_Category__c,
+                                                                         SAP_GL_Account__c, SAP_Order_Reason_Code__c, SAP_T_Code__c, SAP_Order_Type__c,
+                                                                         Market__r.SAP_Sales_Org__c
                                                                     FROM SAP_Interfaced_Data_Configuration__c
                                                                    WHERE Market__c =:theSampleOrder.Market__c
                                                                      AND Is_Active__c = true];
@@ -220,10 +226,22 @@ public with sharing class SampleOrder_Controller {
                         theSampleOrder.SAP_SoldTo_Code__c = config.SoldTo_Code__c;
                         theSampleOrder.SAP_Plant_Code__c = config.Plant_Code__c;
                         theSampleOrder.SAP_Item_Category__c = config.Item_Category__c;
+                        theSampleOrder.SAP_GL_Account__c = config.SAP_GL_Account__c;
+                        theSampleOrder.SAP_Order_Reason_Code__c = config.SAP_Order_Reason_Code__c;
+                        theSampleOrder.SAP_T_Code__c = config.SAP_T_Code__c;
+                        theSampleOrder.SAP_Order_Type__c = config.SAP_Order_Type__c;
                         //theSampleOrder.Internal_Order_Number__c = config.Internal_Order_Number__c;
                     } else if (config.RecordType.Name == 'General' && config.Market__c == theSampleOrder.Market__c && config.Classification__c == null && config.State__c == null) {
                         theSampleOrder.SAP_ShipTo_Code__c = config.ShipTo_Code__c;  
                         theSampleOrder.SAP_Item_Category__c = config.Item_Category__c;
+                        theSampleOrder.SAP_GL_Account__c = config.SAP_GL_Account__c;
+                        theSampleOrder.SAP_Order_Reason_Code__c = config.SAP_Order_Reason_Code__c;
+                        theSampleOrder.SAP_T_Code__c = config.SAP_T_Code__c;
+                        theSampleOrder.SAP_Order_Type__c = config.SAP_Order_Type__c;
+                    }
+
+                    if (config.Market__r != null && String.isNotEmpty(config.Market__r.SAP_Sales_Org__c)) {
+                        theSampleOrder.SAP_Sales_Org__c = config.Market__r.SAP_Sales_Org__c;
                     }
                 }
             }
@@ -267,6 +285,25 @@ public with sharing class SampleOrder_Controller {
                     }
                     if (String.isNotEmpty(theAccount.Sold_to_SAP__c)) {
                         theSampleOrder.SAP_SoldTo_Code__c = theAccount.Sold_to_SAP__c;
+                    }
+                }
+            }
+            if (marketName == 'Thailand' && (theSampleOrder.Account__c != null || theSampleOrder.Storage_Locker__c != null)) {
+                List<String> accountIds = new List<String>();
+                if (String.isNotEmpty(theSampleOrder.Account__c)) {
+                    accountIds.add(theSampleOrder.Account__c);
+                }
+                if (String.isNotEmpty(theSampleOrder.Storage_Locker__c)) {
+                    accountIds.add(theSampleOrder.Storage_Locker__c);
+                }
+                List<Account> accounts = [SELECT Id, Name, RecordTypeId, RecordType.DeveloperName, SAP_Customer_Number__c, Ship_to_SAP__c, Sold_to_SAP__c, Market__c, Market__r.Update_Address_using__c FROM Account WHERE Id =:accountIds];
+                if (accounts != null && accounts.size() > 0) {
+                    for(Account theAccount : accounts) {
+                        if (theAccount.RecordType.DeveloperName == 'Storage_Locker') {
+                            theSampleOrder.SAP_ShipTo_Code__c = theAccount.Ship_to_SAP__c;
+                        } else {
+                            theSampleOrder.SAP_SoldTo_Code__c = theAccount.Sold_to_SAP__c;
+                        }
                     }
                 }
             }

@@ -16,6 +16,9 @@ global class bfColumn {
 
     @AuraEnabled 
     public Boolean isDefault { get; set; }
+
+    @AuraEnabled 
+    public Boolean isMaster { get; set; }
     
     @AuraEnabled
     public Schema.DisplayType type { get; set; }
@@ -26,6 +29,7 @@ global class bfColumn {
         this.value = value;        
         this.isDBRequired = false;
         this.isRequired = false;
+        this.isMaster = false;
         this.type = Schema.DisplayType.STRING;
     }
     public bfColumn(String name, String label, String value, Boolean isDefault) {
@@ -35,6 +39,7 @@ global class bfColumn {
         this.isDefault = isDefault;   
         this.isDBRequired = false;
         this.isRequired = false;
+        this.isMaster = false;
         this.type = Schema.DisplayType.STRING;
     }
     public bfColumn(String name, String label, String value, Schema.DisplayType type, Boolean isRequired, Boolean isDBRequired) {
@@ -44,5 +49,16 @@ global class bfColumn {
         this.isDBRequired = isDBRequired;
         this.isRequired = isRequired;
         this.type = type;
+        this.isMaster = false;
     }
+    public bfColumn(String name, String label, String value, Schema.DisplayType type, Boolean isRequired, Boolean isDBRequired, Boolean isMaster) {
+        this.name = name;
+        this.label = label;
+        this.value = value;        
+        this.isDBRequired = isDBRequired;
+        this.isRequired = isRequired;
+        this.type = type;
+        this.isMaster = isMaster;
+    }
+
 }

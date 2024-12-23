@@ -26,6 +26,7 @@
     <aura:attribute name="showCreateNewOption" type="Boolean" required="false" default="false" description="This is to indicate that the user cannot find the item in the list and will create a new item" />
     <aura:attribute name="isReadOnly" type="Boolean" required="false" default="false" description="This is to indicate that the user should not be able to change the value" />
     <aura:attribute name="isRequired" type="Boolean" required="false" default="false" description="Is this field required to be filled" />
+    <aura:attribute name="isSearching" type="Boolean" required="false" default="false" />
     
     <!-- Object & List Attributes -->
     <aura:attribute name="matches" type="LookupComponentController.Result[]" description="The resulting matches returned by the Apex controller." />

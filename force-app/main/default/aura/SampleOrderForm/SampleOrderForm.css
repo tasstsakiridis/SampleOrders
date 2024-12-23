@@ -59,3 +59,6 @@
     color: red;
     margin-right: 5px;
 }
+.THIS .date-format-help-hide .slds-form-element__help {
+    display: none;
+}

@@ -36,7 +36,7 @@
      * Clear the currently selected SObject
      */
     clear: function(cmp, event, helper) {
-        helper.clearSelection(cmp);    
+        helper.clearSelection(cmp, event);    
     },
     
     /**

@@ -13,21 +13,21 @@
                 if (callState === "SUCCESS") {
                     var rv = response.getReturnValue();
                     console.log('[SampleOrder.Helper.getUserDetails] user', rv);
-                    component.set('v.userId', rv.id);
-                    component.set('v.userName', rv.name);
-                    component.set("v.userPhone", rv.record.MobilePhone);
-                    component.set("v.marketId", rv.value);
-                    component.set('v.marketName', rv.description);
-                    component.set('v.marketISOCode', rv.itemId);
-                    component.set('v.userRole', rv.record == undefined || rv.record.UserRole == undefined ? '' : rv.record.UserRole.Name);
+                    component.set('v.userId', rv.userId);
+                    component.set('v.userName', rv.userName);
+                    component.set("v.userPhone", rv.user.MobilePhone);
+                    component.set("v.marketId", rv.marketId);
+                    component.set('v.marketName', rv.marketName);
+                    component.set('v.marketISOCode', rv.market.Country_ISO_Code_2__c);
+                    component.set('v.userRole', rv.user == undefined || rv.user.UserRole == undefined ? '' : rv.user.UserRole.Name);
                     var leadTime = 0;
-                    if (rv.label != undefined) {
-                        leadTime = parseInt(rv.label);
+                    if (rv.market.Sample_Order_Lead_Time__c != undefined) {
+                        leadTime = parseInt(rv.market.Sample_Order_Lead_Time__c);
                     }
                     component.set('v.leadTime', leadTime);
-                    console.log('[SampleOrder.helper.getUserDetails] marketName', rv.description);
-                    console.log('[SampleOrder.helper.getUserDetails] userRole', rv.record.UserRole.Name);
-                    console.log('[SampleOrder.helper.getUserDetails] leadTime, rv.label', leadTime, rv.label);
+                    console.log('[SampleOrder.helper.getUserDetails] marketName', rv.marketName);
+                    console.log('[SampleOrder.helper.getUserDetails] userRole', rv.user.UserRole.Name);
+                    console.log('[SampleOrder.helper.getUserDetails] leadTime, rv.label', leadTime, rv.market.Sample_Order_Lead_Time__c);
                 } else if (callState === "INCOMPLETE") {
                     console.log("[SampleOrder.Helper.getUserDetails] callback returned incomplete.");                    
                 } else if (callState === "ERROR") {
@@ -105,8 +105,15 @@
                 if (callState === "SUCCESS") {
                     var rv = response.getReturnValue();
                     console.log('[SampleOrder.Helper.getSampleOrders] orders', rv);
-                    component.set('v.mySampleOrders', rv);
+                    var showMyOrders = component.get("v.showMyOrders");
                     component.set("v.allSampleOrders", rv);
+                    if (showMyOrders) {
+                        var userId = component.get("v.userId");
+                        var sampleOrders = rv.filter(s => s.CreatedById == userId);
+                        component.set("v.mySampleOrders", sampleOrders);    
+                    } else {
+                        component.set("v.mySampleOrders", rv);
+                    }
                     component.set("v.isLoading", false);
                 } else if (callState === "INCOMPLETE") {
                     console.log("[SampleOrder.Helper.getSampleOrders] callback returned incomplete.");                    

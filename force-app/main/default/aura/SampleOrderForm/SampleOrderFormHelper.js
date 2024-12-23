@@ -10,6 +10,7 @@
             {'label': 'GuangXi', 'value': 'GX'},
             {'label': 'Sichuan', 'value': 'SC'},
         ],
+        TH: [],
         TW: [
             {'label': 'Taipei', 'value': 'Taipei'},
             {'label': 'Taiwan', 'value': 'Taiwan'},
@@ -101,6 +102,7 @@
         {'label': 'Brazil', 'value': 'BR' },
         {'label': 'China', 'value': 'CN' },
         {'label': 'Japan', 'value': 'JP' },
+        {'label': 'Thailand', 'value': 'TH' }
     ],
 
     getProvinceOptions: function(component, country) {
@@ -183,10 +185,18 @@
                     try {
                         const recordTypeId = component.get("v.recordTypeId");
                         console.log('[SampleOrderForm.helper.getDataTableColumns] recordTypeId', recordTypeId);
-                        for(const rt in rv.recordTypes) {
-                            if (rv.recordTypes[rt].label != "Master" && rv.recordTypes[rt].label.indexOf('Locked') < 0) {
+                        for(const rt in rv.recordTypes) {                            
+                            if (rv.recordTypes[rt].isMaster == false && rv.recordTypes[rt].label.indexOf('Locked') < 0) {
                                 recordTypes.push(rv.recordTypes[rt]);
-                                if (recordTypeId == undefined && rv.recordTypes[rt].isDefault) {
+                            }
+                        }
+                        if (recordTypes.length == 1) {
+                            component.set("v.recordTypeId", recordTypes[0].value);
+                            component.set("v.recordTypeName", recordTypes[0].label);
+                            component.set("v.recordTypeDeveloperName", recordTypes[0].name);
+                        } else {
+                            for(const rt in rv.recordTypes) {                            
+                                if (recordTypeId == undefined && rv.recordTypes[rt].isDefault) {                                        
                                     component.set("v.recordTypeId", rv.recordTypes[rt].value);
                                     component.set("v.recordTypeName", rv.recordTypes[rt].label);
                                     component.set("v.recordTypeDeveloperName", rv.recordTypes[rt].name);
@@ -194,7 +204,7 @@
                                     component.set("v.recordTypeName", rv.recordTypes[rt].label);
                                     component.set("v.recordTypeDeveloperName", rv.recordTypes[rt].name);
                                 }
-                            }
+                            }                            
                         }
 
                         component.set('v.recordTypes', recordTypes);
@@ -240,7 +250,9 @@
                         component.set("v.isSupplyChain", rv.isSupplyChain);
                         component.set("v.lockStickerInput", rv.isSupplyChain ? false : true);
                         component.set("v.classificationConfigs", rv.configs);
-                        
+                        component.set("v.marketConfig", rv.market);
+                        component.set("v.isCommunitySite", rv.isCommunitySite);
+
                         let userRole = rv.user.UserRole == undefined ? '' : rv.user.UserRole.Name;
                         component.set('v.userRole', userRole);
                         console.log('[SampleOrderForm.helper.getUserDetails] userRole', userRole);
@@ -285,6 +297,7 @@
                             country = theSampleOrder.Market__r.Country_ISO_Code_2__c;
                             countryName = theSampleOrder.Market__r.Name;
                         }
+
                         component.set("v.marketId", rv.market.Id);
                         component.set('v.userMarket', rv.market.Name);
                         component.set('v.country', country);
@@ -319,11 +332,15 @@
                         component.set("v.captureItemComments", rv.market.Capture_Item_Comments__c == undefined ? false : rv.market.Capture_Item_Comments__c);
                         component.set("v.canEditDeclinedOrder", rv.market.Can_Edit_Declined_Sample_Order__c == undefined ? false : rv.market.Can_Edit_Declined_Sample_Order__c);
                         component.set("v.captureClassification", rv.market.Capture_Sample_Order_Classification__c == undefined ? false : rv.market.Capture_Sample_Order_Classification__c);
+                        component.set("v.captureDeliveryTime", rv.market.Capture_Delivery_Time__c == undefined ? false : rv.market.Capture_Delivery_Time__c);
                         component.set("v.showPODStatus", rv.market.Name == 'Korea');
                         component.set("v.isPoland", rv.market.Name == 'Poland');
-                        component.set("v.showReasonCode", rv.market.Name == 'Poland' || rv.market.Name == 'Japan');
+                        component.set("v.showReasonCode", rv.market.Name == 'Poland' || rv.market.Name == 'Japan' || rv.market.Name == 'Korea');
+                        component.set("v.updateAddressUsing", rv.market.Update_Address_using__c == undefined ? '' : rv.market.Update_Address_using__c);
                         
                         let lockStatusInput = true;
+                        console.log('[helper.getUserDetails before] disableButtons, lockStatusInput', disableButtons, lockStatusInput);
+                        
                         if (country == 'TW' && (theSampleOrder.Approval_Status__c == 'Submitted' || theSampleOrder.Is_Approved__c) && (userRole == 'Global Administrator' || userRole == 'TWN-Supply Chain Manager')) {
                             lockStatusInput = false;
                             disableButtons = false;
@@ -332,11 +349,9 @@
                             disableButtons = false;
                         }
                         component.set("v.lockStatusInput", lockStatusInput);
+                        console.log('[helper.getUserDetails after] disableButtons, lockStatusInput', disableButtons, lockStatusInput);
 
                         console.log("[helper.getUserDetails] country", country);
-                        if (country == 'PL') {
-                            component.set("v.costCenterRequired", true);
-                        }
                         if (country == 'KR') {
                             component.set("v.disableButtons", rv.isSupplyChain ? false : disableButtons);
                         } else {
@@ -356,6 +371,7 @@
                         console.log('[SampleOrderForm.helper.getUserDetails] market', rv.market);
                         console.log('[SampleOrderForm.helper.getUserDetails] lockStatusInput', lockStatusInput);
                         console.log('[SampleOrderForm.helper.getUserDetails] disableButtons', disableButtons);
+                        console.log('[SampleOrderForm.helper.getUserDetails] captureClassification', component.get("v.captureClassification"));
 
                         console.log('[getUserDetails] updateProvinceOptions]');
                         helper.updateProvinceOptions(component);
@@ -413,7 +429,7 @@
                         console.log('[getUserDetails] getPicklistValues');
                         helper.getPicklistValuesForRecordType(component);
                     }catch(ex) {
-                        console.log('[SampleOrderForm.helper.getUserDetails] exception', ex);
+                        console.log('[SampleOrderForm.helper.getUserDetails] exception', ex.toString());
                     }
                 } else if (callState === "INCOMPLETE") {
                     console.log("[SampleOrderForm.Helper.getUserDetails] callback returned incomplete.");                    
@@ -457,6 +473,7 @@
                         let orderType = component.get("v.orderType");
                         let deliveryOption = component.get("v.deliveryOption");
                         let businessState = component.get("v.businessState");
+                        let deliveryTime = component.get("v.selectedDeliveryTime");
                         const countryCode = component.get("v.country");
                         let stateOptions = helper.getProvinceOptions(component, countryCode);
 
@@ -467,6 +484,7 @@
                         console.log("[SampleOrderForm.Helper.getPicklistValues] stickerType", stickerType);
                         console.log("[SampleOrderForm.Helper.getPicklistValues] orderTypes", orderType);
                         console.log("[SampleOrderForm.Helper.getPicklistValues] stateOptions", stateOptions);
+                        console.log("[SampleOrderForm.Helper.getPicklistValues] deliveryTime", deliveryTime);
 
                         var classifications = [{"label":"", "value":""}];
                         var costCenters = [{"label":"", "value":""}];
@@ -476,6 +494,7 @@
                         var orderTypes = [{"label":"", "value":""}];
                         let deliveryOptions = [{"label":"", "value":""}];
                         let businessStates = [{"label":"", "value":""}];
+                        let deliveryTimes = [{"label":"", "value":""}];
 
                         var classificationPicklistValues = rv["Classification__c"].picklistValues;
                         var costCentersPicklistValues = rv["Cost_Center__c"].picklistValues;
@@ -486,6 +505,8 @@
                         const orderTypePicklistValues = rv["Order_Type__c"] == undefined ? [] : rv["Order_Type__c"].picklistValues;
                         const deliveryOptionPicklistValues = rv["Delivery_Options__c"] == undefined ? [] : rv["Delivery_Options__c"].picklistValues;
                         const businessStatePicklistValues = rv["Business_State__c"] == undefined ? [] : rv["Business_State__c"].picklistValues;
+                        const deliveryTimesPicklistValues = rv["Requested_Delivery_Time__c"] == undefined ? [] : rv["Requested_Delivery_Time__c"].picklistValues;
+
                         //const reasonCodePicklistValues = rv["Reason_Code__c"].picklistValues;
                         console.log('[SampleOrderForm.Helper.getPicklistValues] classificationPicklistValues', classificationPicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] costCentersPicklistValues', costCentersPicklistValues);
@@ -494,6 +515,7 @@
                         console.log('[SampleOrderForm.helper.getPicklistValues] stickerTypePicklistValues', stickerTypePicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] orderTypes', orderTypePicklistValues);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] businessStates', businessStatePicklistValues);
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] deliveryTimes', deliveryTimesPicklistValues);
 
                         for(var i = 0; i < statusPicklistValues.length; i++) {
                             statuses.push({"label":statusPicklistValues[i].label, "value":statusPicklistValues[i].value, "selected":statusPicklistValues[i].value==approvalStatus});
@@ -516,6 +538,10 @@
 
                         for(var i = 0; i < businessStatePicklistValues.length; i++) {
                             businessStates.push({"label":businessStatePicklistValues[i].label, "value":businessStatePicklistValues[i].value, "selected":businessStatePicklistValues[i].value==businessState});
+                        }
+                        
+                        for(var i = 0; i < deliveryTimesPicklistValues.length; i++) {
+                            deliveryTimes.push({"label": deliveryTimesPicklistValues[i].label, "value": deliveryTimesPicklistValues[i].value, "selected": deliveryTimesPicklistValues[i].value==deliveryTime});
                         }
                         
                         if (classification && classification.length > 0) {
@@ -561,6 +587,7 @@
                         console.log('[SampleOrderForm.Helper.getPicklistValues] orderTypes', orderTypes);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] deliveryOptions', deliveryOptions);
                         console.log('[SampleOrderForm.Helper.getPicklistValues] stateOptions', stateOptions);
+                        console.log('[SampleOrderForm.Helper.getPicklistValues] deliveryTimes', deliveryTimes);
                     
 
                         classifications.sort(function(a, b) {
@@ -615,7 +642,15 @@
                             if (x > y) { return 1; }
                             return 0; 
                         });
-                    
+
+                        deliveryTimes.sort(function(a, b) {
+                            let x = a.value.toLowerCase();
+                            let y = b.value.toLowerCase();
+                            if (x < y) { return -1; }
+                            if (x > y) { return 1; }
+                            return 0; 
+                        });
+
                         for(var i = 0; i < statuses.length; i++) {
                             if (statuses[i].value == approvalStatus) {
                                 approvalStatus = statuses[i].label;
@@ -636,6 +671,8 @@
                         component.set("v.orderTypes", orderTypes);
                         component.set("v.deliveryOptions", deliveryOptions);
                         component.set("v.provinceOptions",  businessStates);
+                        component.set("v.deliveryTimes", deliveryTimes);
+
                         if (deliveryOptions.length > 1) {
                             component.set("v.deliveredLabel", deliveryOptions[0]);
                             component.set('v.pickupLabel', deliveryOptions[1]);
@@ -920,6 +957,16 @@
         });
         $A.enqueueAction(action);
     },
+    clearAccountDetails: function(component) {
+        var theSampleOrder = component.get('v.theSampleOrder');
+        theSampleOrder.Business_Name__c = '';
+        theSampleOrder.Business_Address__c = '';
+        theSampleOrder.Business_City__c = '';
+        theSampleOrder.Business_Country__c = '';
+        theSampleOrder.Business_Postcode__c = '';
+        theSampleOrder.Business_State__c = '';
+        component.set('v.theSampleOrder', theSampleOrder);
+    },
     getAccountDetails : function(component, accountId) {
         console.log('[SampleOrderForm.helper.getAccountDetails]');
 
@@ -1050,6 +1097,7 @@
         component.set("v.classification", null);
         component.set("v.costCenter", null);
         component.set("v.selectedBannerGroup", null);
+        component.set("v.selectedDeliveryTime", null);
         component.set("v.storageLocker", null);
         component.set("v.showInternalOrderNumbers", false);
         component.set("v.accountId", null);
@@ -1061,7 +1109,6 @@
         component.set("v.showStatusInput", false);
         component.set("v.lockStatusInput", false);
         component.set("v.approvalStatus", theSampleOrder.Approval_Status__c);
-        component.set("v.canSave", true);
         component.set("v.storeroomOwners", null);
         component.set("v.lockStickerInput", true);
         component.set("v.accountRequired", false);
@@ -1141,23 +1188,38 @@
             this.initSampleOrder(component);
             var navService = component.find("navService");
             var pageReference;
-            if (theSampleOrder.Id == undefined) {
+            var isCommunitySite = component.get("v.isCommunitySite");
+            if (isCommunitySite) {
+                var closeEvent = component.getEvent("bfLightningEvent");
+                closeEvent.setParams({'eventName' : 'close'});
+                closeEvent.fire()
+                /*
                 pageReference = {
-                    type: 'standard__objectPage',
+                    type: 'comm_namedPage',
                     attributes: {
-                        objectApiName: 'SAP_Interfaced_Data__c',
-                        actionName: 'home'
+                        name: 'sample_orders__c'
                     }
                 };
+                */
             } else {
-                pageReference = {
-                    type: 'standard__recordPage',
-                    attributes: {
-                        objectApiName: 'SAP_Interfaced_Data__c',
-                        actionName: 'view',
-                        recordId: theSampleOrder.Id
-                    }
-                };
+                if (theSampleOrder.Id == undefined) {
+                    pageReference = {
+                        type: 'standard__objectPage',
+                        attributes: {
+                            objectApiName: 'SAP_Interfaced_Data__c',
+                            actionName: 'home'
+                        }
+                    };
+                } else {
+                    pageReference = {
+                        type: 'standard__recordPage',
+                        attributes: {
+                            objectApiName: 'SAP_Interfaced_Data__c',
+                            actionName: 'view',
+                            recordId: theSampleOrder.Id
+                        }
+                    };
+                }
             }
             navService.navigate(pageReference);        
         }catch(ex) {
@@ -1270,6 +1332,7 @@
             theSampleOrder.Business_City__c = '';
             theSampleOrder.Business_Postcode__c = '';
             theSampleOrder.Business_State__c = '';
+            theSampleOrder.Business_Country__c = '';
             
             component.set("v.theSampleOrder", theSampleOrder);
             component.set("v.businessState", '');
@@ -1281,6 +1344,8 @@
                         theSampleOrder.Business_Address__c = l.account.ShippingStreet;
                         theSampleOrder.Business_City__c = l.account.ShippingCity;
                         theSampleOrder.Business_Postcode__c = l.account.ShippingPostalCode;
+                        theSampleOrder.Business_State__c = l.account.ShippingState;
+                        theSampleOrder.Business_Country__c = l.account.ShippingCountry;
                         
                         component.set("v.theSampleOrder", theSampleOrder);
                         component.set("v.businessState", l.account.ShippingState);
@@ -1359,6 +1424,7 @@
         let costCenter = component.get("v.costCenter");
         let costCenterRequired = component.get("v.costCenterRequired");
         let storageLocker = component.get("v.storageLocker");
+        let accountRequired = component.get("v.accountRequired");
         let accountId = component.get("v.accountId");
         let leadTime = component.get("v.leadTime");
         console.log('[validateOrder] leadTime', leadTime);
@@ -1366,8 +1432,11 @@
         let countryCode = this.getCountryCode(component, userMarket);
         let storeroom = component.get("v.storeroom");
         let orderType = component.get("v.orderType");
+        const deliveryTime = component.get("v.selectedDeliveryTime");
         let captureBusinessState = component.get("v.captureBusinessState");
-        
+        const captureClassification = component.get("v.captureClassification");
+        const captureDeliveryTime = component.get("v.captureDeliveryTime");
+
         console.log('[validateOrder] userMarket', userMarket);
         console.log('[validateOrder] countryCode', countryCode);
         console.log('[validateOrder] accountId', accountId);
@@ -1377,7 +1446,7 @@
         let today = new Date();
         const isSupplyChain = component.get("v.isSupplyChain");
 
-        if (classification == null || classification == '') { 
+        if (captureClassification && (classification == null || classification == '')) { 
             console.log('[validateOrder] classification is null'); 
             //msg += 'Classification is required';
             requiredFieldMissing = true;
@@ -1410,6 +1479,11 @@
                 }
             }
         }
+        if (captureDeliveryTime && (deliveryTime == null || deliveryTime == '')) {
+            msg += 'Requested Delivery Time is required';
+            isValid = false;
+        }
+
         console.log('[validateOrder] country', country);
         if (country == null || country == '') { 
             console.log('[validateOrder] country is null');  
@@ -1506,7 +1580,8 @@
             isValid = false;
         }
 
-        if (costCenterRequired && (countryCode == 'KR' || countryCode == 'TW' || countryCode == 'CN') && (costCenter == null || costCenter == '')) {
+        if (costCenterRequired && (countryCode == 'PL' || countryCode == 'KR' || countryCode == 'TW' || countryCode == 'CN') && (costCenter == null || costCenter == '')) {
+            console.log('[validateOrder] cost center is required');
             requiredFieldMissing = true;
             isValid = false;
         }
@@ -1514,9 +1589,17 @@
             requiredFieldMissing = true;
             isValid = false;
         }
-        if (countryCode == 'PL' && (orderType == null || orderType == '' || costCenter == null || costCenter == '')) {
+        if (countryCode == 'PL' && (orderType == null || orderType == '')) {
+            console.log('[validateOrder] order type is required');
             requiredFieldMissing = true;
             isValid = false;
+        }
+        console.log('[validateOrder] countryCode, accountId', countryCode, accountId);
+        if (countryCode == 'TH') {
+            if (accountId == undefined || accountId == '') {
+                requiredFieldMissing = true;
+                isValid = false;
+            }
         }
         if (countryCode == 'MX' && classification != null) {
             if (classification.indexOf('SD5') > -1 || classification.indexOf('SDA') > -1) {
@@ -1669,6 +1752,15 @@
             }
         }
         component.set("v.businessState", theSampleOrder.Business_State__c);
+
+        component.set("v.selectedDeliveryTime", theSampleOrder.Requested_Delivery_Time__c);
+        const deliveryTimes = component.get("v.deliveryTimes");
+        if (deliveryTimes && deliveryTimes.length > 0) {
+            let option = deliveryTimes.find(s => s.value == theSampleOrder.Requested_Delivery_Time__c);
+            if (option != null) {
+                option.selected = true;
+            }
+        }
         /*
         let disableButtons = theSampleOrder.Approval_Status__c != 'New';
         let userRole = component.get('v.userRole');
@@ -1755,9 +1847,6 @@
             component.set("v.accountName", theSampleOrder.Account_Name__c);
         }
 
-        if (countryCode == 'PL') {
-            component.set("v.costCenterRequired", true);
-        }
         if (countryCode == 'MX') {
             let accountRequired = false;
             let costCenterRequired = false;
@@ -1900,6 +1989,7 @@
         const products = component.get("v.productData");
         const orderType = component.get("v.orderType");
         const useStandardAddressComponent = component.get("v.useStandardAddressComponent");
+        const selectedDeliveryTime = component.get("v.selectedDeliveryTime");
         const deliveryOptions = component.get("v.deliveryOptions");
         let selectedProducts = products.filter(p => p.quantity > 0);
                     
@@ -1929,6 +2019,9 @@
                 theSampleOrder.Budget_Type__c = 'SG&A';
             }
         }
+        if (marketName == 'Poland' && (classification == '' || classification == null)) {
+            classification = 'P6F - Other';
+        }
 
         const stickerTypes = component.get("v.stickerTypes");
         if (stickerTypes != null && stickerTypes.length > 0) {
@@ -1940,6 +2033,7 @@
         if (useStandardAddressComponent) {
             theSampleOrder.Business_State__c = businessState;
         } 
+        theSampleOrder.Requested_Delivery_Time__c = selectedDeliveryTime;
         theSampleOrder.RecordTypeId = recordTypeId;
         theSampleOrder.Classification__c = classification;
         theSampleOrder.Reason_Code__c = reasonCode;
