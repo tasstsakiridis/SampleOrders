@@ -110,6 +110,8 @@
     <aura:attribute name="canEditDeclinedOrder" type="Boolean" default="false" />
     <aura:attribute name="captureClassification" type="Boolean" default="true" />
     <aura:attribute name="captureDeliveryTime" type="Boolean" default="false" />
+    <aura:attribute name="captureContactEmail" type="Boolean" default="false" />
+    <aura:attribute name="contactEmailRequired" type="Boolean" default="false" />
     <aura:attribute name="isJapan" type="Boolean" default="false" />
 
     <!-- List & Object Attributes -->
@@ -577,7 +579,12 @@
                             </div>            
                         <div class="slds-col slds-has-flexi-truncate" role="listitem">
                             <lightning:input aura:id="i_ContactPhone" type="tel" name="i_ContactPhone" label="{!v.objectDescribe.fields.Contact_Phone__c.label}" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Contact_Phone__c}" placeholder="{!v.objectDescribe.fields.Contact_Phone__c.label}" required="true" />
-                        </div>            
+                        </div>   
+                        <aura:if isTrue="{!v.captureContactEmail}">
+                            <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                                <lightning:input aura:id="i_ContactEmail" type="email" name="i_ContactEmal" label="{!v.objectDescribe.fields.Contact_Email__c.label}" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Contact_Email__c}" placeholder="{!v.objectDescribe.fields.Contact_Email__c.label}" required="contactEmailRequired" />
+                            </div>        
+                        </aura:if>
                     </div>
                     <aura:if isTrue="{!v.captureOrderChannel}">
                         <div class="slds-col slds-has-flexi-truncate slds-m-top_small" role="listitem">

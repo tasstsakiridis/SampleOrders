@@ -10,7 +10,7 @@ public with sharing class SampleOrder_Controller {
                             Show_Wholesalers__c, Sample_Order_Account_RecordType__c, Sample_Order_Wholesaler_RecordType__c, Show_Sticker_Types__c,
                             Show_Approval_History__c, Delivery_Options__c, Show_Sample_Order_Guidance__c, Capture_State_in_Address__c,
                             Capture_Item_Comments__c, Can_Edit_Declined_Sample_Order__c, Capture_Sample_Order_Classification__c, 
-                            Address_State_Type__c, Update_Address_using__c, Capture_Delivery_Time__c, SAP_Sales_Org__c 
+                            Address_State_Type__c, Update_Address_using__c, Capture_Delivery_Time__c, SAP_Sales_Org__c, Capture_Contact_Email__c 
                          FROM Market__c 
                         WHERE Name =:u.Market__c LIMIT 1];
 

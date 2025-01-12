@@ -337,6 +337,7 @@
                         component.set("v.isPoland", rv.market.Name == 'Poland');
                         component.set("v.showReasonCode", rv.market.Name == 'Poland' || rv.market.Name == 'Japan' || rv.market.Name == 'Korea');
                         component.set("v.updateAddressUsing", rv.market.Update_Address_using__c == undefined ? '' : rv.market.Update_Address_using__c);
+                        component.set("v.captureContactEmail", rv.market.Capture_Contact_Email__c == undefined ? false : rv.market.Capture_Contact_Email__c);
                         
                         let lockStatusInput = true;
                         console.log('[helper.getUserDetails before] disableButtons, lockStatusInput', disableButtons, lockStatusInput);
@@ -1869,6 +1870,9 @@
             component.set("v.storageLockerRequired", storageLockerRequired);
             component.set("v.activityRequired", activityRequired);
         }
+
+        let contactEmailRequired = countryCode == 'KR' && (theSampleOrder.Classification__c == 'Marketing Activity' || theSampleOrder.Classification__c == 'Trade Activity');
+        component.set("v.contactEmailRequired", contactEmailRequired);
 
         console.log('[SampleOrderForm.helper.loadSampleOrder] items', theSampleOrder.SAP_Interfaced_Data_Items__r);
         var bannerText = component.find("bannerText");
