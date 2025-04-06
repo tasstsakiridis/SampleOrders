@@ -7,7 +7,7 @@
         console.log('[SampleOrderItemRow.doInit] showSKU', component.get("v.showSKU"));
         console.log('[SampleOrderItemRow.doInit] showIONumbers', component.get("v.showInternalOrderNumbers"));
         helper.checkRowVisibility(component);
-        helper.getInternalOrderNumbersForBrand(component);
+        helper.getInternalOrderNumbers(component);
 	},
     handleBrandChange : function(component, event, helper) {
     	var brand = event.getParam("value");

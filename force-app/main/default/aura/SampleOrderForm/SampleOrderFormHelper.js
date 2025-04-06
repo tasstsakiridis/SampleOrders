@@ -248,10 +248,17 @@
                         component.set('v.userName', rv.user.Name);
                         component.set("v.userPhone", rv.user.MobilePhone);
                         component.set("v.isSupplyChain", rv.isSupplyChain);
-                        component.set("v.lockStickerInput", rv.isSupplyChain ? false : true);
                         component.set("v.classificationConfigs", rv.configs);
                         component.set("v.marketConfig", rv.market);
                         component.set("v.isCommunitySite", rv.isCommunitySite);
+
+                        let lockStickerInput = !rv.isSupplyChain;
+                        if (rv.market.Name == 'Korea') {
+                            lockStickerInput = false;
+                            component.set("v.contactEmailRequired", true);
+                        }
+                        component.set("v.lockStickerInput", lockStickerInput);
+                        console.log('[SampleOrderForm.helper.getUserDetails] contactEmailRequired', component.get("v.contactEmailRequired"));
 
                         let userRole = rv.user.UserRole == undefined ? '' : rv.user.UserRole.Name;
                         component.set('v.userRole', userRole);
@@ -367,6 +374,11 @@
                             }
                         }
 
+                        if (country == 'BR') {
+                            component.set("v.accountRequired", true);
+                            component.set("v.storageLockerRequired", true);
+                        }
+
                         console.log('[SampleOrderForm.helper.getUserDetails] sampleOrder', theSampleOrder);
                         console.log('[SampleOrderForm.helper.getUserDetails] user', rv.user);
                         console.log('[SampleOrderForm.helper.getUserDetails] market', rv.market);
@@ -394,6 +406,9 @@
                                 });
                                 accountFilter = accountFilter.slice(0, -2);
                                 accountFilter += ')';
+                            }
+                            if (rv.market.Name == 'Thailand') {
+                                accountFilter += ' AND Sold_to_SAP__c <> NULL'
                             }
                             component.set("v.accountFilter", accountFilter);
                         }
@@ -930,23 +945,37 @@
                 if (callState === "SUCCESS") {
                     var rv = response.getReturnValue();
                     //component.set("v.internalOrderNumbers", rv);
-                    
+                    try {
                     console.log('[SampleOrderForm.Helper.getInternalOrderNumbers] ordernumbers', rv);
-                    var ionumberMap = new Map();
-                    var ionumbers;
+                    const ionumberMap = new Map();
+                    var ionumberArray = [];
+                    var ioKey;
                     for(var i = 0; i < rv.length; i++) {
-                        if (ionumberMap.has(rv[i].Brand__c)) {
-                            ionumbers = ionumberMap.get(rv[i].Brand__c); 
-                        } else {
-                            ionumbers = [{"label":"", "value":""}];
+                        if (rv[i].Brand__c) {
+                            ioKey = rv[i].Brand__c;                            
+                        } else if (rv[i].Sample_Order_Classification__c) {
+                            ioKey = rv[i].Sample_Order_Classification__c;
                         }
+                        console.log(`ioKey:${ioKey}, description: ${rv[i].Description__c}, io number: ${rv[i].Internal_Order_Number__c}`);
 
-                        ionumbers.push({"label":rv[i].Description__c + ' ' + rv[i].Internal_Order_Number__c, "value":rv[i].Internal_Order_Number__c});
-                        ionumberMap.set(rv[i].Brand__c, ionumbers);
+                        if (ionumberMap.has(ioKey)) {
+                            ionumberArray = [...ionumberMap.get(ioKey)]; 
+                        } else {                            
+                            ionumberArray = [{"label":"", "value":""}];
+                            console.log('adding empty item to ionumbers array', ionumberArray);
+                        }
+                      
+                        ionumberArray.push({"label":rv[i].Description__c + ' ' + rv[i].Internal_Order_Number__c, "value":rv[i].Internal_Order_Number__c});
+                        console.log('ionumberArray length', ionumberArray.length);
+                        ionumberMap.set(ioKey, ionumberArray);
                     }
-                    console.log('[SampleOrderForm.helper.getInternalOrderNumbers] ionumbersmap', ionumberMap);
-                    component.set("v.internalOrderNumbers", ionumberMap);
+
                     
+                    component.set("v.internalOrderNumbers", ionumberMap);
+                    console.log('ioNumberMap.length', ionumberMap.size);
+                    }catch(ex) {
+                        console.log("[SampleOrderForm.Helper.getInternalOrderNumbers] exception", ex.toString());                                            
+                    }
                 } else if (callState === "INCOMPLETE") {
                     console.log("[SampleOrderForm.Helper.getInternalOrderNumbers] callback returned incomplete.");                    
                 } else if (callState === "ERROR") {
@@ -1000,7 +1029,7 @@
                                 }
                             }
                             component.set("v.country", countryCode);
-                            component.set("v.countyName", rv[0].ShippingCountry);                            
+                            component.set("v.countryName", rv[0].ShippingCountry);                            
                             component.set("v.businessState", rv[0].ShippingState);                        
 
                             if (rv[0].Contacts != null && rv[0].Contacts.length > 0) {
@@ -1190,6 +1219,7 @@
             var navService = component.find("navService");
             var pageReference;
             var isCommunitySite = component.get("v.isCommunitySite");
+            console.log('[closeSampleOrderDialog] navservice', navService);
             if (isCommunitySite) {
                 var closeEvent = component.getEvent("bfLightningEvent");
                 closeEvent.setParams({'eventName' : 'close'});
@@ -1223,6 +1253,7 @@
                 }
             }
             navService.navigate(pageReference);        
+            console.log('[closeSampleOrderDialog] pageReference', pageReference.type, pageReference.attributes.actionName, pageReference.attributes.recordId);
         }catch(ex) {
             console.log('[SampleOrderForm.helper.closeSampleOrderDialog] exception: ' + ex.toString());
         }
@@ -1419,6 +1450,7 @@
     validateOrder : function(component) {
         console.log('[SampleOrderForm.helper.validateOrder]');
     	var theSampleOrder = component.get("v.theSampleOrder");
+        var recordTypeName = component.get("v.recordTypeDeveloperName");
         var businessState = component.get("v.businessState");
         var country = component.get("v.countryName");
         let classification = component.get("v.classification");
@@ -1426,6 +1458,7 @@
         let costCenterRequired = component.get("v.costCenterRequired");
         let storageLocker = component.get("v.storageLocker");
         let accountRequired = component.get("v.accountRequired");
+        let storageLockerRequired = component.get("v.storageLockerRequired");
         let accountId = component.get("v.accountId");
         let leadTime = component.get("v.leadTime");
         console.log('[validateOrder] leadTime', leadTime);
@@ -1437,6 +1470,7 @@
         let captureBusinessState = component.get("v.captureBusinessState");
         const captureClassification = component.get("v.captureClassification");
         const captureDeliveryTime = component.get("v.captureDeliveryTime");
+        const contactEmailRequired = component.get("v.contactEmailRequired");
 
         console.log('[validateOrder] userMarket', userMarket);
         console.log('[validateOrder] countryCode', countryCode);
@@ -1482,6 +1516,11 @@
         }
         if (captureDeliveryTime && (deliveryTime == null || deliveryTime == '')) {
             msg += 'Requested Delivery Time is required';
+            isValid = false;
+        }
+
+        if (recordTypeName == 'Sample_Order_Storeroom_Request' && (theSampleOrder.Account__c == null || theSampleOrder.Account__c == '')) {
+            msg += 'Storeroom is required';
             isValid = false;
         }
 
@@ -1560,6 +1599,10 @@
             requiredFieldMissing = true;
             isValid = false;
         }
+        if (contactEmailRequired && (theSampleOrder.Contact_Email__c == null || theSampleOrder.Contact_Email__c == '')) {
+            requiredFieldMissing = true;
+            isValid = false;
+        }
         if (countryCode != 'PL' && (theSampleOrder.Reason__c == null || theSampleOrder.Reason__c == '')) { 
             console.log('[validateOrder] Reason is null');  
             //msg += 'You must enter a Reason.';
@@ -1595,9 +1638,20 @@
             requiredFieldMissing = true;
             isValid = false;
         }
-        console.log('[validateOrder] countryCode, accountId', countryCode, accountId);
+        console.log('[validateOrder] countryCode, accountId, storageLocker', countryCode, accountId, storageLocker);
         if (countryCode == 'TH') {
             if (accountId == undefined || accountId == '') {
+                requiredFieldMissing = true;
+                isValid = false;
+            }
+        }
+        if (countryCode == 'BR') {
+            console.log('[validateOrder.Brazil] accountRequired, storageLockerRequired', accountRequired, storageLockerRequired);
+            if (accountRequired && (accountId == undefined || accountId == '')) {
+                requiredFieldMissing = true;
+                isValid = false;
+            }
+            if (storageLockerRequired && (storageLocker == null || storageLocker == '')) {
                 requiredFieldMissing = true;
                 isValid = false;
             }
@@ -1871,7 +1925,17 @@
             component.set("v.activityRequired", activityRequired);
         }
 
-        let contactEmailRequired = countryCode == 'KR' && (theSampleOrder.Classification__c == 'Marketing Activity' || theSampleOrder.Classification__c == 'Trade Activity');
+        if (countryCode == 'BR') {
+            component.set("v.storageLockerRequired", true);
+            component.set("v.accountRequired", true);
+            if (theSampleOrder.Classification__c == 'MZ2' || theSampleOrder.Classification__c == 'SD0') {
+                component.set("v.internalOrderNumberRequired", true);
+            } else {
+                component.set("v.internalOrderNumberRequired", false);
+            }
+        }
+
+        let contactEmailRequired = countryCode == 'KR';
         component.set("v.contactEmailRequired", contactEmailRequired);
 
         console.log('[SampleOrderForm.helper.loadSampleOrder] items', theSampleOrder.SAP_Interfaced_Data_Items__r);
@@ -2151,6 +2215,7 @@
         var theSampleOrder = component.get("v.theSampleOrder");
         let userMarket = component.get("v.userMarket");
         let internalOrderNumberRequired = component.get("v.internalOrderNumberRequired");
+        console.log('[SampleOrderForm.helper.saveSampleOrderItems] internalOrderRequired', internalOrderNumberRequired);
         console.log('[SampleOrderForm.helper.saveSampleOrderItems] selectedRows', rows);
         console.log('[SampleOrderForm.helper.saveSampleOrderItems] deletedRows', deletedRows);
         try {
@@ -2161,7 +2226,7 @@
                 if (userMarket == 'United Kingdom' && showInternalOrderNumbers && rows[i].quantity > 0 && (rows[i].internalOrderNumber == null || rows[i].internalOrderNumber == '')) {
                     throw "You must select an Internal Order Number for SD0 Sample Orders.";
                 }
-                if (userMarket == 'Mexico' && internalOrderNumberRequired && showInternalOrderNumbers && rows[i].quantity > 0 && (rows[i].internalOrderNumber == null || rows[i].internalOrderNumber == '')) {
+                if ((userMarket == 'Mexico' || userMarket == 'Brazil') && internalOrderNumberRequired && showInternalOrderNumbers && rows[i].quantity > 0 && (rows[i].internalOrderNumber == null || rows[i].internalOrderNumber == '')) {
                     throw $A.get("$Label.c.InternalOrderNumberRequired");
                 }
                 if (rows[i].quantity > 0) {
@@ -2180,6 +2245,7 @@
                         quantity: rows[i].quantity,
                         units: rows[i].units,
                         price: rows[i].price,
+                        cogs: rows[i].cogs,
                         comments: rows[i].comments,
                         convertedCases: rows[i].convertedCases,
                         totalActualQty: rows[i].totalActualQty,

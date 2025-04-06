@@ -1,5 +1,7 @@
 <aura:component >
     <!-- String Attributes -->
+    <aura:attribute name="classification" type="String" default="" />
+    <aura:attribute name="market" type="String" default="" />
     <aura:attribute name="selectedBrand" type="String" default="" />
     <aura:attribute name="recordTypeName" type="String" default="" />
     <aura:attribute name="recordTypeDeveloperName" type="String" default="" />
@@ -19,7 +21,7 @@
     <aura:attribute name="showCaseConversion" type="Boolean" default="false" />
     <aura:attribute name="showRemainingQty" type="Boolean" default="false" />
     <aura:attribute name="captureVolumeInBottles" type="Boolean" default="false" />
-    <aura:attribute name="captureItemComments" type="Boolean" default="false" />
+    <aura:attribute name="captureItemComments" type="Boolean" default="false" />    
     
     <!-- List & Object Attributes -->
     <aura:attribute name="row" type="SampleOrderItem" required="true" />

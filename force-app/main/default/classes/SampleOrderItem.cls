@@ -32,6 +32,9 @@ global class SampleOrderItem {
     @AuraEnabled 
     public Decimal cogs { get; set; }
 
+    @AuraEnabled 
+    public Decimal unitCost { get; set; }
+
     @AuraEnabled
     public String convertedCases { get; set; }
     
@@ -72,6 +75,7 @@ global class SampleOrderItem {
         this.units = 0;
         this.price = 0;
         this.cogs = 0;
+        this.unitCost = 0;
         this.internalOrderNumber = '';
         this.convertedCases = '';
         this.totalActualQty = 0;
@@ -103,6 +107,7 @@ global class SampleOrderItem {
         this.totalFreeBottleQty = totalFreeBottleQty;
         this.pmiActualId = pmiActualId;
         this.comments = '';
+        this.unitCost = 0;
     }
 
     public SampleOrderItem(String id, String productId, String productName, String productCode, String brandId, String brandName, String usedFor, Integer packQty, Integer quantity, Decimal price, Decimal cogs, String internalOrderNumber, String convertedCases, Decimal totalActualQty, Decimal totalPlannedQty, Decimal totalFreeBottleQty, Decimal totalActualFreeBottleQty, String pmiActualId) {
@@ -126,6 +131,7 @@ global class SampleOrderItem {
         this.totalFreeBottleQty = totalFreeBottleQty;
         this.pmiActualId = pmiActualId;
         this.comments = '';
+        this.unitCost = 0;
     }
 
 }

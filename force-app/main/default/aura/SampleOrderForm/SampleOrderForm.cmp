@@ -1,4 +1,4 @@
-<aura:component access="global" controller="SampleOrder_Controller" implements="lightning:actionOverride,force:hasRecordId,force:hasSObjectName,lightning:hasPageReference">
+<aura:component access="global" controller="SampleOrder_Controller" implements="lightning:actionOverride,force:hasRecordId,force:hasSObjectName,lightning:hasPageReference,force:appHostable,flexipage:availableForAllPageTypes">
 	<!-- String Attributes -->
     <aura:attribute name="userId" type="String" default="" />
     <aura:attribute name="userName" type="String" default="" />
@@ -265,7 +265,7 @@
                                     showSKU="{!v.showSKU}" showCaseConversion="{!v.showCaseConversion}" deletedRows="{!v.deletedRows}"
                                     showInternalOrderNumbers="{!v.showInternalOrderNumbers}" internalOrderNumbersMap="{!v.internalOrderNumbers}"
                                     captureVolumeInBottles="{!v.captureVolumeInBottles}" promotionActivity="{!v.promotionActivity}"
-                                    captureItemComments="{!v.captureItemComments}" />
+                                    captureItemComments="{!v.captureItemComments}" market="{!v.country}" classification="{!v.classification}" />
 
                             </aura:iteration>
                         </tbody>                
@@ -582,7 +582,7 @@
                         </div>   
                         <aura:if isTrue="{!v.captureContactEmail}">
                             <div class="slds-col slds-has-flexi-truncate" role="listitem">
-                                <lightning:input aura:id="i_ContactEmail" type="email" name="i_ContactEmal" label="{!v.objectDescribe.fields.Contact_Email__c.label}" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Contact_Email__c}" placeholder="{!v.objectDescribe.fields.Contact_Email__c.label}" required="contactEmailRequired" />
+                                <lightning:input aura:id="i_ContactEmail" type="email" name="i_ContactEmal" label="{!v.objectDescribe.fields.Contact_Email__c.label}" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Contact_Email__c}" placeholder="{!v.objectDescribe.fields.Contact_Email__c.label}" required="{!v.contactEmailRequired}" />
                             </div>        
                         </aura:if>
                     </div>

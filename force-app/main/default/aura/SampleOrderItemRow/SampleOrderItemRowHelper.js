@@ -33,25 +33,37 @@
             }
         }		
 	},
-    getInternalOrderNumbersForBrand : function(component) {
+    getInternalOrderNumbers : function(component) {
         var row = component.get("v.row");
         var ioNumbersMap = component.get("v.internalOrderNumbersMap");
-        console.log('[SampleOrderItemRow.getInternalOrderNumbersForBrand] row: ', JSON.parse(JSON.stringify(row)));
-        console.log('[SampleOrderItemRow.getInternalOrderNumbersForBrand] brand: ', row.brandId);
-        console.log('[SampleOrderItemRow.getInternalOrderNumbersForBrand] ioNumbersMap: ', ioNumbersMap);
-        if (ioNumbersMap) {
-            var ioNumbersForBrand = ioNumbersMap.get(row.brandId);
+        var market = component.get("v.market");
+        var classification = component.get("v.classification");
+        console.log('[SampleOrderItemRow.getInternalOrderNumbers] row: ', JSON.parse(JSON.stringify(row)));
+        console.log('[SampleOrderItemRow.getInternalOrderNumbers] brand: ', row.brandId);
+        //console.log('[SampleOrderItemRow.getInternalOrderNumbers] ioNumbersMap: ', [...ioNumbersMap.entries]);
+        console.log('[SampleOrderItemRow.getInternalOrderNumbers] market: ', market);
+        console.log('[SampleOrderItemRow.getInternalOrderNumbers] classification: ', classification);
+        console.log('[SampleOrderItemRow.getInternalOrderNumbers] ioNumbersMap: ', ioNumbersMap);
+        if (ioNumbersMap && ioNumbersMap.size > 0) {
+            ioNumbersMap.forEach((val, key, map) => {
+                console.log(`ioNumbersMap[${key}] = ${val}`);
+            });
+            let ioNumbersList;
+            if (market == 'CN') {
+                ioNumbersList = ioNumbersMap.get(classification);
+            } else {
+                ioNumbersList = ioNumbersMap.get(row.brandId);
+            }
             var ioNumbers = [];
-            component.set("v.internalOrderNumbers", ioNumbers);
-            if (ioNumbersForBrand && ioNumbersForBrand.length > 0) {
-                for(var i = 0; i < ioNumbersForBrand.length; i++) {
-                    console.log('[SampleOrderItemRow.getInternalOrderNumbersForBrand] ioNumber, row.internalOrderNumber: ', ioNumbersForBrand[i], row.internalOrderNumber);
-                    let ioNumber = ioNumbersForBrand[i];
+            if (ioNumbersList && ioNumbersList.length > 0) {
+                for(var i = 0; i < ioNumbersList.length; i++) {
+                    console.log('[SampleOrderItemRow.getInternalOrderNumbers] ioNumber, row.internalOrderNumber: ', ioNumbersList[i], row.internalOrderNumber);
+                    let ioNumber = ioNumbersList[i];
                     ioNumbers.push({label: ioNumber.label, value: ioNumber.value, selected: ioNumber.value == row.internalOrderNumber});
                 }
-            }
+            }    
 
-            console.log('[SampleOrderItemRow.getInternalOrderNumbersForBrand] ioNumbers: ', ioNumbers);
+            console.log('[SampleOrderItemRow.getInternalOrderNumbers] ioNumbers: ', ioNumbers);
             component.set("v.internalOrderNumbers", ioNumbers);
         }
     }

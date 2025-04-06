@@ -172,7 +172,7 @@ public with sharing class SampleOrder_Controller {
         return [SELECT Id, Name, RecordTypeId, RecordType.Name, RecordType.DeveloperName, Order_Number__c, Approval_Status__c, Requested_Delivery_Date__c, 
                        Authorised_By__c, Authorised_By__r.Name, Authorised_Date__c, Finance_Authorised_By__c, Finance_Authorised_Date__c, 
                        Classification__c, Banner_Group__c, Business_Name__c, Business_Address__c, Business_City__c, Business_State__c, 
-                       Business_Postcode__c, Business_Country__c, Contact_Name__c, Contact_Phone__c, Reason__c, Is_International_Order__c, 
+                       Business_Postcode__c, Business_Country__c, Contact_Name__c, Contact_Phone__c, Contact_Email__c, Reason__c, Is_International_Order__c, 
                        Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c, Is_Gift__c, Is_Gift_Above_100__c,
                 	   Gift_Register_Acknowledgement__c, Budget_Type__c, Reason_Code__c, Activity__c, Is_Approved__c, Order_Status__c, 
                        Shipping_Instructions__c, Sticker_Type__c, Wholesaler__c, Wholesaler__r.Name, Delivery_Options__c, Internal_Order_Number__c,
@@ -653,8 +653,8 @@ public with sharing class SampleOrder_Controller {
                 marketId = [SELECT Id, Name FROM Market__c WHERE Name = 'United Kingdom'].Id;
             }
         }
-        
-        return [SELECT Id, Internal_Order_Number__c, Brand__c, Description__c FROM Internal_Order__c WHERE Internal_Order_Type__c = 'ZBS' AND Market__c =:marketId ORDER BY Brand__c, Internal_Order_Number__c];
+
+        return [SELECT Id, Internal_Order_Number__c, Brand__c, Description__c, Sample_Order_Classification__c FROM Internal_Order__c WHERE Internal_Order_Type__c = 'ZBS' AND Market__c =:marketId ORDER BY Brand__c, Internal_Order_Number__c];
     }
 
     @AuraEnabled 
