@@ -10,12 +10,13 @@ public with sharing class SampleOrder_Controller {
                             Show_Wholesalers__c, Sample_Order_Account_RecordType__c, Sample_Order_Wholesaler_RecordType__c, Show_Sticker_Types__c,
                             Show_Approval_History__c, Delivery_Options__c, Show_Sample_Order_Guidance__c, Capture_State_in_Address__c,
                             Capture_Item_Comments__c, Can_Edit_Declined_Sample_Order__c, Capture_Sample_Order_Classification__c, 
-                            Address_State_Type__c, Update_Address_using__c, Capture_Delivery_Time__c, SAP_Sales_Org__c, Capture_Contact_Email__c 
+                            Address_State_Type__c, Update_Address_using__c, Capture_Delivery_Time__c, SAP_Sales_Org__c, Capture_Contact_Email__c,
+                            Capture_Unit_of_Measure__c, Capture_Sample_Order_Gift__c, Sample_Order_Reason_Code_Required__c 
                          FROM Market__c 
                         WHERE Name =:u.Market__c LIMIT 1];
 
         List<SAP_Interfaced_Data_Configuration__c> configs = [SELECT Id, Name, Classification__c, Additional_Requirements__c, Item_Category__c, RecordType.Name,
-                                                                    Default_Account__c, Default_Account_Name__c 
+                                                                    Default_Account__c, Default_Account_Name__c, Default_Unit_of_Measure__c 
                                                                 FROM SAP_Interfaced_Data_Configuration__c 
                                                                 WHERE Market__c =:m.Id
                                                                   AND Is_Active__c = true];
@@ -201,7 +202,7 @@ public with sharing class SampleOrder_Controller {
             List<SAP_Interfaced_Data_Configuration__c> configs = [SELECT Id, Classification__c, State__c, RecordTypeId, RecordType.Name, ShipTo_Code__c, 
                                                                          SoldTo_Code__c, Plant_Code__c, Market__c, Internal_Order_Number__c, Item_Category__c,
                                                                          SAP_GL_Account__c, SAP_Order_Reason_Code__c, SAP_T_Code__c, SAP_Order_Type__c,
-                                                                         Market__r.SAP_Sales_Org__c
+                                                                         Market__r.SAP_Sales_Org__c, Default_Unit_of_Measure__c
                                                                     FROM SAP_Interfaced_Data_Configuration__c
                                                                    WHERE Market__c =:theSampleOrder.Market__c
                                                                      AND Is_Active__c = true];
@@ -230,6 +231,9 @@ public with sharing class SampleOrder_Controller {
                         theSampleOrder.SAP_Order_Reason_Code__c = config.SAP_Order_Reason_Code__c;
                         theSampleOrder.SAP_T_Code__c = config.SAP_T_Code__c;
                         theSampleOrder.SAP_Order_Type__c = config.SAP_Order_Type__c;
+                        if (theSampleOrder.Unit_of_Measure__c == null && config.Default_Unit_of_Measure__c != null) {
+                            theSampleOrder.Unit_of_Measure__c = config.Default_Unit_of_Measure__c;
+                        }
                         //theSampleOrder.Internal_Order_Number__c = config.Internal_Order_Number__c;
                     } else if (config.RecordType.Name == 'General' && config.Market__c == theSampleOrder.Market__c && config.Classification__c == null && config.State__c == null) {
                         theSampleOrder.SAP_ShipTo_Code__c = config.ShipTo_Code__c;  
@@ -238,12 +242,19 @@ public with sharing class SampleOrder_Controller {
                         theSampleOrder.SAP_Order_Reason_Code__c = config.SAP_Order_Reason_Code__c;
                         theSampleOrder.SAP_T_Code__c = config.SAP_T_Code__c;
                         theSampleOrder.SAP_Order_Type__c = config.SAP_Order_Type__c;
+                        if (theSampleOrder.Unit_of_Measure__c == null && config.Default_Unit_of_Measure__c != null) {
+                            theSampleOrder.Unit_of_Measure__c = config.Default_Unit_of_Measure__c;
+                        }
                     }
 
                     if (config.Market__r != null && String.isNotEmpty(config.Market__r.SAP_Sales_Org__c)) {
                         theSampleOrder.SAP_Sales_Org__c = config.Market__r.SAP_Sales_Org__c;
                     }
                 }
+            }
+
+            if (theSampleOrder.Unit_of_Measure__c == null) {
+                theSampleOrder.Unit_of_Measure__c = 'Cases';
             }
 
             System.debug('delivery options: ' + theSampleOrder.Delivery_Options__c);
@@ -654,7 +665,13 @@ public with sharing class SampleOrder_Controller {
             }
         }
 
-        return [SELECT Id, Internal_Order_Number__c, Brand__c, Description__c, Sample_Order_Classification__c FROM Internal_Order__c WHERE Internal_Order_Type__c = 'ZBS' AND Market__c =:marketId ORDER BY Brand__c, Internal_Order_Number__c];
+        return [SELECT Id, Internal_Order_Number__c, Brand__c, Description__c, Sample_Order_Classification__c 
+                  FROM Internal_Order__c 
+                 WHERE Internal_Order_Type__c = 'ZBS' 
+                   AND Market__c =:marketId 
+                   AND End_Date__c >= TODAY
+                   AND Start_Date__c <= TODAY
+              ORDER BY Brand__c, Internal_Order_Number__c];
     }
 
     @AuraEnabled 

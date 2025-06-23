@@ -58,6 +58,7 @@
         try {
             let recordType = component.get("v.recordTypeDeveloperName");            
             const captureVolumeInBottles = component.get("v.captureVolumeInBottles");
+            const unitOfMeasure = component.get("v.unitOfMeasure");
             let qty = event.target.value;
             var rowCount = component.get("v.selectedRowCount");
             var row = component.get("v.row");
@@ -134,7 +135,7 @@
                         row.quantity = qty;
                         row.units = qty;
                     }
-                } else if (captureVolumeInBottles) {
+                } else if (unitOfMeasure == 'Bottles') {
                     row.quantity = qty;
                     row.units = qty;
                     let cases = Math.floor(qty / row.packQty);

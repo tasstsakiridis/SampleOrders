@@ -51,6 +51,7 @@
     <aura:attribute name="labelOrderType" type="String" default="{!$Label.c.Type}" />
     <aura:attribute name="labelGuidance" type="String" default="{!$Label.c.Sample_Order_Guidance}" />
     <aura:attribute name="addressStateInputType" type="String" default="Free Text" />
+    <aura:attribute name="unitOfMeasure" type="String" default="Cases" />
 
     <!-- Number Attributes -->
     <aura:attribute name="selectedRowCount" type="Integer" default="0" />
@@ -112,7 +113,10 @@
     <aura:attribute name="captureDeliveryTime" type="Boolean" default="false" />
     <aura:attribute name="captureContactEmail" type="Boolean" default="false" />
     <aura:attribute name="contactEmailRequired" type="Boolean" default="false" />
+    <aura:attribute name="captureUnitOfMeasure" type="Boolean" default="false" />
+    <aura:attribute name="captureIsGift" type="Boolean" default="false" />
     <aura:attribute name="isJapan" type="Boolean" default="false" />
+    <aura:attribute name="isReasonCodeRequired" type="Boolean" default="false" />
 
     <!-- List & Object Attributes -->
     <aura:attribute name="theSampleOrder" type="SAP_Interfaced_Data__c" default="{ }" />
@@ -126,6 +130,7 @@
     <aura:attribute name="bannerGroups" type="List" default="[]" />
     <aura:attribute name="statuses" type="List" default="[]" />
     <aura:attribute name="deliveryOptions" type="List" default="[]" />
+    <aura:attribute name="unitOfMeasureOptions" type="List" default="[]" />
     <aura:attribute name="orderStatuses" type="List" default="[]" />
     <aura:attribute name="productData" type="SampleOrderItem[]" />
     <aura:attribute name="deletedRows" type="SampleOrderItem[]" />
@@ -265,7 +270,7 @@
                                     showSKU="{!v.showSKU}" showCaseConversion="{!v.showCaseConversion}" deletedRows="{!v.deletedRows}"
                                     showInternalOrderNumbers="{!v.showInternalOrderNumbers}" internalOrderNumbersMap="{!v.internalOrderNumbers}"
                                     captureVolumeInBottles="{!v.captureVolumeInBottles}" promotionActivity="{!v.promotionActivity}"
-                                    captureItemComments="{!v.captureItemComments}" market="{!v.country}" classification="{!v.classification}" />
+                                    captureItemComments="{!v.captureItemComments}" market="{!v.country}" classification="{!v.classification}" unitOfMeasure="{!v.unitOfMeasure}" />
 
                             </aura:iteration>
                         </tbody>                
@@ -367,6 +372,16 @@
                                 <lightning:select name="deliveryOptions" aura:id="deliveryOptions" label="{!v.objectDescribe.fields.Delivery_Options__c.label}" value="{!v.deliveryOption}"
                                                 onchange="{!c.handleDeliveryOptionsChange}" disabled="{!v.orderLocked}">
                                     <aura:iteration items="{!v.deliveryOptions}" var="s">
+                                        <option text="{!s.label}" value="{!s.value}" selected="{!s.selected}" />
+                                    </aura:iteration>
+                                </lightning:select>
+                            </div>
+                        </aura:if>
+                        <aura:if isTrue="{!v.captureUnitOfMeasure}">
+                            <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                                <lightning:select name="unitOfMeasure" aura:id="unitOfMeasure" label="{!v.objectDescribe.fields.Unit_of_Measure__c.label}" value="{!v.unitOfMeasure}"
+                                                onchange="{!c.handleUnitOfMeasureChange}" disabled="{!v.orderLocked}">
+                                    <aura:iteration items="{!v.unitOfMeasureOptions}" var="s">
                                         <option text="{!s.label}" value="{!s.value}" selected="{!s.selected}" />
                                     </aura:iteration>
                                 </lightning:select>
@@ -609,16 +624,18 @@
                     <aura:if isTrue="{!v.isStoreroomRequest}">
                         <div class="slds-grid slds-gutters_small slds-m-top_small">
                             <div class="slds-col slds-has-flexi-truncate" role="listitem">
-                                <lightning:select name="reasonCodes" label="{!$Label.c.Reason}" aura:id="reasonCodes" disabled="{!v.orderLocked}" value="{!v.reasonCode}" onchange="{!c.handleReasonCodeSelectionChange}">
+                                <lightning:select name="reasonCodes" label="{!$Label.c.Reason_Code}" aura:id="reasonCodes" required="{!v.isReasonCodeRequired}" disabled="{!v.orderLocked}" value="{!v.reasonCode}" onchange="{!c.handleReasonCodeSelectionChange}">
                                     <aura:iteration items="{!v.reasonCodes}" var="st">
                                         <option text="{!st.label}" value="{!st.value}" selected="{!st.selected}" />
                                     </aura:iteration>
                                 </lightning:select>
-                            </div>            
-                            <div class="slds-col slds-has-flexi-truncate" role="listitem">
-                                <h4>{!$Label.c.Is_Gift}</h4>
-                                <lightning:input type="toggle" label="" name="i_IsGift" checked="{!v.theSampleOrder.Is_Gift__c}" messageToggleActive="" messageToggleInactive="" onchange="{!c.handleIsGiftChange}" class="slds-align_absolute-center slds-m-top_x-small" />
-                            </div>            
+                            </div>          
+                            <aura:if isTrue="{!v.captureIsGift}">
+                                <div class="slds-col slds-has-flexi-truncate" role="listitem">
+                                    <h4>{!$Label.c.Is_Gift}</h4>
+                                    <lightning:input type="toggle" label="" name="i_IsGift" checked="{!v.theSampleOrder.Is_Gift__c}" messageToggleActive="" messageToggleInactive="" onchange="{!c.handleIsGiftChange}" class="slds-align_absolute-center slds-m-top_x-small" />
+                                </div>            
+                            </aura:if> 
                         </div>    
                     </aura:if>
                     <aura:if isTrue="{!v.theSampleOrder.Is_Gift__c}">

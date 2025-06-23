@@ -43,7 +43,6 @@
         //console.log('[SampleOrderItemRow.getInternalOrderNumbers] ioNumbersMap: ', [...ioNumbersMap.entries]);
         console.log('[SampleOrderItemRow.getInternalOrderNumbers] market: ', market);
         console.log('[SampleOrderItemRow.getInternalOrderNumbers] classification: ', classification);
-        console.log('[SampleOrderItemRow.getInternalOrderNumbers] ioNumbersMap: ', ioNumbersMap);
         if (ioNumbersMap && ioNumbersMap.size > 0) {
             ioNumbersMap.forEach((val, key, map) => {
                 console.log(`ioNumbersMap[${key}] = ${val}`);

@@ -11,10 +11,10 @@
 		component.set("v.provinceOptions", helper.getProvinceOptions(component, component.get("v.country")));
         component.set("v.itemsButtonLabel", $A.get('$Label.c.Add_Items'));
 
-        var maxInputLengthStr = component.get("v.maxInputLength");
-        maxInputLengthStr = maxInputLengthStr.replace("{0}", "35");
-        console.log('maxInputLength', maxInputLengthStr);
-        component.set("v.maxInputLength", maxInputLengthStr);
+        //var maxInputLengthStr = component.get("v.maxInputLength");
+        //maxInputLengthStr = maxInputLengthStr.replace("{0}", "35");
+        //console.log('maxInputLength', maxInputLengthStr);
+        //component.set("v.maxInputLength", maxInputLengthStr);
 
         component.set("v.approvalHistoryColumns", [
             { label: 'Step Name', fieldName: 'StepName', type: 'text' },
@@ -325,7 +325,7 @@
             if (country == 'BR') {
                 component.set("v.accountRequired", true);
                 component.set("v.storageLockerRequired", true);
-                if (classification == 'MZ2' || classificatio == 'SD0') {
+                if (classification.indexOf('MZ2') > -1 || classification.indexOf('SD0') > -1) {
                     component.set("v.internalOrderNumberRequired", true);
                 } else {
                     component.set("v.internalOrderNumberRequired", false);
@@ -335,6 +335,7 @@
                 component.set("v.accountRequired", true);
             }
 
+            component.set("v.stickerType", '');
             var stickerTypesForClassification = stickerTypePicklistValues.filter(r => r.description == classification);
             console.log('[SampleOrderForm.controller.handleClassificationChange] stickerTypesForClassification', stickerTypesForClassification);
             var stickerTypes = [{"label":"", "value":""}];
@@ -367,6 +368,7 @@
                     if (classificationConfig.Additional_Requirements__c != undefined && classificationConfig.Additional_Requirements__c.indexOf('Cost Center') >= 0) {
                         component.set("v.costCenterRequired", true);
                         component.set("v.showCostCenters", marketConfig.Cost_Centers__c == true);
+                        component.set("v.costCenter", '');
                     } else {
                         component.set("v.costCenterRequired", false);
                         component.set("v.showCostCenters", false);
