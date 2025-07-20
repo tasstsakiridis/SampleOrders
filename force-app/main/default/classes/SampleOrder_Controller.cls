@@ -11,7 +11,8 @@ public with sharing class SampleOrder_Controller {
                             Show_Approval_History__c, Delivery_Options__c, Show_Sample_Order_Guidance__c, Capture_State_in_Address__c,
                             Capture_Item_Comments__c, Can_Edit_Declined_Sample_Order__c, Capture_Sample_Order_Classification__c, 
                             Address_State_Type__c, Update_Address_using__c, Capture_Delivery_Time__c, SAP_Sales_Org__c, Capture_Contact_Email__c,
-                            Capture_Unit_of_Measure__c, Capture_Sample_Order_Gift__c, Sample_Order_Reason_Code_Required__c 
+                            Capture_Unit_of_Measure__c, Capture_Sample_Order_Gift__c, Sample_Order_Reason_Code_Required__c, Show_Sample_Order_Cost__c,
+                            Sample_Order_Guidance_Label__c 
                          FROM Market__c 
                         WHERE Name =:u.Market__c LIMIT 1];
 
@@ -175,12 +176,12 @@ public with sharing class SampleOrder_Controller {
                        Classification__c, Banner_Group__c, Business_Name__c, Business_Address__c, Business_City__c, Business_State__c, 
                        Business_Postcode__c, Business_Country__c, Contact_Name__c, Contact_Phone__c, Contact_Email__c, Reason__c, Is_International_Order__c, 
                        Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c, Is_Gift__c, Is_Gift_Above_100__c,
-                	   Gift_Register_Acknowledgement__c, Budget_Type__c, Reason_Code__c, Activity__c, Is_Approved__c, Order_Status__c, 
+                	   Gift_Register_Acknowledgement__c, Budget_Type__c, Reason_Code__c, Activity__c, Is_Approved__c, 
                        Shipping_Instructions__c, Sticker_Type__c, Wholesaler__c, Wholesaler__r.Name, Delivery_Options__c, Internal_Order_Number__c,
                        POD_Attached__c, Market__c, Market__r.Name, Order_Type__c, Requested_Delivery_Time__c, Market__r.SAP_Sales_Org__c,
                        (SELECT Id, Name, SAP_Interfaced_Data__c, Product__c, Brand_Name__c, Product_Code__c, Internal_Order_Number__c, 
                                Quantity__c, Units__c, Product__r.Used_For__c, Product__r.Pack_Quantity__c, Total_Ordered_Cases__c, PMI_Actual__c,
-                        	   Product__r.Price__c, Comments__c
+                        	   Product__r.Price__c, Comments__c, Line_Cost__c
                           FROM SAP_Interfaced_Data_Items__r)
                   FROM SAP_Interfaced_Data__c 
                  WHERE Id=:recordId];
@@ -202,10 +203,13 @@ public with sharing class SampleOrder_Controller {
             List<SAP_Interfaced_Data_Configuration__c> configs = [SELECT Id, Classification__c, State__c, RecordTypeId, RecordType.Name, ShipTo_Code__c, 
                                                                          SoldTo_Code__c, Plant_Code__c, Market__c, Internal_Order_Number__c, Item_Category__c,
                                                                          SAP_GL_Account__c, SAP_Order_Reason_Code__c, SAP_T_Code__c, SAP_Order_Type__c,
-                                                                         Market__r.SAP_Sales_Org__c, Default_Unit_of_Measure__c
+                                                                         Market__r.SAP_Sales_Org__c, Default_Unit_of_Measure__c, Sample_Order_Record_Type__c
                                                                     FROM SAP_Interfaced_Data_Configuration__c
                                                                    WHERE Market__c =:theSampleOrder.Market__c
                                                                      AND Is_Active__c = true];
+                                              
+            Map<Id, RecordTypeInfo> rtList = SAP_Interfaced_Data__c.SObjectType.getDescribe().getRecordTypeInfosById();
+            String rtDeveloperName = rtList.get(theSampleOrder.RecordTypeId).getDeveloperName();
                                                                      
             if (configs != null && configs.size() > 0) {
                 for(SAP_Interfaced_Data_Configuration__c config : configs) {
@@ -219,7 +223,8 @@ public with sharing class SampleOrder_Controller {
     
                         if (config.RecordType.Name == 'ShipTo' && config.State__c == theSampleOrder.Business_State__c) {
                             theSampleOrder.SAP_ShipTo_Code__c = config.ShipTo_Code__c;
-                        }                        
+                        }         
+                                       
                     }
 
                     if (config.RecordType.Name == 'General' && (config.Classification__c == null || config.Classification__c == theSampleOrder.Classification__c) && (String.isEmpty(config.State__c) || config.State__c == theSampleOrder.Business_State__c)) {
@@ -231,9 +236,9 @@ public with sharing class SampleOrder_Controller {
                         theSampleOrder.SAP_Order_Reason_Code__c = config.SAP_Order_Reason_Code__c;
                         theSampleOrder.SAP_T_Code__c = config.SAP_T_Code__c;
                         theSampleOrder.SAP_Order_Type__c = config.SAP_Order_Type__c;
-                        if (theSampleOrder.Unit_of_Measure__c == null && config.Default_Unit_of_Measure__c != null) {
-                            theSampleOrder.Unit_of_Measure__c = config.Default_Unit_of_Measure__c;
-                        }
+                        //if (theSampleOrder.Unit_of_Measure__c == null && config.Default_Unit_of_Measure__c != null) {
+                        //    theSampleOrder.Unit_of_Measure__c = config.Default_Unit_of_Measure__c;
+                        //}
                         //theSampleOrder.Internal_Order_Number__c = config.Internal_Order_Number__c;
                     } else if (config.RecordType.Name == 'General' && config.Market__c == theSampleOrder.Market__c && config.Classification__c == null && config.State__c == null) {
                         theSampleOrder.SAP_ShipTo_Code__c = config.ShipTo_Code__c;  
@@ -242,14 +247,21 @@ public with sharing class SampleOrder_Controller {
                         theSampleOrder.SAP_Order_Reason_Code__c = config.SAP_Order_Reason_Code__c;
                         theSampleOrder.SAP_T_Code__c = config.SAP_T_Code__c;
                         theSampleOrder.SAP_Order_Type__c = config.SAP_Order_Type__c;
-                        if (theSampleOrder.Unit_of_Measure__c == null && config.Default_Unit_of_Measure__c != null) {
-                            theSampleOrder.Unit_of_Measure__c = config.Default_Unit_of_Measure__c;
-                        }
+                        //if (theSampleOrder.Unit_of_Measure__c == null && config.Default_Unit_of_Measure__c != null) {
+                        //    theSampleOrder.Unit_of_Measure__c = config.Default_Unit_of_Measure__c;
+                        //}
                     }
 
                     if (config.Market__r != null && String.isNotEmpty(config.Market__r.SAP_Sales_Org__c)) {
                         theSampleOrder.SAP_Sales_Org__c = config.Market__r.SAP_Sales_Org__c;
                     }
+                    if ((config.Sample_Order_Record_Type__c == null || config.Sample_Order_Record_Type__c == rtDeveloperName) && (config.Classification__c == null || config.Classification__c == theSampleOrder.Classification__c) && theSampleOrder.Unit_of_Measure__c == null && config.Default_Unit_of_Measure__c != null) {
+                        theSampleOrder.Unit_of_Measure__c = config.Default_Unit_of_Measure__c;
+                    }
+                    if (rtDeveloperName.contains('Storeroom_Request')) {
+                        theSampleOrder.Unit_of_Measure__c = 'Bottles';
+                    }
+
                 }
             }
 
@@ -391,7 +403,15 @@ public with sharing class SampleOrder_Controller {
                 sapItem.Internal_Order_Number__c = i.internalOrderNumber;
                 sapItem.Total_Ordered_Cases__c = i.convertedCases;
                 sapItem.Comments__c = i.comments;
-                orderTotal += i.quantity * i.price;
+                sapItem.Line_Cost__c = i.unitCost;
+                sapItem.COGS__c = i.cogs;
+
+                if (market == 'United Kingdom') {
+                    orderTotal += i.unitCost;
+                } else {
+                    orderTotal += i.quantity * i.price;
+                }
+                
                 if(i.id != i.productId && i.id != '') {
                     sapItem.Id = i.id;
                 }

@@ -21,7 +21,7 @@
             { label: 'Date', fieldName: 'CompletedDate', type: 'date' },
             { label: 'Status', fieldName: 'Status', type: 'text' },
             { label: 'Assigned To', fieldName: 'Actor', type: 'text' }
-        ]);
+        ]);        
 
         /*
         helper.setupProductColumns(component);   
@@ -559,6 +559,7 @@
         //var brand = event.getParam("value");
         var brand = component.find('brands').get('v.value');
         console.log('[SampleOrderForm.controller.handleBrandChange] selected brand', brand);
+        console.log('[SampleOrderForm.controller.handleBrandChange] record type name', component.get("v."));
         component.set("v.selectedBrand", brand);
     },
     handleShowSelectedProductsChange : function(component, event, helper) {

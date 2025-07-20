@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GlobalValueSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customValue>
+        <fullName>Bottles</fullName>
+        <default>false</default>
+        <label>Bottles</label>
+    </customValue>
+    <customValue>
+        <fullName>Cases</fullName>
+        <default>false</default>
+        <label>Cases</label>
+    </customValue>
+    <masterLabel>Unit of Measure</masterLabel>
+    <sorted>false</sorted>
+</GlobalValueSet>

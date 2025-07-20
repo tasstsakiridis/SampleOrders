@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RecordType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>General</fullName>
+    <active>true</active>
+    <label>General</label>
+    <picklistValues>
+        <picklist>Additional_Requirements__c</picklist>
+        <values>
+            <fullName>Cost Center</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Internal Order</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Unit of Measure</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+    <picklistValues>
+        <picklist>Default_Unit_of_Measure__c</picklist>
+        <values>
+            <fullName>Bottles</fullName>
+            <default>false</default>
+        </values>
+        <values>
+            <fullName>Cases</fullName>
+            <default>false</default>
+        </values>
+    </picklistValues>
+</RecordType>

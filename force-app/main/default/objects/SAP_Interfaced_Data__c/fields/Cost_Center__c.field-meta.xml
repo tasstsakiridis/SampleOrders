@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Cost_Center__c</fullName>
+    <externalId>false</externalId>
+    <label>Cost Center</label>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>3419830 - BBI</fullName>
+                <default>false</default>
+                <label>3419830 - BBI</label>
+            </value>
+            <value>
+                <fullName>3419842 - Customer Marketing</fullName>
+                <default>false</default>
+                <label>3419842 - Customer Marketing</label>
+            </value>
+            <value>
+                <fullName>3419825 - Marketing Director</fullName>
+                <default>false</default>
+                <label>3419825 - Marketing Director</label>
+            </value>
+            <value>
+                <fullName>3419826 - Marketing Jack Daniel&apos;s</fullName>
+                <default>false</default>
+                <label>3419826 - Marketing Jack Daniel&apos;s</label>
+            </value>
+            <value>
+                <fullName>3419827 - Marketing Super Premium Brands</fullName>
+                <default>false</default>
+                <label>3419827 - Marketing Super Premium Brands</label>
+            </value>
+            <value>
+                <fullName>3419840 - Off-trade</fullName>
+                <default>false</default>
+                <label>3419840 - Off-trade</label>
+            </value>
+            <value>
+                <fullName>3419838 - On Trade - Advocacy</fullName>
+                <default>false</default>
+                <label>3419838 - On Trade - Advocacy</label>
+            </value>
+            <value>
+                <fullName>3419839 - On Trade - Field Sales</fullName>
+                <default>false</default>
+                <label>3419839 - On Trade - Field Sales</label>
+            </value>
+            <value>
+                <fullName>3419836 - On Trade - MOTR</fullName>
+                <default>false</default>
+                <label>3419836 - On Trade - MOTR</label>
+            </value>
+            <value>
+                <fullName>3419837 - On Trade - RTM</fullName>
+                <default>false</default>
+                <label>3419837 - On Trade - RTM</label>
+            </value>
+            <value>
+                <fullName>3419848 - Admin</fullName>
+                <default>false</default>
+                <label>3419848 - Admin</label>
+            </value>
+            <value>
+                <fullName>3419841 - Sales Operations</fullName>
+                <default>false</default>
+                <label>3419841 - Sales Operations</label>
+            </value>
+            <value>
+                <fullName>2969712 - Sales</fullName>
+                <default>false</default>
+                <label>2969712 - Sales</label>
+            </value>
+            <value>
+                <fullName>2969713 - Marketing</fullName>
+                <default>false</default>
+                <label>2969713 - Marketing</label>
+            </value>
+            <value>
+                <fullName>2964000 - Finance</fullName>
+                <default>false</default>
+                <label>2964000 - Finance</label>
+            </value>
+            <value>
+                <fullName>2969715 - GM</fullName>
+                <default>false</default>
+                <label>2969715 - GM</label>
+            </value>
+            <value>
+                <fullName>2928103 - Marketing</fullName>
+                <default>false</default>
+                <label>2928103 - Marketing</label>
+            </value>
+            <value>
+                <fullName>2928108 - Finance</fullName>
+                <default>false</default>
+                <label>2928108 - Finance</label>
+            </value>
+            <value>
+                <fullName>2928109 - SupplyChain</fullName>
+                <default>false</default>
+                <label>2928109 - SupplyChain</label>
+            </value>
+            <value>
+                <fullName>2928110 - Sales</fullName>
+                <default>false</default>
+                <label>2928110 - Sales</label>
+            </value>
+            <value>
+                <fullName>2928111 - HR</fullName>
+                <default>false</default>
+                <label>2928111 - HR</label>
+            </value>
+            <value>
+                <fullName>2928112 - GM</fullName>
+                <default>false</default>
+                <label>2928112 - GM</label>
+            </value>
+            <value>
+                <fullName>4351000 - CENTRAL FUNDS GERENTE GENERAL</fullName>
+                <default>false</default>
+                <label>4351000 - CENTRAL FUNDS GERENTE GENERAL</label>
+            </value>
+            <value>
+                <fullName>4352000 - FINANZAS FINANZAS</fullName>
+                <default>false</default>
+                <label>4352000 - FINANZAS FINANZAS</label>
+            </value>
+            <value>
+                <fullName>4353000 - TMF VENTAS</fullName>
+                <default>false</default>
+                <label>4353000 - TMF VENTAS</label>
+            </value>
+            <value>
+                <fullName>4353101 - TMF MAYORIASTAS CD MEX</fullName>
+                <default>false</default>
+                <label>4353101 - TMF MAYORIASTAS CD MEX</label>
+            </value>
+            <value>
+                <fullName>4353102 - TMF MAYORISTAS GDL</fullName>
+                <default>false</default>
+                <label>4353102 - TMF MAYORISTAS GDL</label>
+            </value>
+            <value>
+                <fullName>4353200 - TMF DUERO</fullName>
+                <default>false</default>
+                <label>4353200 - TMF DUERO</label>
+            </value>
+            <value>
+                <fullName>4353300 - CENTROS DE CONSUMO CENTRO DE CONSUMO</fullName>
+                <default>false</default>
+                <label>4353300 - CENTROS DE CONSUMO CENTRO DE CONSUMO</label>
+            </value>
+            <value>
+                <fullName>4353400 - FIELD SALES OP AUTOSERVICIOS</fullName>
+                <default>false</default>
+                <label>4353400 - FIELD SALES OP AUTOSERVICIOS</label>
+            </value>
+            <value>
+                <fullName>4353500 - DUTY FREE DUTY FREE</fullName>
+                <default>false</default>
+                <label>4353500 - DUTY FREE DUTY FREE</label>
+            </value>
+            <value>
+                <fullName>4354000 - MERCADOTECNIA MERCADOTECNIA</fullName>
+                <default>false</default>
+                <label>4354000 - MERCADOTECNIA MERCADOTECNIA</label>
+            </value>
+            <value>
+                <fullName>4354100 - MERCADOTECNIA GROUPER HERRADURA</fullName>
+                <default>false</default>
+                <label>4354100 - MERCADOTECNIA GROUPER HERRADURA</label>
+            </value>
+            <value>
+                <fullName>4354200 - MERCADOTECNIA EL JIMADOR</fullName>
+                <default>false</default>
+                <label>4354200 - MERCADOTECNIA EL JIMADOR</label>
+            </value>
+            <value>
+                <fullName>4354210 - MERCADOTECNIA NEW MIX</fullName>
+                <default>false</default>
+                <label>4354210 - MERCADOTECNIA NEW MIX</label>
+            </value>
+            <value>
+                <fullName>4354220 - MERCADOTECNIA WHISKEYS PREMIUM</fullName>
+                <default>false</default>
+                <label>4354220 - MERCADOTECNIA WHISKEYS PREMIUM</label>
+            </value>
+            <value>
+                <fullName>4354350 - TRADE MARKETING TRAINING MKT EXPENSE</fullName>
+                <default>false</default>
+                <label>4354350 - TRADE MARKETING TRAINING MKT EXPENSE</label>
+            </value>
+            <value>
+                <fullName>4354500 - SG&amp;A - GOVERMENT RELATIONS RELACIONES PUBLICAS</fullName>
+                <default>false</default>
+                <label>4354500 - SG&amp;A - GOVERMENT RELATIONS RELACIONES PUBLICAS</label>
+            </value>
+            <value>
+                <fullName>4354700 - MERCADOTECNIA JD MARKETING MEXICO</fullName>
+                <default>false</default>
+                <label>4354700 - MERCADOTECNIA JD MARKETING MEXICO</label>
+            </value>
+            <value>
+                <fullName>4354920 - MERCADOTECNIA ANTIGUO</fullName>
+                <default>false</default>
+                <label>4354920 - MERCADOTECNIA ANTIGUO</label>
+            </value>
+            <value>
+                <fullName>4355000 - SG&amp;A-HUMAN RESOURCES RECURSOS HUMANOS</fullName>
+                <default>false</default>
+                <label>4355000 - SG&amp;A-HUMAN RESOURCES RECURSOS HUMANOS</label>
+            </value>
+            <value>
+                <fullName>4649819 - Home Office LA</fullName>
+                <default>false</default>
+                <label>4649819 - Home Office LA</label>
+            </value>
+            <value>
+                <fullName>1005051 - Events</fullName>
+                <default>false</default>
+                <label>1005051 - Events</label>
+            </value>
+            <value>
+                <fullName>1008595 - Fords wsparcie wprowadzenia produktu</fullName>
+                <default>false</default>
+                <label>1008595 - Fords wsparcie wprowadzenia produktu</label>
+            </value>
+            <value>
+                <fullName>1006128 - Księgowanie odchyleń kosztów AR od standard price</fullName>
+                <default>false</default>
+                <label>1006128 - Księgowanie odchyleń kosztów AR od standard price</label>
+            </value>
+            <value>
+                <fullName>1002216 - Activation in Off Trade</fullName>
+                <default>false</default>
+                <label>1002216 - Activation in Off Trade</label>
+            </value>
+            <value>
+                <fullName>1004922 - AR</fullName>
+                <default>false</default>
+                <label>1004922 - AR</label>
+            </value>
+            <value>
+                <fullName>1005242 - Activation in S&amp;A LKA</fullName>
+                <default>false</default>
+                <label>1005242 - Activation in S&amp;A LKA</label>
+            </value>
+            <value>
+                <fullName>1005511 - Activation in Modern Trade</fullName>
+                <default>false</default>
+                <label>1005511 - Activation in Modern Trade</label>
+            </value>
+            <value>
+                <fullName>1002383 - Agency Fees</fullName>
+                <default>false</default>
+                <label>1002383 - Agency Fees</label>
+            </value>
+            <value>
+                <fullName>1002823 - Others</fullName>
+                <default>false</default>
+                <label>1002823 - Others</label>
+            </value>
+            <value>
+                <fullName>1002173 - Additional Activations in On-Trade</fullName>
+                <default>false</default>
+                <label>1002173 - Additional Activations in On-Trade</label>
+            </value>
+            <value>
+                <fullName>1002005 - Bud Loc North</fullName>
+                <default>false</default>
+                <label>1002005 - Bud Loc North</label>
+            </value>
+            <value>
+                <fullName>1008601 - Woodford aktywacja jesienna</fullName>
+                <default>false</default>
+                <label>1008601 - Woodford aktywacja jesienna</label>
+            </value>
+            <value>
+                <fullName>1006256 - Masterclasses Single Malts</fullName>
+                <default>false</default>
+                <label>1006256 - Masterclasses Single Malts</label>
+            </value>
+            <value>
+                <fullName>1008600 - Benriach pozostałe aktywacje</fullName>
+                <default>false</default>
+                <label>1008600 - Benriach pozostałe aktywacje</label>
+            </value>
+            <value>
+                <fullName>1008603 - Woodford pozostałe aktywacje</fullName>
+                <default>false</default>
+                <label>1008603 - Woodford pozostałe aktywacje</label>
+            </value>
+            <value>
+                <fullName>1008594 - Glendronach pozostałe aktywacje</fullName>
+                <default>false</default>
+                <label>1008594 - Glendronach pozostałe aktywacje</label>
+            </value>
+            <value>
+                <fullName>1008597 - Glenglassaugh pozostałe aktywacje</fullName>
+                <default>false</default>
+                <label>1008597 - Glenglassaugh pozostałe aktywacje</label>
+            </value>
+            <value>
+                <fullName>1001996 - BF Education Other</fullName>
+                <default>false</default>
+                <label>1001996 - BF Education Other</label>
+            </value>
+            <value>
+                <fullName>1002003 - Bud Loc South</fullName>
+                <default>false</default>
+                <label>1002003 - Bud Loc South</label>
+            </value>
+            <value>
+                <fullName>1001997 - Bud Loc Hotel</fullName>
+                <default>false</default>
+                <label>1001997 - Bud Loc Hotel</label>
+            </value>
+            <value>
+                <fullName>1004937 - AlcoholRequest MT</fullName>
+                <default>false</default>
+                <label>1004937 - AlcoholRequest MT</label>
+            </value>
+            <value>
+                <fullName>1004938 - AlcoholRequest TT</fullName>
+                <default>false</default>
+                <label>1004938 - AlcoholRequest TT</label>
+            </value>
+            <value>
+                <fullName>1005059 - PR internal</fullName>
+                <default>false</default>
+                <label>1005059 - PR internal</label>
+            </value>
+            <value>
+                <fullName>1004921 - Szkolenia</fullName>
+                <default>false</default>
+                <label>1004921 - Szkolenia</label>
+            </value>
+            <value>
+                <fullName>1006302 - B&amp;G</fullName>
+                <default>false</default>
+                <label>1006302 - B&amp;G</label>
+            </value>
+            <value>
+                <fullName>1008596 - Fords pozostałe aktywacje</fullName>
+                <default>false</default>
+                <label>1008596 - Fords pozostałe aktywacje</label>
+            </value>
+            <value>
+                <fullName>2515000 - GC MARKETING</fullName>
+                <default>false</default>
+                <label>2515000 - GC MARKETING</label>
+            </value>
+            <value>
+                <fullName>2519000 - GC SALES</fullName>
+                <default>false</default>
+                <label>2519000 - GC SALES</label>
+            </value>
+            <value>
+                <fullName>2511100 - CHINA SUPPLY CHN MGR</fullName>
+                <default>false</default>
+                <label>2511100 - CHINA SUPPLY CHN MGR</label>
+            </value>
+            <value>
+                <fullName>4142000 - BFSS G&amp;A Prod</fullName>
+                <default>false</default>
+                <label>4142000 - BFSS G&amp;A Prod</label>
+            </value>
+            <value>
+                <fullName>2513000 - GC HR &amp; ADM MGR</fullName>
+                <default>false</default>
+                <label>2513000 - GC HR &amp; ADM MGR</label>
+            </value>
+            <value>
+                <fullName>3259500 - Public Affairs</fullName>
+                <default>false</default>
+                <label>3259500 - Public Affairs</label>
+            </value>
+            <value>
+                <fullName>5653200 - Sales</fullName>
+                <default>false</default>
+                <label>5653200 - Sales</label>
+            </value>
+            <value>
+                <fullName>5653110 - Marketing</fullName>
+                <default>false</default>
+                <label>5653110 - Marketing</label>
+            </value>
+            <value>
+                <fullName>2903040 - Supply Chain</fullName>
+                <default>false</default>
+                <label>2903040 - Supply Chain</label>
+            </value>
+            <value>
+                <fullName>2961316 - Accounting</fullName>
+                <default>false</default>
+                <label>2961316 - Accounting</label>
+            </value>
+            <value>
+                <fullName>2967000 - GBS</fullName>
+                <default>false</default>
+                <label>2967000 - GBS</label>
+            </value>
+            <value>
+                <fullName>2965050 - Human Resource</fullName>
+                <default>false</default>
+                <label>2965050 - Human Resource</label>
+            </value>
+            <value>
+                <fullName>2961400 - Korea Home Office</fullName>
+                <default>false</default>
+                <label>2961400 - Korea Home Office</label>
+            </value>
+            <value>
+                <fullName>5653010 - Tokyo Office</fullName>
+                <default>false</default>
+                <label>5653010 - Tokyo Office</label>
+            </value>
+            <value>
+                <fullName>2964000 - F&amp;A</fullName>
+                <default>false</default>
+                <isActive>false</isActive>
+                <label>2964000 - F&amp;A</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

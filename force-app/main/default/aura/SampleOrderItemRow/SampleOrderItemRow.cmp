@@ -23,6 +23,7 @@
     <aura:attribute name="showRemainingQty" type="Boolean" default="false" />
     <aura:attribute name="captureVolumeInBottles" type="Boolean" default="false" />
     <aura:attribute name="captureItemComments" type="Boolean" default="false" />    
+    <aura:attribute name="showOrderCost" type="Boolean" default="false" />
     
     <!-- List & Object Attributes -->
     <aura:attribute name="row" type="SampleOrderItem" required="true" />
@@ -95,6 +96,11 @@
                 <div class="slds-truncate" >{!v.row.units}</div>
             </td>    
         </aura:set>
+        </aura:if>
+        <aura:if isTrue="{!v.showOrderCost}">
+            <td data-label="{!$Label.c.Cost}">
+                <div class="slds-truncate">{!v.row.unitCost}</div>
+            </td>
         </aura:if>
         <aura:if isTrue="{!v.captureItemComments}">
             <td data-label="{!$Label.c.Comments}">

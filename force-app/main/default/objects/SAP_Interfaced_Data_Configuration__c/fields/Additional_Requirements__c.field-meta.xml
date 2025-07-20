@@ -18,6 +18,16 @@
                 <default>false</default>
                 <label>Cost Center</label>
             </value>
+            <value>
+                <fullName>Internal Order</fullName>
+                <default>false</default>
+                <label>Internal Order</label>
+            </value>
+            <value>
+                <fullName>Unit of Measure</fullName>
+                <default>false</default>
+                <label>Unit of Measure</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
     <visibleLines>4</visibleLines>

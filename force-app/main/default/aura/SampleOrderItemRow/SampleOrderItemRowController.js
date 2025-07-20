@@ -14,7 +14,7 @@
         var row = component.get("v.row");
         var el = component.find("theRow");
         var recordTypeName = component.get("v.recordTypeDeveloperName");
-        if (recordTypeName.indexOf('Storeroom_Request') >= 0) {
+        if (recordTypeName.indexOf('Sample_Order_Storeroom_Request') >= 0) {
             recordTypeName = 'Sample_Order';
         }
         try {
@@ -58,7 +58,10 @@
         try {
             let recordType = component.get("v.recordTypeDeveloperName");            
             const captureVolumeInBottles = component.get("v.captureVolumeInBottles");
-            const unitOfMeasure = component.get("v.unitOfMeasure");
+            let unitOfMeasure = component.get("v.unitOfMeasure");
+            if (recordType.indexOf('Storeroom_Request') >= 0) {
+                unitOfMeasure = 'Bottles';
+            }
             let qty = event.target.value;
             var rowCount = component.get("v.selectedRowCount");
             var row = component.get("v.row");
@@ -69,12 +72,14 @@
                 row.quantity = 0;
                 row.units = 0;
                 row.convertedCases = '';
+                row.unitCost = 0;
                 component.set("v.row", row);
             } else if (qty == 0) {
                 rowCount--;
                 row.quantity = qty;
                 row.units = 0;
                 row.convertedCases = '';
+                row.unitCost = 0;
                 component.set("v.row", row);
                 
                 if (row.id != null && row.id != '') {
@@ -95,6 +100,7 @@
 				row.quantity = 0;                   
 				row.units = row.quantity * row.packQty;
                 row.convertedCases = '';
+                row.unitCost = units * row.cogs;
                 component.set("v.row", row);
                 alert('Quantity out of range.  Please enter a number greater than or equal to zero');
             } else {
@@ -153,6 +159,7 @@
                     row.units = qty;
                 }
 
+                row.unitCost = row.units * row.cogs;
                 console.log('[SampleOrderItemRow.controller.handleQuantityChange] row', JSON.parse(JSON.stringify(row)));
                 component.set("v.row", row);
 

@@ -50,6 +50,8 @@
     <aura:attribute name="labelNo" type="String" default="{!$Label.c.No}" />
     <aura:attribute name="labelOrderType" type="String" default="{!$Label.c.Type}" />
     <aura:attribute name="labelGuidance" type="String" default="{!$Label.c.Sample_Order_Guidance}" />
+    <aura:attribute name="Sample_Order_Guidance_Korea" type="String" default="{!$Label.c.Sample_Order_Guidance_Korea}" />
+    <aura:attribute name="Sample_Order_Guidance_China" type="String" default="{!$Label.c.Sample_Order_Guidance_China}" />
     <aura:attribute name="addressStateInputType" type="String" default="Free Text" />
     <aura:attribute name="unitOfMeasure" type="String" default="Cases" />
 
@@ -115,6 +117,7 @@
     <aura:attribute name="contactEmailRequired" type="Boolean" default="false" />
     <aura:attribute name="captureUnitOfMeasure" type="Boolean" default="false" />
     <aura:attribute name="captureIsGift" type="Boolean" default="false" />
+    <aura:attribute name="showOrderCost" type="Boolean" default="false" />
     <aura:attribute name="isJapan" type="Boolean" default="false" />
     <aura:attribute name="isReasonCodeRequired" type="Boolean" default="false" />
 
@@ -270,7 +273,8 @@
                                     showSKU="{!v.showSKU}" showCaseConversion="{!v.showCaseConversion}" deletedRows="{!v.deletedRows}"
                                     showInternalOrderNumbers="{!v.showInternalOrderNumbers}" internalOrderNumbersMap="{!v.internalOrderNumbers}"
                                     captureVolumeInBottles="{!v.captureVolumeInBottles}" promotionActivity="{!v.promotionActivity}"
-                                    captureItemComments="{!v.captureItemComments}" market="{!v.country}" classification="{!v.classification}" unitOfMeasure="{!v.unitOfMeasure}" />
+                                    captureItemComments="{!v.captureItemComments}" market="{!v.country}" classification="{!v.classification}" unitOfMeasure="{!v.unitOfMeasure}"
+                                    showOrderCost="{!v.showOrderCost}" />
 
                             </aura:iteration>
                         </tbody>                

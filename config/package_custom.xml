@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <name>CustomField</name>
+        <members>SAP_Interfaced_Data_Configuration__c.Additional_Requirements__c</members>
+        <members>SAP_Interfaced_Data_Configuration__c.Default_Unit_of_Measure__c</members>
+        <members>SAP_Interfaced_Data_Configuration__c.Sample_Order_Record_Type__c</members>
+        <members>Internal_Order__c.Start_Date__c</members>
+        <members>Internal_Order__c.End_Date__c</members>
+    </types>
+    <types>
+        <name>GlobalValueSet</name>
+        <members>Unit_of_Measure</members>
+    </types>
+    <types>
+        <name>RecordType</name>
+        <members>SAP_Interfaced_Data_Item__c.Sample_Order_JAP_Storeroom_Request</members>
+        <members>SAP_Interfaced_Data_Configuration__c.General</members>
+    </types>
+    <version>43.0</version>
+</Package>

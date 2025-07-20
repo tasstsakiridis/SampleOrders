@@ -263,6 +263,24 @@
                         component.set("v.marketConfig", rv.market);
                         component.set("v.isCommunitySite", rv.isCommunitySite);
 
+                        console.log('[SampleOrderForm.helper.getUserDetails] sample order guidance label', rv.market.Sample_Order_Guidance_Label__c);
+
+                        if (rv.market.Sample_Order_Guidance_Label__c != undefined && rv.market.Sample_Order_Guidance_Label__c != '') {
+                            let guidanceLabelName = 'v.Sample_Order_Guidance_' + rv.market.Name;
+                            /*
+                            if (rv.market.Name == 'Korea') {
+                                guidance = component.get("v.Sample_Order_Guidance_Korea");
+                            } else if (rv.market.name == 'China') {
+                                guidance = component.get("v.Sample_Order_Guidance_China");
+                            }
+                                */
+                            let guidance = component.get(guidanceLabelName);
+                            console.log('[SampleOrderForm.helper.getUserDetails] guidance name. guidnace', guidanceLabelName, guidance);
+                            if (guidance != undefined && guidance != '') {
+                                component.set("v.labelGuidance", guidance);  
+                            }
+                        }
+
                         let lockStickerInput = !rv.isSupplyChain;
                         if (rv.market.Name == 'Korea') {
                             lockStickerInput = false;
@@ -357,6 +375,12 @@
                         component.set("v.captureUnitOfMeasure", rv.market.Capture_Unit_of_Measure__c == undefined ? false : rv.market.Capture_Unit_of_Measure__c);
                         component.set("v.captureIsGift", rv.market.Capture_Sample_Order_Gift__c == undefined ? false : rv.market.Capture_Sample_Order_Gift__c);
                         component.set("v.isReasonCodeRequired", rv.market.Sample_Order_Reason_Code_Required__c == undefined ? false : rv.market.Sample_Order_Reason_Code_Required__c);
+                        component.set("v.showOrderCost", rv.market.Show_Sample_Order_Cost__c == undefined ? false : rv.market.Show_Sample_Order_Cost__c);
+
+                        if (country == 'JP' && recordTypeName == 'Sample_Order_JAP_Storeroom_Request') {
+                            component.set("v.showGuidance", false);                            
+                        }
+                        console.log('[helper.getUserDetails] showGuidance', component.get("v.showGuidance"));
 
                         let lockStatusInput = true;
                         console.log('[helper.getUserDetails before] disableButtons, lockStatusInput', disableButtons, lockStatusInput);
@@ -763,6 +787,7 @@
         let lblNumberOfBottles = $A.get('$Label.c.NumberOfBottles');
         let lblConvertedCases = $A.get('$Label.c.ConvertedCases');
         let lblComments = $A.get('$Label.c.Comments');
+        let lblOrderCost = $A.get('$Label.c.Cost');
         let country = component.get('v.country');
         console.log('[setupProductTableHeaders] showCaseConversion', component.get("v.showCaseConversion"));
         console.log('[setupProductTableHeaders] country', country);
@@ -779,7 +804,8 @@
             { label: lblQuantity, fieldName: 'Quantity__c', type:'number', editable:'true', isVisible: true },
             { label: lblNumberOfBottles, fieldName: 'Units__c', type: 'number', editable: false , isVisible: component.get("v.showCaseConversion")==false},
             { label: lblConvertedCases, fieldName: 'Total_Ordered_Cases__c', type: 'text', editable: false, isVisible: component.get("v.showCaseConversion") },
-            { label: lblComments, fieldName: 'Comments__c', type: 'text', isVisible: component.get('v.captureItemComments')}
+            { label: lblComments, fieldName: 'Comments__c', type: 'text', isVisible: component.get('v.captureItemComments')},
+            { label: lblOrderCost, fieldName: 'Line_Cost___c', type: 'number', editable: false, isVisible: component.get("v.showOrderCost")}
         ]);        
     },
     setupProductColumns : function(component) {
@@ -1557,7 +1583,7 @@
             isValid = false;
         }
 
-        if (recordTypeName == 'Sample_Order_Storeroom_Request' && (theSampleOrder.Account__c == null || theSampleOrder.Account__c == '')) {
+        if (recordTypeName == 'Sample_Order_Storeroom_Request' && (accountId == null || accountId == '') && (theSampleOrder.Account__c == null || theSampleOrder.Account__c == '')) {
             msg += 'Storeroom is required';
             isValid = false;
         }
@@ -2048,6 +2074,7 @@
                         products[j].internalOrderNumber = theSampleOrder.SAP_Interfaced_Data_Items__r[i].Internal_Order_Number__c;
                         products[j].convertedCases = theSampleOrder.SAP_Interfaced_Data_Items__r[i].Total_Ordered_Cases__c;
                         products[j].comments = theSampleOrder.SAP_Interfaced_Data_Items__r[i].Comments__c;
+                        products[j].unitCost = theSampleOrder.SAP_Interfaced_Data_Items__r[i].Line_Cost__c;
                         break;
                     }
                 }
@@ -2123,8 +2150,9 @@
         let stickerType = component.get("v.stickerType");
         let deliveryOption = component.get("v.deliveryOption");
         let podAttached = component.get("v.podAttached");
-        let unitOfMeasure = component.get("unitOfMeasure");
-        
+        let unitOfMeasure = component.get("v.unitOfMeasure");
+        let captureUnitOfMeasure = component.get("v.captureUnitOfMeasure");
+
         const reasonCode = component.get("v.reasonCode");
         const marketName = component.get("v.userMarket");
         const recordTypeName = component.get("v.recordTypeDeveloperName");
@@ -2181,7 +2209,10 @@
         theSampleOrder.RecordTypeId = recordTypeId;
         theSampleOrder.Classification__c = classification;
         theSampleOrder.Reason_Code__c = reasonCode;
-        theSampleOrder.Unit_of_Measure__c = unitOfMeasure;
+        if (captureUnitOfMeasure) {
+            theSampleOrder.Unit_of_Measure__c = unitOfMeasure;
+        }
+        
         if (accountId != null && accountId.length > 0) {
             theSampleOrder.Account__c = accountId;
         }
@@ -2329,6 +2360,7 @@
                         units: rows[i].units,
                         price: rows[i].price,
                         cogs: rows[i].cogs,
+                        unitCost: rows[i].unitCost,
                         comments: rows[i].comments,
                         convertedCases: rows[i].convertedCases,
                         totalActualQty: rows[i].totalActualQty,
