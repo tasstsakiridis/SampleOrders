@@ -282,10 +282,14 @@
                         }
 
                         let lockStickerInput = !rv.isSupplyChain;
+                        let stickerTypeRequired = false;
                         if (rv.market.Name == 'Korea') {
                             lockStickerInput = false;
+                            stickerTypeRequired = true;
                         }
                         component.set("v.lockStickerInput", lockStickerInput);
+                        component.set("v.canEditStickerType", rv.isSupplyChain);
+                        component.set("v.stickerTypeRequired", stickerTypeRequired);
 
                         let userRole = rv.user.UserRole == undefined ? '' : rv.user.UserRole.Name;
                         component.set('v.userRole', userRole);
@@ -337,8 +341,7 @@
                         component.set('v.country', country);
                         component.set("v.countryName", countryName);
                         component.set("v.isJapan", country == 'JP');
-//                        helper.updateProvinceOptions(component);
-
+                        component.set("v.isJapanSampleOrder", country == 'JP' && recordTypeName.indexOf('Storeroom_Request') < 0);
                         component.set('v.leadTime', rv.market == undefined || rv.market.Sample_Order_Lead_Time__c == undefined ? 0 : parseInt(rv.market.Sample_Order_Lead_Time__c));
                         component.set("v.showInternationalOrder", showInternationalOrder);
                         component.set("v.showAccounts", showAccounts);
@@ -349,7 +352,6 @@
                         component.set("v.showInternalOrderNumbers", showInternalOrderNumbers);
                         component.set("v.showShippingInstructions", rv.market.Shipping_Instructions__c == undefined ? false : rv.market.Shipping_Instructions__c);
                         component.set("v.useStandardAddressComponent", useStandardAddressComponent);
-                        //component.set("v.captureVolumeInBottles", rv.market.Capture_Volume_in_Bottles__c == undefined ? false : rv.market.Capture_Volume_in_Bottles__c);
                         component.set("v.showPrice", rv.market.Show_Product_Price__c == undefined ? false : rv.market.Show_Product_Price__c);
                         component.set("v.showCaseConversion", rv.market.Capture_Volume_in_Bottles__c == undefined ? false : rv.market.Capture_Volume_in_Bottles__c);
                         component.set("v.showRemainingQty", showActivities);
@@ -372,18 +374,20 @@
                         component.set("v.showReasonCode", rv.market.Name == 'Poland' || (rv.market.Name == 'Japan' && !isStoreroomRequest) || rv.market.Name == 'Korea');
                         component.set("v.updateAddressUsing", rv.market.Update_Address_using__c == undefined ? '' : rv.market.Update_Address_using__c);
                         component.set("v.captureContactEmail", rv.market.Capture_Contact_Email__c == undefined ? false : rv.market.Capture_Contact_Email__c);
+                        component.set("v.contactEmailRequired", rv.market.Capture_Contact_Email__c == undefined ? false : rv.market.Capture_Contact_Email__c);
                         component.set("v.captureUnitOfMeasure", rv.market.Capture_Unit_of_Measure__c == undefined ? false : rv.market.Capture_Unit_of_Measure__c);
                         component.set("v.captureIsGift", rv.market.Capture_Sample_Order_Gift__c == undefined ? false : rv.market.Capture_Sample_Order_Gift__c);
                         component.set("v.isReasonCodeRequired", rv.market.Sample_Order_Reason_Code_Required__c == undefined ? false : rv.market.Sample_Order_Reason_Code_Required__c);
                         component.set("v.showOrderCost", rv.market.Show_Sample_Order_Cost__c == undefined ? false : rv.market.Show_Sample_Order_Cost__c);
+                        component.set("v.showUnitCost", rv.market.Show_Unit_Cost__c == undefined ? false : rv.market.Show_Unit_Cost__c);
+                        component.set("v.showBreakEven", rv.market.Calculate_Break_Even__c == undefined ? false : rv.market.Calculate_Break_Even__c);
+                        component.set("v.captureAddress2", rv.market.Capture_Address_2__c == undefined ? '' : rv.market.Capture_Address_2__c);
 
                         if (country == 'JP' && recordTypeName == 'Sample_Order_JAP_Storeroom_Request') {
                             component.set("v.showGuidance", false);                            
                         }
-                        console.log('[helper.getUserDetails] showGuidance', component.get("v.showGuidance"));
 
                         let lockStatusInput = true;
-                        console.log('[helper.getUserDetails before] disableButtons, lockStatusInput', disableButtons, lockStatusInput);
                         
                         if (country == 'TW' && (theSampleOrder.Approval_Status__c == 'Submitted' || theSampleOrder.Is_Approved__c) && (userRole == 'Global Administrator' || userRole == 'TWN-Supply Chain Manager')) {
                             lockStatusInput = false;
@@ -392,14 +396,16 @@
                         if (country == 'CN' && (theSampleOrder.Approval_Status__c == 'Submitted' || theSampleOrder.Is_Approved__c) && (userRole == 'Global Administrator' || userRole == 'CHN-Supply Chain')) {
                             disableButtons = false;
                         }
-                        component.set("v.lockStatusInput", lockStatusInput);
-                        console.log('[helper.getUserDetails after] disableButtons, lockStatusInput', disableButtons, lockStatusInput);
 
-                        console.log("[helper.getUserDetails] country", country);
+                        console.log("[SampleOrderForm.helper.getUserDetails] country", country);
                         if (country == 'KR') {
+                            lockStatusInput = !rv.isSupplyChain;
                             component.set("v.disableButtons", rv.isSupplyChain ? false : disableButtons);
+                            component.set("v.captureMarketingApprover", true);
+                            component.set("v.marketingApproverFilter", "WHERE IsActive=true AND Market__c = '"+rv.market.Name+"' AND Is_Marketing_Approver__c=true");
                         } else {
                             component.set("v.disableButtons", disableButtons);
+                            component.set("v.captureMarketingApprover", false);
                         }
 
                         if ((country == 'AU' || country == 'JP') && theSampleOrder.Account__c != undefined && theSampleOrder.Account__c != '') {
@@ -427,6 +433,7 @@
                             }
                         }
                         component.set("v.unitOfMeasure", unitOfMeasure);
+                        component.set("v.lockStatusInput", lockStatusInput);
 
                         console.log('[SampleOrderForm.helper.getUserDetails] sampleOrder', theSampleOrder);
                         console.log('[SampleOrderForm.helper.getUserDetails] user', rv.user);
@@ -435,7 +442,6 @@
                         console.log('[SampleOrderForm.helper.getUserDetails] disableButtons', disableButtons);
                         console.log('[SampleOrderForm.helper.getUserDetails] captureClassification', component.get("v.captureClassification"));
 
-                        console.log('[getUserDetails] updateProvinceOptions]');
                         helper.updateProvinceOptions(component);
                         helper.setupProductColumns(component);
 
@@ -788,16 +794,22 @@
         let lblConvertedCases = $A.get('$Label.c.ConvertedCases');
         let lblComments = $A.get('$Label.c.Comments');
         let lblOrderCost = $A.get('$Label.c.Cost');
+        let lblCost = $A.get('$Label.c.COGS');
+        let lblBreakEven = $A.get('$Label.c.Break_Even');
+        let unitOfMeasure = component.get("v.unitOfMeasure");
+        lblBreakEven += unitOfMeasure == 'Bottles' ? ' (BTL)' : ' (CS)';
+        
         let country = component.get('v.country');
         console.log('[setupProductTableHeaders] showCaseConversion', component.get("v.showCaseConversion"));
         console.log('[setupProductTableHeaders] country', country);
-        console.log('[setupProductTableHeaders] posm cost', lblPOSMCost);
+        console.log('[setupProductTableHeaders] showUnitCost', component.get("v.showUnitCost"));
         component.set("v.productColumns", [
             { label: lblProduct, fieldName: 'Name', type:'text', isVisible: true },
             { label: lblSKU, fieldName: 'ProductCode__c', type: 'text', isVisible: component.get("v.showSKU")},
             { label: lblBrand, fieldName: 'Brand_Name__c', type: 'text', isVisible: true },
             { label: lblInternalOrderNumber, fieldName: 'Internal_Order_Number__c', type: 'text', isVisible: component.get("v.showInternalOrderNumbers")},
             { label: lblPackQty, fieldName: 'Pack_Quantity__c', type: 'number', editable: false, isVisible: true },
+            { label: lblCost, fieldName: 'COGS__c', type: 'number', editable: false, isVisible: component.get("v.showUnitCost")},
             { label: lblPrice, fieldName: 'Price__c', type:'number', editable: false, isVisible: component.get("v.showPrice") && country !== 'CN' },
             { label: lblPOSMCost, fieldName: 'POSM_Cost__c', type:'number', editable: false, isVisible: component.get("v.showPrice") && country === 'CN' },
             { label: lblRemaining, fieldName: 'Total_Actual_Free_Bottle_Qty__c', type:'number', editable: false, isVisible: component.get("v.showRemainingQty") },
@@ -805,7 +817,8 @@
             { label: lblNumberOfBottles, fieldName: 'Units__c', type: 'number', editable: false , isVisible: component.get("v.showCaseConversion")==false},
             { label: lblConvertedCases, fieldName: 'Total_Ordered_Cases__c', type: 'text', editable: false, isVisible: component.get("v.showCaseConversion") },
             { label: lblComments, fieldName: 'Comments__c', type: 'text', isVisible: component.get('v.captureItemComments')},
-            { label: lblOrderCost, fieldName: 'Line_Cost___c', type: 'number', editable: false, isVisible: component.get("v.showOrderCost")}
+            { label: lblOrderCost, fieldName: 'Line_Cost___c', type: 'number', editable: false, isVisible: component.get("v.showOrderCost")},
+            { label: lblBreakEven, fieldName: 'Break_Even__c', type: 'number', editable: false, isVisible: component.get("v.showBreakEven")}
         ]);        
     },
     setupProductColumns : function(component) {
@@ -1361,6 +1374,7 @@
                     productId : p.productId,
                     productName: p.productName,
                     cogs: p.cogs,
+                    excise: p.excise,
                     convertedCases: p.convertedCases,
                     id: p.id,
                     internalOrderNumber : p.internalOrderNumber,
@@ -1529,12 +1543,15 @@
         let countryCode = this.getCountryCode(component, userMarket);
         let storeroom = component.get("v.storeroom");
         let orderType = component.get("v.orderType");
+        let marketingApprover = component.get("v.marketingApproverId");
+        let captureMarketingApprover = component.get("v.captureMarketingApprover");
         const deliveryTime = component.get("v.selectedDeliveryTime");
         let captureBusinessState = component.get("v.captureBusinessState");
         const captureClassification = component.get("v.captureClassification");
         const captureDeliveryTime = component.get("v.captureDeliveryTime");
         const contactEmailRequired = component.get("v.contactEmailRequired");
         const isReasonCodeRequired = component.get("v.isReasonCodeRequired");
+        const stickerTypeRequired = component.get("v.stickerTypeRequired")
 
         console.log('[validateOrder] userMarket', userMarket);
         console.log('[validateOrder] countryCode', countryCode); 
@@ -1710,7 +1727,7 @@
             requiredFieldMissing = true;
             isValid = false;
         }
-        if (countryCode == 'KR' && isSupplyChain && theSampleOrder.Sticker_Type__c == null) {
+        if (countryCode == 'KR' && theSampleOrder.Sticker_Type__c == null) {
             console.log('[validateOrder] sticker type is required');
             requiredFieldMissing = true;
             isValid = false;
@@ -1787,6 +1804,10 @@
                 requiredFieldMissing = true;
                 isValid = false;
             }
+        }
+        if (captureMarketingApprover && marketingApprover == null) {
+            requiredFieldMissing = true;
+            isValid = false;
         }
 
         console.log('[validateOrder] requiredFieldMissing', requiredFieldMissing);
@@ -1907,6 +1928,14 @@
                 option.selected = true;
             }
         }
+        component.set("v.orderStatus", theSampleOrder.Order_Status__c);
+        const orderStatusOptions = component.get("v.orderStatuses");
+        if (orderStatusOptions && orderStatusOptions.length > 0) {
+            let option = orderStatusOptions.find(s => s.value == theSampleOrder.Order_Status__c);
+            if (option != null) {
+                option.selected = true;
+            }
+        }
         /*
         let disableButtons = theSampleOrder.Approval_Status__c != 'New';
         let userRole = component.get('v.userRole');
@@ -1992,6 +2021,10 @@
             component.set("v.accountId", theSampleOrder.Account__c);
             component.set("v.accountName", theSampleOrder.Account_Name__c);
         }
+        if (theSampleOrder.Marketing_Approver__c != null) {
+            component.set("v.marketingApproverId", theSampleOrder.Marketing_Approver__c);
+            component.set("v.marketingApproverName", theSampleOrder.Marketing_Approver__r == undefined ? '' : theSampleOrder.Marketing_Approver__r.Name);
+        }
 
         if (countryCode == 'MX') {
             let accountRequired = false;
@@ -2034,6 +2067,12 @@
 
         if (countryCode == 'TH') {
             component.set("v.storageLockerRequired", true);
+        }
+        if (countryCode == 'KR') {
+            component.set("v.captureMarketingApprover", true);
+            component.set("v.marketingApproverFilter", "WHERE IsActive=true AND Market__c=\'"+market+"\' AND Is_Marketing_Approver__c=true");
+            component.set("v.marketingApproverId", theSampleOrder.Marketing_Approver__c);
+            component.set("v.marketingApproverName", theSampleOrder.Marketing_Approver__r == undefined ? '' : theSampleOrder.Marketing_Approver__r.Name);
         }
 
         component.set("v.contactEmailRequired", theSampleOrder.Market__r.Capture_Contact_Email__c == null ? false : theSampleOrder.Market__r.Capture_Contact_Email__c);
@@ -2152,6 +2191,7 @@
         let podAttached = component.get("v.podAttached");
         let unitOfMeasure = component.get("v.unitOfMeasure");
         let captureUnitOfMeasure = component.get("v.captureUnitOfMeasure");
+        let marketingApprover = component.get("v.marketingApproverId");
 
         const reasonCode = component.get("v.reasonCode");
         const marketName = component.get("v.userMarket");
@@ -2227,6 +2267,7 @@
         theSampleOrder.Activity__c = activityId;
         theSampleOrder.Order_Status__c = orderStatus;
         theSampleOrder.Sticker_Type__c = stickerType;
+        theSampleOrder.Marketing_Approver__c = marketingApprover;
 
         console.log('[saveSampleOrder] deliveryOptions: ' + deliveryOption);
         console.log('[saveSampleOrder] deliveryOptions', deliveryOptions.length);
@@ -2361,6 +2402,7 @@
                         price: rows[i].price,
                         cogs: rows[i].cogs,
                         unitCost: rows[i].unitCost,
+                        lineTotal: rows[i].lineTotal,
                         comments: rows[i].comments,
                         convertedCases: rows[i].convertedCases,
                         totalActualQty: rows[i].totalActualQty,

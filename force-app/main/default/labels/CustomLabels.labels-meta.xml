@@ -72,4 +72,12 @@
         <shortDescription>Show Selected Products</shortDescription>
         <value>Show selected products</value>
     </labels>
+    <labels>
+        <fullName>Sample_Order_Reason_Japan</fullName>
+        <categories>labels</categories>
+        <language>en_US</language>
+        <protected>false</protected>
+        <shortDescription>Sample Order Reason Japan</shortDescription>
+        <value>Reason for Stock Order/Comments (if you would like to have a sellable product, please mention here)</value>
+    </labels>
 </CustomLabels>

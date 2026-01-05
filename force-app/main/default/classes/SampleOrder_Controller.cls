@@ -12,7 +12,7 @@ public with sharing class SampleOrder_Controller {
                             Capture_Item_Comments__c, Can_Edit_Declined_Sample_Order__c, Capture_Sample_Order_Classification__c, 
                             Address_State_Type__c, Update_Address_using__c, Capture_Delivery_Time__c, SAP_Sales_Org__c, Capture_Contact_Email__c,
                             Capture_Unit_of_Measure__c, Capture_Sample_Order_Gift__c, Sample_Order_Reason_Code_Required__c, Show_Sample_Order_Cost__c,
-                            Sample_Order_Guidance_Label__c 
+                            Sample_Order_Guidance_Label__c, Show_Unit_Cost__c, Calculate_Break_Even__c, Capture_Address_2__c 
                          FROM Market__c 
                         WHERE Name =:u.Market__c LIMIT 1];
 
@@ -178,7 +178,8 @@ public with sharing class SampleOrder_Controller {
                        Storage_Locker__c, Cost_Center__c, Business_Address2__c, Account__c, Account_Name__c, Is_Gift__c, Is_Gift_Above_100__c,
                 	   Gift_Register_Acknowledgement__c, Budget_Type__c, Reason_Code__c, Activity__c, Is_Approved__c, 
                        Shipping_Instructions__c, Sticker_Type__c, Wholesaler__c, Wholesaler__r.Name, Delivery_Options__c, Internal_Order_Number__c,
-                       POD_Attached__c, Market__c, Market__r.Name, Order_Type__c, Requested_Delivery_Time__c, Market__r.SAP_Sales_Org__c,
+                       POD_Attached__c, Market__c, Market__r.Name, Order_Type__c, Requested_Delivery_Time__c, Market__r.SAP_Sales_Org__c, Marketing_Approver__c,
+                       Marketing_Approver__r.Name, Market__r.Country_ISO_Code_2__c, Order_Status__c, Market__r.Capture_Address_2__c,
                        (SELECT Id, Name, SAP_Interfaced_Data__c, Product__c, Brand_Name__c, Product_Code__c, Internal_Order_Number__c, 
                                Quantity__c, Units__c, Product__r.Used_For__c, Product__r.Pack_Quantity__c, Total_Ordered_Cases__c, PMI_Actual__c,
                         	   Product__r.Price__c, Comments__c, Line_Cost__c
@@ -403,11 +404,14 @@ public with sharing class SampleOrder_Controller {
                 sapItem.Internal_Order_Number__c = i.internalOrderNumber;
                 sapItem.Total_Ordered_Cases__c = i.convertedCases;
                 sapItem.Comments__c = i.comments;
-                sapItem.Line_Cost__c = i.unitCost;
+                sapItem.Line_Cost__c = i.lineTotal;
                 sapItem.COGS__c = i.cogs;
+                sapItem.Excise__c = i.excise;
+                sapItem.Unit_Cost__c = i.unitCost;
+                sapItem.Break_Even__c = i.breakEven;
 
-                if (market == 'United Kingdom') {
-                    orderTotal += i.unitCost;
+                if (market == 'Australia' || market == 'United Kingdom') {
+                    orderTotal += i.lineTotal;
                 } else {
                     orderTotal += i.quantity * i.price;
                 }
@@ -562,7 +566,7 @@ public with sharing class SampleOrder_Controller {
                                         AND Used_For__c INCLUDES ('Sample Order','Sample Order - E-Premise', 'Sample Order - UK', 'Sample Order - TWN','Sample Order - MEX','Sample Order - KOR',)
                                    ORDER BY Name];
 */
-        String soql = 'SELECT Id, Name, ProductCode__c, Brand__c, Brand_Name__c, Pack_Quantity__c, Used_For__c, Price__c, COGS__c, POSM_Cost__c ';
+        String soql = 'SELECT Id, Name, ProductCode__c, Brand__c, Brand_Name__c, Pack_Quantity__c, Used_For__c, Price__c, COGS__c, POSM_Cost__c, Excise__c, Wholesale_Price__c ';
         soql += ' FROM Product__c WHERE IsActive__c = true AND Market__c =:marketId';
         soql += ' AND Used_For__c INCLUDES (\''+String.join(recordTypes, '\',\'') +'\')';
         soql += ' ORDER BY Name';
@@ -570,13 +574,21 @@ public with sharing class SampleOrder_Controller {
         List<Product__c> products = Database.query(soql);
         List<SampleOrderItem> items = new List<SampleOrderItem>();
         Decimal price = 0;
+        Decimal unitCost = 0;
         for(Product__c p : products) {
             if (marketName == 'China') {
                 price = (Decimal)p.POSM_Cost__c;
+            } else if (marketName == 'Australia') {
+                price = (Decimal)p.Wholesale_Price__c;
             } else {
                 price = (Decimal)p.Price__c;
             }
-            items.add(new SampleOrderItem('', p.Id, p.Name, p.ProductCode__c, p.Brand__c, p.Brand_Name__c, p.Used_For__c, (Integer)p.Pack_Quantity__c, 0, price, (Decimal)p.COGS__c, '', '', 0, 0, ''));
+            unitCost = p.COGS__c == null ? 0 : (Decimal)p.COGS__c;
+            if (marketName == 'Australia' && p.Excise__c != null) {
+                unitCost += (Decimal)p.Excise__c;
+            }
+            
+            items.add(new SampleOrderItem('', p.Id, p.Name, p.ProductCode__c, p.Brand__c, p.Brand_Name__c, p.Used_For__c, (Integer)p.Pack_Quantity__c, 0, price, (Decimal)p.COGS__c, (Decimal)p.Excise__c, unitCost, '', '', 0, 0, ''));
         }
         return items;
     }

@@ -33,7 +33,16 @@ global class SampleOrderItem {
     public Decimal cogs { get; set; }
 
     @AuraEnabled 
+    public Decimal excise { get; set; }
+
+    @AuraEnabled 
     public Decimal unitCost { get; set; }
+
+    @AuraEnabled 
+    public Decimal breakEven { get; set; }
+
+    @AuraEnabled 
+    public Decimal lineTotal { get; set; }
 
     @AuraEnabled
     public String convertedCases { get; set; }
@@ -75,6 +84,7 @@ global class SampleOrderItem {
         this.units = 0;
         this.price = 0;
         this.cogs = 0;
+        this.excise = 0;
         this.unitCost = 0;
         this.internalOrderNumber = '';
         this.convertedCases = '';
@@ -84,9 +94,12 @@ global class SampleOrderItem {
         this.totalActualFreeBottleQty = 0;
         this.pmiActualId = '';
         this.comments = '';
+        this.unitCost = 0;
+        this.lineTotal = 0;
+        this.breakEven = 0;
     }
     
-    public SampleOrderItem(String id, String productId, String productName, String productCode, String brandId, String brandName, String usedFor, Integer packQty, Integer quantity, Decimal price, Decimal cogs, String internalOrderNumber, String convertedCases, Decimal totalActualQty, Decimal totalPlannedQty, String pmiActualId) {
+    public SampleOrderItem(String id, String productId, String productName, String productCode, String brandId, String brandName, String usedFor, Integer packQty, Integer quantity, Decimal price, Decimal cogs, Decimal excise, Decimal unitCost, String internalOrderNumber, String convertedCases, Decimal totalActualQty, Decimal totalPlannedQty, String pmiActualId) {
         this.id = (id == null || id == '' ? productId : id);
         this.productId = productId;
         this.productName = productName;
@@ -98,6 +111,7 @@ global class SampleOrderItem {
         this.quantity = quantity == null ? 0 : quantity;
         this.units = this.quantity * this.packQty;        
         this.cogs = cogs == null ? 0 : cogs;
+        this.excise = excise == null ? 0 : excise;
         this.price = price == null || price == 0 ? this.cogs : price;
         this.internalOrderNumber = internalOrderNumber;
         this.convertedCases = convertedCases;
@@ -107,10 +121,12 @@ global class SampleOrderItem {
         this.totalFreeBottleQty = totalFreeBottleQty;
         this.pmiActualId = pmiActualId;
         this.comments = '';
-        this.unitCost = 0;
+        this.unitCost = unitCost;
+        this.lineTotal = 0;
+        this.breakEven = 0;
     }
 
-    public SampleOrderItem(String id, String productId, String productName, String productCode, String brandId, String brandName, String usedFor, Integer packQty, Integer quantity, Decimal price, Decimal cogs, String internalOrderNumber, String convertedCases, Decimal totalActualQty, Decimal totalPlannedQty, Decimal totalFreeBottleQty, Decimal totalActualFreeBottleQty, String pmiActualId) {
+    public SampleOrderItem(String id, String productId, String productName, String productCode, String brandId, String brandName, String usedFor, Integer packQty, Integer quantity, Decimal price, Decimal cogs, Decimal excise, Decimal unitCost, String internalOrderNumber, String convertedCases, Decimal totalActualQty, Decimal totalPlannedQty, Decimal totalFreeBottleQty, Decimal totalActualFreeBottleQty, String pmiActualId) {
         this.id = (id == null || id == '' ? productId : id);
         this.productId = productId;
         this.productName = productName;
@@ -122,6 +138,7 @@ global class SampleOrderItem {
         this.quantity = quantity == null ? 0 : quantity;
         this.units = this.quantity * this.packQty;        
         this.cogs = cogs == null ? 0 : cogs;
+        this.excise = excise == null ? 0 : excise;
         this.price = price == null || price == 0 ? this.cogs : price;
         this.internalOrderNumber = internalOrderNumber;
         this.convertedCases = convertedCases;
@@ -131,7 +148,9 @@ global class SampleOrderItem {
         this.totalFreeBottleQty = totalFreeBottleQty;
         this.pmiActualId = pmiActualId;
         this.comments = '';
-        this.unitCost = 0;
+        this.unitCost = unitCost;
+        this.lineTotal = 0;
+        this.breakEven = 0;
     }
 
 }

@@ -6,6 +6,9 @@
         console.log('[SampleOrderItemRow.doInit] showPrice', component.get("v.showPrice"));
         console.log('[SampleOrderItemRow.doInit] showSKU', component.get("v.showSKU"));
         console.log('[SampleOrderItemRow.doInit] showIONumbers', component.get("v.showInternalOrderNumbers"));
+        let unitOfMeasure = component.get("v.unitOfMeasure");
+        let lbl = component.get("v.label_BreakEven");
+        component.set("v.label_BreakEven", lbl + (unitOfMeasure == 'Bottles' ? ' (BTL)' : ' (CS)'));
         helper.checkRowVisibility(component);
         helper.getInternalOrderNumbers(component);
 	},
@@ -57,6 +60,7 @@
     handleQuantityChange : function(component, event, helper) {
         try {
             let recordType = component.get("v.recordTypeDeveloperName");            
+            let country = component.get("v.market");
             const captureVolumeInBottles = component.get("v.captureVolumeInBottles");
             let unitOfMeasure = component.get("v.unitOfMeasure");
             if (recordType.indexOf('Storeroom_Request') >= 0) {
@@ -72,14 +76,20 @@
                 row.quantity = 0;
                 row.units = 0;
                 row.convertedCases = '';
-                row.unitCost = 0;
+                if (country != 'AU') {
+                    row.unitCost = 0;
+                }
+                row.lineTotal = 0;
                 component.set("v.row", row);
             } else if (qty == 0) {
                 rowCount--;
                 row.quantity = qty;
                 row.units = 0;
                 row.convertedCases = '';
-                row.unitCost = 0;
+                if (country != 'AU') {
+                    row.unitCost = 0;
+                }
+                row.lineTotal = 0;
                 component.set("v.row", row);
                 
                 if (row.id != null && row.id != '') {
@@ -159,7 +169,19 @@
                     row.units = qty;
                 }
 
-                row.unitCost = row.units * row.cogs;
+                row.unitCost = row.cogs;
+                if (country == 'AU') {
+                    row.unitCost = row.cogs + row.excise;
+                }
+                
+                row.lineTotal = parseFloat(qty * row.unitCost).toFixed(2);
+                if (row.price > 0) {
+                    var profit = row.price - row.unitCost
+                    if (profit != 0) {
+                        row.breakEven = ((row.unitCost / profit) * qty).toFixed(2);
+                    }
+                }
+
                 console.log('[SampleOrderItemRow.controller.handleQuantityChange] row', JSON.parse(JSON.stringify(row)));
                 component.set("v.row", row);
 

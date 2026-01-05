@@ -187,7 +187,7 @@ public class SampleOrder_Test {
         
         List<Product__c> lProducts = helper.createProducts(5, 'Wet Goods', mAU.Id, brand.Id, false);
         for(Product__c p : lProducts) {
-            p.Used_For__c = 'Sample Order';
+            p.Used_For__c = 'Sample_Order';
         }
         lProducts[0].Used_For__c = 'Sample Order;High Value;Sample Order - MX';
         insert lProducts;
@@ -287,7 +287,7 @@ public class SampleOrder_Test {
 			//Map<String, Object> runningAsUser = SampleOrder_Controller.getCurrentUserInfo();
 			//System.assertEquals('Test Tsakiridis', String.valueOf(runningAsUser.get('userName')));
             
-            //bfObjectDescribe obj = SampleOrder_Controller.getObjectDetails();
+            bfObjectDescribe obj = SampleOrder_Controller.getObjectDetails();
             //System.assertEquals('SAP_Interfaced_Data__c', obj.apiName);
             
             List<Map<String, Object>> lSampleOrders = SampleOrder_Controller.getSampleOrders();
@@ -306,7 +306,7 @@ public class SampleOrder_Test {
             
             sampleOrderAU = SampleOrder_Controller.saveSampleOrder(sampleOrderAU, mAU.Id, mAU.Name);
             sampleOrderMX = SampleOrder_Controller.saveSampleOrder(sampleOrderMX, mMX.Id, mMX.Name);
-            List<SAP_Interfaced_Data_Item__c> orderItems = SampleOrder_Controller.saveOrderItems(sampleOrderMX.Id, 'Sample Order - MEX', 'Mexico', activity1.Id, json);
+            List<SAP_Interfaced_Data_Item__c> orderItems = SampleOrder_Controller.saveOrderItems(sampleOrderMX.Id, rtSampleOrderMX, 'Mexico', activity1.Id, json);
                 
             sampleOrderMX = SampleOrder_Controller.getSampleOrder(sampleOrderMX.Id);
             System.assertNotEquals(null, sampleOrderMX);
@@ -327,6 +327,8 @@ public class SampleOrder_Test {
             
             SampleOrderItem soi = new SampleOrderItem();
             System.assertEquals('', soi.id);
+
+           	SampleOrderItem soi2 = new SampleOrderItem('', lProducts.get(0).Id, lProducts.get(0).Name, '1234', lProducts.get(0).Brand__c, 'Jack', '', 12, 6, 0, 0, 0, 0, '', '', 0, 0, 0, 0, '');
             
             sampleOrderAU.Approval_Status__c = 'Approved';
             sampleOrderAU.RecordTypeId = rtSampleOrderLocked;
@@ -344,7 +346,7 @@ public class SampleOrder_Test {
             sli = new SimpleListItem('id', 'name', false, '', false);
             System.assertEquals('id', sli.id);
             
-            Map<String, bfFieldDescribe> l_controllingValues = SampleOrder_Controller.getPicklistValuesForRecordType('Sample Order');
+            Map<String, bfFieldDescribe> l_controllingValues = SampleOrder_Controller.getPicklistValuesForRecordType(rtSampleOrder);
             
             ApprovalHistory ahist = SampleOrder_Controller.getApprovalHistory(sampleOrderAU.Id);
             System.debug('approvalhistory: ' + ahist);
@@ -355,12 +357,15 @@ public class SampleOrder_Test {
 
             bfColumn col = new bfColumn('name', 'label', 'value');
             bfColumn col2 = new bfColumn('name', 'label', 'value', Schema.DisplayType.STRING, false, false);
+            bfColumn col3 = new bfColumn('name', 'label', 'value', Schema.DisplayType.STRING, false, false, false);
             
             bfObjectDescribe desc1 = new bfObjectDescribe('Account', 'Account', 'Accounts');
             bfObjectDescribe desc2 = new bfObjectDescribe('Account', 'Account', 'Accounts', true, false, false);
+            desc2.getDescribe(true, true, true);
             
             SampleOrder_Controller.submitForApproval(sampleOrderMX.Id, 'Mexico', 'Sample Order - MEX', 'Approved');
 
+            
             Test.stopTest();
        }
         

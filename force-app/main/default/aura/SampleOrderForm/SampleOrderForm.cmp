@@ -36,6 +36,9 @@
     <aura:attribute name="orderType" type="String" default="Other" />
     <aura:attribute name="accountFilter" type="String" default="" />
     <aura:attribute name="wholesalerFilter" type="String" default="" />
+    <aura:attribute name="marketingApproverId" type="String" default="" />
+    <aura:attribute name="marketingApproverName" type="String" default="" />
+    <aura:attribute name="marketingApproverFilter" type="String" default="" />
     <aura:attribute name="maxInputLength" type="String" default="{!$Label.c.Max_Input_Length}" />
     <aura:attribute name="sampleOrderLabel" type="String" default="{!$Label.c.SampleOrder}" />
     <aura:attribute name="submitForApprovalSuccessMessage" type="String" default="{!$Label.c.Submit_for_Review_Success}" />
@@ -52,6 +55,7 @@
     <aura:attribute name="labelGuidance" type="String" default="{!$Label.c.Sample_Order_Guidance}" />
     <aura:attribute name="Sample_Order_Guidance_Korea" type="String" default="{!$Label.c.Sample_Order_Guidance_Korea}" />
     <aura:attribute name="Sample_Order_Guidance_China" type="String" default="{!$Label.c.Sample_Order_Guidance_China}" />
+    <aura:attribute name="Sample_Order_Reason_Japan" type="String" default="{!$Label.c.Sample_Order_Reason_Japan}" />
     <aura:attribute name="addressStateInputType" type="String" default="Free Text" />
     <aura:attribute name="unitOfMeasure" type="String" default="Cases" />
 
@@ -84,6 +88,8 @@
     <aura:attribute name="showStickerTypes" type="Boolean" default="false" />
     <aura:attribute name="showReasonCode" type="Boolean" default="false" />
     <aura:attribute name="lockStickerInput" type="Boolean" default="true" />
+    <aura:attribute name="canEditStickerType" type="Boolean" default="false" />
+    <aura:attribute name="stickerTypeRequired" type="Boolean" default="false" />
     <aura:attribute name="useStandardAddressComponent" type="Boolean" default="true" />
     <aura:attribute name="showCaseConversion" type="Boolean" default="false" />
     <aura:attribute name="showShippingInstructions" type="Boolean" default="false" />
@@ -118,8 +124,13 @@
     <aura:attribute name="captureUnitOfMeasure" type="Boolean" default="false" />
     <aura:attribute name="captureIsGift" type="Boolean" default="false" />
     <aura:attribute name="showOrderCost" type="Boolean" default="false" />
+    <aura:attribute name="showUnitCost" type="Boolean" default="false" />
+    <aura:attribute name="showBreakEven" type="Boolean" default="false" />
     <aura:attribute name="isJapan" type="Boolean" default="false" />
+    <aura:attribute name="isJapanSampleOrder" type="Boolean" default="false" />
     <aura:attribute name="isReasonCodeRequired" type="Boolean" default="false" />
+    <aura:attribute name="captureMarketingApprover" type="Boolean" default="false" />
+    <aura:attribute name="captureAddress2" type="Boolean" default="true" />
 
     <!-- List & Object Attributes -->
     <aura:attribute name="theSampleOrder" type="SAP_Interfaced_Data__c" default="{ }" />
@@ -274,7 +285,7 @@
                                     showInternalOrderNumbers="{!v.showInternalOrderNumbers}" internalOrderNumbersMap="{!v.internalOrderNumbers}"
                                     captureVolumeInBottles="{!v.captureVolumeInBottles}" promotionActivity="{!v.promotionActivity}"
                                     captureItemComments="{!v.captureItemComments}" market="{!v.country}" classification="{!v.classification}" unitOfMeasure="{!v.unitOfMeasure}"
-                                    showOrderCost="{!v.showOrderCost}" />
+                                    showOrderCost="{!v.showOrderCost}" showUnitCost="{!v.showUnitCost}" showBreakEven="{!v.showBreakEven}" />
 
                             </aura:iteration>
                         </tbody>                
@@ -342,7 +353,7 @@
                         <aura:if isTrue="{!v.showStickerTypes}">
                             <div class="slds-col slds-has-flexi-truncate" role="listitem">
                                 <lightning:select name="stickerTypes" label="{!v.objectDescribe.fields.Sticker_Type__c.label}"
-                                    value="{!v.stickerType}" onchange="{!c.handleStickerTypeChange}" disabled="{!v.lockStickerInput}" required="{!v.isSupplyChain}">
+                                    value="{!v.stickerType}" onchange="{!c.handleStickerTypeChange}" disabled="{!v.lockStickerInput}" required="{!v.stickerTypeRequired}">
                                     <aura:iteration items="{!v.stickerTypes}" var="s">
                                         <option text="{!s.label}" value="{!s.value}" selected="{!s.selected}" />
                                     </aura:iteration>
@@ -526,19 +537,23 @@
                                         value="{!v.theSampleOrder.Business_Address__c}" required="true" maxlength="35"
                                         messageWhenTooLong="{!$Label.c.Input_Too_Long}" disabled="{!v.orderLocked}" />
                                 </div>
-                                <div>
-                                    <lightning:textarea aura:id="i_BusinessAddress2" name="i_BusinessAddress2"
-                                        label="{!v.objectDescribe.fields.Business_Address2__c.label + ' (' + v.maxInputLength + ')'}"
-                                        value="{!v.theSampleOrder.Business_Address2__c}" required="false" maxlength="35"
-                                        messageWhenTooLong="{!$Label.c.Input_Too_Long}" disabled="{!v.orderLocked}" />
-                                </div>
+                                <aura:if isTrue="{!v.captureAddress2}">
+                                    <div>
+                                        <lightning:textarea aura:id="i_BusinessAddress2" name="i_BusinessAddress2"
+                                            label="{!v.objectDescribe.fields.Business_Address2__c.label + ' (' + v.maxInputLength + ')'}"
+                                            value="{!v.theSampleOrder.Business_Address2__c}" required="false" maxlength="35"
+                                            messageWhenTooLong="{!$Label.c.Input_Too_Long}" disabled="{!v.orderLocked}" />
+                                    </div>
+                                </aura:if>
                             <aura:set attribute="else">
                                 <div>
                                     <lightning:textarea aura:id="i_BusinessAddress" name="i_BusinessAddress" label="{!v.objectDescribe.fields.Business_Address__c.label + ' (' + v.maxInputLength + ')'}" value="{!v.theSampleOrder.Business_Address__c}" required="true" maxlength="35" messageWhenTooLong="{!$Label.c.Input_Too_Long}"  disabled="{!v.orderLocked}" />
                                 </div>
-                                <div>
-                                    <lightning:textarea aura:id="i_BusinessAddress2" name="i_BusinessAddress2" label="{!v.objectDescribe.fields.Business_Address2__c.label + ' (' + v.maxInputLength + ')'}" value="{!v.theSampleOrder.Business_Address2__c}" required="false" maxlength="35" messageWhenTooLong="{!$Label.c.Input_Too_Long}"  disabled="{!v.orderLocked}"/>
-                                </div>
+                                <aura:if isTrue="{!v.captureAddress2}">
+                                    <div>
+                                        <lightning:textarea aura:id="i_BusinessAddress2" name="i_BusinessAddress2" label="{!v.objectDescribe.fields.Business_Address2__c.label + ' (' + v.maxInputLength + ')'}" value="{!v.theSampleOrder.Business_Address2__c}" required="false" maxlength="35" messageWhenTooLong="{!$Label.c.Input_Too_Long}"  disabled="{!v.orderLocked}"/>
+                                    </div>
+                                </aura:if>
                                 <div class="slds-m-top_small">
                                     <lightning:layout>
                                         <lightning:layoutItem size="6" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="6">
@@ -680,6 +695,21 @@
                             </lightning:card>
                         </div>
                     </aura:if>
+                    <aura:if isTrue="{!v.captureMarketingApprover}">
+                        <div class="slds-col slds-has-flexi-truncate slds-m-top_large" role="listitem">
+                            <h4>
+                                <span class="requiredField">*</span>
+                                {!$Label.c.Marketing_Approver}
+                            </h4>
+                                <c:lookupComponent aura:id="i_MarketingApprover" id="i_MarketingApprover" instanceId="i_MarketingApprover" searchString="{!v.marketingApproverName}"
+                                    recordId="{!v.marketingApproverId}" label="{!$Label.c.Approver}" pluralLabel='{!$Label.c.Approvers}' sObjectAPIName="User"
+                                    resultLimit="100" filterClause="{!v.marketingApproverFilter}"
+                                    listIconSVGPath="/resource/SLDS091/assets/icons/standard-sprite/svg/symbols.svg#user"
+                                    listIconClass="slds-icon-standard-account" objectLabel="User" closeResultListLabel="{!$Label.c.Close}"
+                                    isReadOnly="{!v.orderLocked}" showCreateNewOption="false" triggerEvent="setLookupId" />
+
+                        </div>
+                    </aura:if>
                     <aura:if isTrue="{!v.showShippingInstructions}">
                         <div class="slds-m-top_small">
                             <lightning:input label="{!$Label.c.Shipping_Instructions}" disabled="{!v.orderLocked}" value="{!v.theSampleOrder.Shipping_Instructions__c}" class="height_60" />
@@ -689,7 +719,12 @@
                         <div class="slds-m-top_small">
                             <!--<span class="slds-form-element__label">Reason for Stock Order/Comments</span>-->
                             <!--<lightning:inputRichText label="Reason for Stock Order/Comments" disabled="{!v.orderLocked}" placeholder="Comments" value="{!v.theSampleOrder.Reason__c}" disabledCategories="FORMAT_FONT,FORMAT_TEXT,FORMAT_BODY,ALIGN_TEXT,INSERT_CONTENT,REMOVE_FORMATTING" />-->
-                            <lightning:input label="{!$Label.c.Sample_Order_Reason}" required="true" disabled="{!v.orderLocked}" placeholder="{!$Label.c.Sample_Order_Reason}" value="{!v.theSampleOrder.Reason__c}" class="height_60" />
+                            <aura:if isTrue="{!v.isJapanSampleOrder}">
+                                <lightning:input label="{!$Label.c.Sample_Order_Reason_Japan}" required="true" disabled="{!v.orderLocked}" placeholder="{!$Label.c.Sample_Order_Reason}" value="{!v.theSampleOrder.Reason__c}" class="height_60" />
+                            <aura:set attribute="else">
+                                <lightning:input label="{!$Label.c.Sample_Order_Reason}" required="true" disabled="{!v.orderLocked}" placeholder="{!$Label.c.Sample_Order_Reason}" value="{!v.theSampleOrder.Reason__c}" class="height_60" />
+                            </aura:set>    
+                            </aura:if>
                         </div>
                     </aura:if>
 				</aura:if>  

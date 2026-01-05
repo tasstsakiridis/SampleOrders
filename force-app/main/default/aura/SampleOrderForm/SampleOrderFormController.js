@@ -268,6 +268,7 @@
                 helper.setupProductTableHeaders(component);
             }
             if (country == 'JP') {
+                component.set("v.costCenter", null);
                 component.set("v.showCostCenters", false);
                 if (classification.indexOf('SD5') >= 0) {
                     component.set("v.showCostCenters", true);
