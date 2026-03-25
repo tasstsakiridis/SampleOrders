@@ -312,7 +312,7 @@
             const reasonCode = component.get("v.reasonCode");
             var reasonCodePicklistValues = picklistValues["Reason_Code__c"].picklistValues;
             var stickerTypePicklistValues = picklistValues["Sticker_Type__c"].picklistValues;
-
+            var validReasonCodeForClassification = false;
             if (country != 'PL') {
                 var picklistValuesForClassification = reasonCodePicklistValues.filter(r => r.description == classification);
                 console.log('[SampleOrderForm.controller.handleClassificationChange] picklistValuesForClassification', picklistValuesForClassification);
@@ -320,6 +320,9 @@
 
                 for(var i = 0; i < picklistValuesForClassification.length; i++) {
                     reasonCodes.push({"label":picklistValuesForClassification[i].label, "value":picklistValuesForClassification[i].value, "selected":reasonCode == picklistValuesForClassification[i].value});
+                    if (reasonCode == picklistValuesForClassification[i].value) {
+                       validReasonCodeForClassification = true; 
+                    }
                 }
             }
 
@@ -356,6 +359,10 @@
                 if (x > y) { return 1; }
                 return 0; 
             });
+
+            if (!validReasonCodeForClassification) {
+                component.set("v.reasonCode", "");
+            }
             component.set("v.reasonCodes", reasonCodes);
             component.set("v.stickerTypes", stickerTypes);
 
@@ -379,6 +386,10 @@
                         component.set("v.accountName", classificationConfig.Default_Account_Name__c);
                     }
                 }
+            }
+
+            if (component.get("v.showCostCenters") == false) {
+                component.set("v.costCenter", "");
             }
         }catch(ex) {
             console.log('[handleClassificationChange] exception', ex);

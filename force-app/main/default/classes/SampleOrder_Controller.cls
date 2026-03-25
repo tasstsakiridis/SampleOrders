@@ -290,6 +290,15 @@ public with sharing class SampleOrder_Controller {
                     theSampleOrder.SAP_ShipTo_Code__c = banner.Ship_To_Code__c;
                 }                
             }
+            if (marketName == 'China' && theSampleOrder.Account__c != null && theSampleOrder.Classification__c.startsWithIgnoreCase('free goods')) {
+                Account theAccount = [SELECT Id, Name, Sold_To_SAP__c, Ship_To_SAP__c FROM Account WHERE Id =:theSampleOrder.Account__c LIMIT 1];
+                if (theAccount != null && theAccount.Ship_To_SAP__c != null) {
+                    theSampleOrder.SAP_ShipTo_Code__c = theAccount.Ship_To_SAP__c;
+                }
+                if (theAccount != null && theAccount.Sold_To_SAP__c != null) {
+                    theSampleOrder.SAP_SoldTo_Code__c = theAccount.Sold_To_SAP__c;
+                }
+            }
 
             if (marketName == 'Mexico' && theSampleOrder.Storage_Locker__c != null) {
                 String accountId = '';
