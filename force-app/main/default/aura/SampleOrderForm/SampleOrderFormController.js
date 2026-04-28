@@ -329,11 +329,13 @@
             if (country == 'BR') {
                 component.set("v.accountRequired", true);
                 component.set("v.storageLockerRequired", true);
+                /*
                 if (classification.indexOf('MZ2') > -1 || classification.indexOf('SD0') > -1) {
                     component.set("v.internalOrderNumberRequired", true);
                 } else {
                     component.set("v.internalOrderNumberRequired", false);
                 }
+                */
             }
             if (country == 'TH') {
                 component.set("v.accountRequired", true);
@@ -384,6 +386,9 @@
                     if (classificationConfig.Default_Account__c != undefined) {
                         component.set("v.accountId", classificationConfig.Default_Account__c);
                         component.set("v.accountName", classificationConfig.Default_Account_Name__c);
+                    }
+                    if (classificationConfig.Additional_Requirements__c != undefined && classificationConfig.Additional_Requirements__c.indexOf('Internal Order') >= 0) {
+                        component.set("v.internalOrderNumberRequired", true);
                     }
                 }
             }

@@ -2052,7 +2052,7 @@
         if (countryCode == 'BR') {
             component.set("v.storageLockerRequired", true);
             component.set("v.accountRequired", true);
-            if (theSampleOrder.Classification__c.indexOf('MZ2') > -1 || theSampleOrder.Classification__c.indexOf('SD0') > -1) {
+            if (theSampleOrder.Classification__c.indexOf('FG1') > -1 || theSampleOrder.Classification__c.indexOf('SD0') > -1) {
                 component.set("v.internalOrderNumberRequired", true);
             } else {
                 component.set("v.internalOrderNumberRequired", false);
