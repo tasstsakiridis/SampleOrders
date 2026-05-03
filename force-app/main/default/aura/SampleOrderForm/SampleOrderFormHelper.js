@@ -1222,6 +1222,7 @@
         component.set("v.orderType", null);
         component.set("v.showReasonCode", false);
         component.set("v.captureIsGift", false);
+        component.set("v.internalOrderNumberRequired", false);
         
         this.initToast(component);
         let deletedRows = [];
@@ -2052,11 +2053,6 @@
         if (countryCode == 'BR') {
             component.set("v.storageLockerRequired", true);
             component.set("v.accountRequired", true);
-            if (theSampleOrder.Classification__c.indexOf('FG1') > -1 || theSampleOrder.Classification__c.indexOf('SD0') > -1) {
-                component.set("v.internalOrderNumberRequired", true);
-            } else {
-                component.set("v.internalOrderNumberRequired", false);
-            }
         }
         if (countryCode == 'JP') {
             component.set("v.showCostCenters", false);
@@ -2097,6 +2093,31 @@
             this.filterProductsToActivityProducts(component);
         }
         
+        const configs = component.get("v.classificationConfigs");
+        const marketConfig = component.get("v.marketConfig");
+        console.log('[SampleOrderForm.helper.loadSampleOrder] configs', configs);
+        if (configs != undefined && configs.length > 0) {
+            const classificationConfig = configs.find(c => c.Classification__c == theSampleOrder.Classification__c && c.RecordType != undefined && c.RecordType.Name == 'General');
+            console.log('[SampleOrderForm.helper.loadSampleOrder] config', classificationConfig);
+            if (classificationConfig) {
+                if (classificationConfig.Additional_Requirements__c != undefined && classificationConfig.Additional_Requirements__c.indexOf('Cost Center') >= 0) {
+                    component.set("v.costCenterRequired", true);
+                    component.set("v.showCostCenters", marketConfig.Cost_Centers__c == true);
+                    component.set("v.costCenter", '');
+                } else {
+                    component.set("v.costCenterRequired", false);
+                    component.set("v.showCostCenters", false);
+                }
+                if (classificationConfig.Default_Account__c != undefined) {
+                    component.set("v.accountId", classificationConfig.Default_Account__c);
+                    component.set("v.accountName", classificationConfig.Default_Account_Name__c);
+                }
+                if (classificationConfig.Additional_Requirements__c != undefined && classificationConfig.Additional_Requirements__c.indexOf('Internal Order') >= 0) {
+                    component.set("v.internalOrderNumberRequired", true);
+                }
+            }
+        }
+
         //this.setupProductTableHeaders(component);
         if (theSampleOrder.SAP_Interfaced_Data_Items__r && theSampleOrder.SAP_Interfaced_Data_Items__r.length > 0) {
             component.set("v.selectedRowCount", theSampleOrder.SAP_Interfaced_Data_Items__r.length);
